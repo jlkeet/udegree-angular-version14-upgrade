@@ -1,0 +1,26 @@
+<splash-screen [animationType]="SplashAnimationType.FadeOut" [duration]="2"></splash-screen>
+
+<div *ngIf="!isMobile">
+<header>
+  <app-header></app-header>
+</header>
+
+<main>
+<admin-export></admin-export>
+<!-- containers will get injected here -->
+<router-outlet></router-outlet>
+<footer></footer>
+</main>
+</div>
+
+<div *ngIf="isMobile">
+  <header>
+    <app-header></app-header>
+  </header>
+  
+  <main style="padding: 0px;">
+  <!-- containers will get injected here -->
+  <router-outlet></router-outlet>
+  </main>
+  </div>
+

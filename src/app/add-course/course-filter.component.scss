@@ -1,0 +1,198 @@
+.course-filter-search {
+  border-radius: 3px;
+  display: inline-block;
+  padding: 3px 26px 3px 5px;
+  width: 225px;
+}
+
+.filter-panel {
+  width: 100%;
+  background:white;
+  overflow-y: scroll;
+}
+
+.add-course-filter-title {
+  padding: 0px !important;
+  margin-left: 0px !important;
+  height: 30px !important;
+}
+
+.add-course-filter-panel {
+  box-shadow: none !important;
+}
+
+::ng-deep .add-course-filter-panel .mat-expansion-panel-content .mat-expansion-panel-body {
+  padding: 0px !important;
+}
+
+.radio-group-style {
+  display: inline-grid !important;
+}
+
+::ng-deep .slide-toggle .mat-slide-toggle-label {
+  display: inline-grid !important;
+}
+
+::ng-deep .slide-toggle .mat-slide-toggle-bar {
+  margin-top: 15px !important;
+}
+
+.slide-toggle-group {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 25px;
+  padding-bottom: 20px;
+}
+
+.pad {
+  padding:10px;
+}
+
+@media (max-width: 415px) {
+
+  .pad {
+    padding-top: 1px;
+  }
+}
+
+//this gets rid of the big space that mat-form uses 
+.remove-pad {
+  margin-bottom:0px
+}
+
+toggle-switch {
+  display: inline-block
+}
+
+.space{
+  margin-left:10px;
+
+}
+
+.flex-justify {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-left:20px;
+  margin-right:20px;
+  align-items: center;
+}
+
+.mat-checkbox-whole {
+  width: 110%;
+  padding-top: 10px;
+}
+
+.mat-checkbox-whole:active {
+  background: rgba(0,0,0,.04);
+  transition: border-color 90ms cubic-bezier(0,0,.2,.1),background-color 90ms cubic-bezier(0,0,.2,.1);
+  transition-property: border-color, background-color;
+  transition-duration: 90ms, 90ms;
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 0.1), cubic-bezier(0, 0, 0.2, 0.1);
+  transition-delay: 0s, 0s;
+}
+
+.mat-checkbox-whole:after {
+  background: rgba(0,0,0,.04);
+  transition: border-color 90ms cubic-bezier(0,0,.2,.1),background-color 90ms cubic-bezier(0,0,.2,.1);
+  transition-property: border-color, background-color;
+  transition-duration: 90ms, 90ms;
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 0.1), cubic-bezier(0, 0, 0.2, 0.1);
+  transition-delay: 0s, 0s;
+}
+
+@media (max-width: 415px) {
+  .flex-justify {
+    display: block;
+  }
+}
+
+
+.searchBox {
+  position: relative;
+  border-radius: 40px;
+  border: 1px solid grey;
+  float: right;
+  top: 14px;
+}
+
+.searchBox:hover > .searchInput {
+  width: 240px;
+  padding: 0 6px;
+}
+
+.searchBox:hover > .searchButton {
+background: white;
+color : #2f3640;
+}
+
+.searchButton {
+  color: #2f3640;
+  float: right;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.4s;
+}
+
+.searchInput {
+  border:none;
+  background: none;
+  outline:none;
+  float:left;
+  padding: 0;
+  color: rgba(0,0,0,.87);
+  font-size: 16px;
+  transition: 0.4s;
+  line-height: 40px;
+  width: 0px;
+
+}
+
+@media screen and (max-width: 620px) {
+.searchBox:hover > .searchInput {
+  padding: 0 20px;
+}
+}
+
+.button-toggle-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.remove-course-button {
+  width: 90px;
+  color: white;
+  background-color: #FF5403;
+  margin-top: 20px;
+  margin-left: 0px;
+}
+
+.collapse-filter-button {
+  width: 90px;
+  color: white;
+  background-color: #65cc01;
+  margin-top: 20px;
+  margin-left: 0px;
+}
+
+@keyframes spinner {
+  to {transform: rotate(360deg);}
+}
+ 
+.spinner:before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin-left: 7px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  border-top-color: #000000;
+  animation: spinner .8s linear;
+}

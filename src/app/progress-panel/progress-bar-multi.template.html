@@ -1,0 +1,51 @@
+<div id="bar-total" [title]="hoverText" class="bar-main-container" [class.inactive]="inactive" [class.totalBar]="isTotal">
+    <!-- <mat-expansion-panel
+    class="complex-container"
+    [disabled]="isDisabled"
+    [expanded]="false"
+    hideToggle
+  >
+
+    <mat-expansion-panel-header *ngIf="isComplex" class="complex-header" (click)="expansionOnClick();populateCombined();">
+      <span>{{title}}</span>
+    </mat-expansion-panel-header> -->
+
+    <div *ngIf="isComplex" class="wrap">
+          
+        <!-- <div *ngFor="let item of combinedRule; let i=index"> -->
+            <!-- {{newMax(item.complexMax)}} -->
+            <div class="progress-bar-title" style="padding-left: 4px !important">
+            {{rule}}
+          </div>
+        <!-- <div class="bar-percentage">{{total}}/{{item.complexMax}}</div> -->
+        <div class="bar-container">
+            <div class="bar bar--one" [style.backgroundColor]="barOne.color" [uProgressWidth]=barOneWidth  title="{{barOneHoverText}}"></div>
+            <div class="bar bar--two" [style.backgroundColor]="barTwo.color" [uProgressWidth]=barTwoWidth  title="{{barTwoHoverText}}"></div>
+            <div class="bar bar--three" [style.backgroundColor]="barThree.color" [uProgressWidth]=barThreeWidth title="{{barTwoHoverText}}"></div>
+        </div>
+           <!-- <div *ngIf="i < combinedRule.length - 1">
+          <P>OR</P>
+        </div> -->
+       </div>
+    <!-- </div> -->
+  <!-- </div>  -->
+
+    <!-- </mat-expansion-panel> -->
+
+    <div *ngIf="!isComplex" class="progress-bar-title" [class.inactive]="inactive">
+      <!--<img src='assets/img/file.svg' class="file-icon" />-->
+      {{title}}
+    </div>
+    
+    <div *ngIf="!isComplex" class="wrap">
+      <!-- <div class="bar-percentage">{{total}}/{{max}}</div> -->
+
+
+        <div class="bar-container">
+            <div class="bar bar--one" [style.backgroundColor]="barOne.color" [uProgressWidth]=barOneWidth  title="{{barOneHoverText}}"><div *ngIf="barOne.full" class="completed-fully"><div *ngIf="barOne.full" class="planned-fully-check"></div></div><div *ngIf="fullyPlannedEnrolledCompleted && !barOne.full" class="planned-mixed"><div *ngIf="fullyPlannedEnrolledCompleted && !barOne.full" class="planned-mixed-check"></div></div></div>
+            <div class="bar bar--two" [style.backgroundColor]="barTwo.color" [uProgressWidth]=barTwoWidth  title="{{barTwoHoverText}}"><div *ngIf="barTwo.full" class="enrolled-fully"><div *ngIf="barTwo.full" class="planned-fully-check"></div></div><div *ngIf="fullyPlannedEnrolledCompleted && !barTwo.full" class="planned-mixed"><div *ngIf="fullyPlannedEnrolledCompleted && !barTwo.full" class="planned-mixed-check"></div></div></div>
+            <div class="bar bar--three" [style.backgroundColor]="barThree.color" [uProgressWidth]=barThreeWidth  title="{{barThreeHoverText}}"><div *ngIf="barThree.full" class="planned-fully"><div *ngIf="barThree.full" class="planned-fully-check"></div></div></div>
+
+        </div>
+    </div> 
+</div>

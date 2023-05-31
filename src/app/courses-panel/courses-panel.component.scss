@@ -1,0 +1,122 @@
+.courses-panel {
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  margin-left: 35px;
+}
+
+.plain {
+  border-radius:inherit;
+  background:white;
+  font-family: Open Sans, sans-serif;
+  padding-left:0px;
+  padding-right:0px;
+  height:100px;
+}
+
+.add-semester {
+  border-radius:5px;
+  border: 1px dashed;
+  background:white;
+  overflow: hidden;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.new-semester {
+  font-size:15px;
+  font-weight:700;
+  cursor: pointer;
+  color:#607d8b;
+  width:100%;
+  padding-top: 50px;
+  padding-bottom: 50px;
+  padding-left: 36px;
+}
+
+.pad-left {
+  padding-left:20px;
+}
+
+
+.nice-select{
+  border: 1px #ccc solid;
+  background:white;
+  border-radius:3px;
+  color: #607d8b !important;
+  font-size: 18px;
+
+  // cursor: pointer;
+  // color: #607d8b;
+  // width: 100%;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 15px;
+}
+
+::ng-deep .mat-form-field-underline {
+  display: none !important;
+}
+
+.year-input {
+  width: 97px;
+  border: 1px #ccc solid;
+  background:white;
+  border-radius:3px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 15px;
+  color: #607d8b !important;
+  font-size: 18px;
+  height: 1.84em;;
+}
+
+@media (max-width: 415px) { 
+  .export-button {
+    float:none !important;
+    display: block;
+    width: 30%;
+    margin: auto;
+    color:black;
+  }
+}
+
+.export-button {
+  float:right;
+  color:black;
+}
+
+.default {
+  background-color:#ffcc00;
+}
+
+.sent {
+  background-color:#65cc01;
+  transition: 0.3s ease-in 0.2s;
+}
+
+.export-container {
+  width:100%;
+}
+
+.export-button-options {
+  margin: auto;
+  width: 25%;
+  padding-top: 110px;
+}
+
+.export-button-yes {
+  background-color:#65cc01;
+  font-family: "Open Sans", sans-serif;
+  color: black;
+  width: 45%;
+  display:inline-block;
+  margin-right: 10px;
+}
+
+.export-button-cancel {
+  font-family: "Open Sans", sans-serif;
+  color: black;
+  width: 45%;
+  display:inline-block;
+}

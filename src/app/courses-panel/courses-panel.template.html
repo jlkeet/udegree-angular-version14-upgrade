@@ -1,0 +1,15 @@
+<div class="courses-panel">
+  <div class="courses-panel-content" >
+    <semester-panel *ngFor="let semester of semesters; let i=index" [semester]="semester" [courses]="filteredCourses[i]? filteredCourses[i]:[]">
+    </semester-panel>
+    <div class="add-semester">
+      <mat-toolbar class="plain">
+        <span class="new-semester" (click)="courseService.newSemester();courseService.newSemEvent()" *ngIf="addingSemester === false">
+          Add semester
+        </span>
+      </mat-toolbar>
+    </div>
+  </div>
+  <export-button>
+  </export-button>
+</div>

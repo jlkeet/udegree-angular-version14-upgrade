@@ -1,0 +1,298 @@
+<div *ngIf="!appHeader.mobile">
+<div class="filter-panel">
+  <div class="pad">
+    <div class="remove-pad flex-justify">
+      <div>
+        <mat-form-field class="space" (click)="newFacultyFilterEvent()">
+          <mat-select multiple placeholder="Faculties"
+                               [(ngModel)]="filterParams.faculties"
+                               (selectionChange)="onChange()"
+                               disableOptionCentering
+                               panelClass="filter-dropdown"
+                               >
+            <mat-option *ngFor="let faculty of facultyChoices"
+                               [value]="faculty.value">
+              {{faculty.label}}
+            </mat-option> 
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div>
+        <mat-form-field class="space" (click)="newDepartmentFilterEvent()">
+          <mat-select multiple placeholder="Departments"
+                               [(ngModel)]="filterParams.departments"
+                               (selectionChange)="onChange()"
+                               disableOptionCentering
+                               >
+            <mat-option *ngFor="let department of departmentChoices"
+                               [value]="department.value">
+              {{department.label}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div>
+        <mat-form-field class="space" (click)="newCampusFilterEvent()">
+          <mat-select multiple placeholder="Campus"
+                               [(ngModel)]="filterParams.campus"
+                               (selectionChange)="onChange()"
+                               disableOptionCentering
+                               >
+            <mat-option *ngFor="let campus of campusChoices"
+                               [value]="campus.value">
+              {{campus.label}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+
+      <div>
+        <mat-form-field class="space" (click)="newStageFilterEvent()">
+          <mat-select multiple placeholder="Stages"
+                      [(ngModel)]="filterParams.stage"
+                      (selectionChange)="onChange()"
+                      disableOptionCentering>
+            <mat-option *ngFor="let stage of stageChoices"
+                      [value]="stage.value">
+              {{stage.label}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="remove-pad flex-justify">
+      <mat-slide-toggle [(ngModel)]="filterParams.ineligible" labelPosition="before" (change)="onChange()" (click)="newEligibleFilterEvent()">
+        Only show eligible
+      </mat-slide-toggle>
+
+      <mat-slide-toggle [(ngModel)]="filterParams.general" labelPosition="before" (change)="onChange($event, 'General')" (click)="newGeneralFilterEvent()">
+        General Education
+      </mat-slide-toggle>
+
+      <!-- <mat-slide-toggle [(ngModel)]="filterParams.modules" labelPosition="before" (change)="onChange($event, 'modules')">
+        Modules
+      </mat-slide-toggle> -->
+
+      <mat-slide-toggle [(ngModel)]="filterParams.hidePlanned" labelPosition="before" (change)="onChange()" (click)="newPlannedFilterEvent()">
+        Hide planned
+      </mat-slide-toggle>
+      <mat-form-field (click)="newSearchFilterEvent()">
+        <input
+                        matInput
+                        type="search"
+                        name="search"
+                        placeholder="Search"
+                        [(ngModel)]="filterParams.searchTerm"
+                        (ngModelChange)="onChange(null, null, true)"
+                        (blur)="onChange()">
+      </mat-form-field>
+    </div>
+  </div>
+  <hr style="width:90%; margin:auto;"/>
+</div>
+</div>
+
+
+
+
+<div *ngIf="appHeader.mobile">
+<div class="filter-panel">
+  <div class="pad">
+    <div class="remove-pad flex-justify">
+
+      <div class="searchBox">
+        <input class="searchInput" type="search" name="search" placeholder="Search" [(ngModel)]="filterParams.searchTerm" (ngModelChange)="onChange(null, null, true)" (blur)="onChange()">
+        <button class="searchButton">
+            <i class="material-icons">search</i>
+        </button>
+    </div>
+
+      <mat-accordion #accordion="matAccordion" multi>
+      <mat-expansion-panel class="add-course-filter-panel" [expanded]=false hideToggle>
+        <mat-expansion-panel-header class="add-course-filter-header">
+          <mat-panel-title class="add-course-filter-title">
+            <img src="https://img.icons8.com/ios-glyphs/30/000000/filter.png" style="height: 30px">
+          </mat-panel-title>
+          </mat-expansion-panel-header>
+      <div>  
+        <mat-form-field>
+          <mat-expansion-panel class="add-course-filter-panel" [(expanded)]="panelOpenStateFaculty">
+          <mat-expansion-panel-header class="add-course-filter-header">
+            <mat-panel-title class="add-course-filter-title"> 
+          Faculties
+        </mat-panel-title>
+        </mat-expansion-panel-header>
+
+          <section class="radio-group-style" [ngModel]="filterParams.faculties" ngDefaultControl>
+              <div class="mat-checkbox-whole" *ngFor="let faculty of facultyChoices">
+            <mat-checkbox class="mat-checkbox-text" [value]="faculty.value" (change)="onChange($event, 'faculty')">
+              {{faculty.label}}
+          </mat-checkbox>
+        </div>
+          </section>
+        </mat-expansion-panel>
+            
+          <!-- <mat-select multiple placeholder="Faculties"
+                               [(ngModel)]="filterParams.faculties"
+                               (selectionChange)="onChange()"
+                               disableOptionCentering
+                               panelClass="filter-dropdown"
+                               >
+            <mat-option *ngFor="let faculty of facultyChoices"
+                               [value]="faculty.value">
+              {{faculty.label}}
+            </mat-option> 
+          </mat-select> -->
+        </mat-form-field>
+
+      </div>
+
+
+      <div>
+        <mat-form-field>
+        <mat-expansion-panel class="add-course-filter-panel" [(expanded)]="panelOpenStateDepartment">
+          <mat-expansion-panel-header class="add-course-filter-header">
+            <mat-panel-title class="add-course-filter-title"> 
+          Departments
+        </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <section class="radio-group-style" [ngModel]="filterParams.departments" ngDefaultControl>
+          <div class="mat-checkbox-whole" *ngFor="let department of departmentChoices">
+        <mat-checkbox [value]="department.value" (change)="onChange($event, 'department')">
+          {{department.label}}
+      </mat-checkbox>
+    </div>
+      </section>
+    </mat-expansion-panel>
+
+        <!-- <mat-form-field class="space">
+          <mat-select multiple placeholder="Departments"
+                               [(ngModel)]="filterParams.departments"
+                               (selectionChange)="onChange()"
+                               disableOptionCentering
+                               >
+            <mat-option *ngFor="let department of departmentChoices"
+                               [value]="department.value">
+              {{department.label}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field> -->
+      </mat-form-field>
+      </div>
+
+      <div>
+
+      <mat-form-field>
+        <mat-expansion-panel class="add-course-filter-panel" [(expanded)]="panelOpenStateCampus">
+          <mat-expansion-panel-header class="add-course-filter-header">
+            <mat-panel-title class="add-course-filter-title"> 
+              Campus
+        </mat-panel-title>
+        </mat-expansion-panel-header>
+
+
+        <section class="radio-group-style" [ngModel]="filterParams.campus" ngDefaultControl>
+          <div class="mat-checkbox-whole" *ngFor="let campus of campusChoices">
+        <mat-checkbox [disabled]="true" [value]="campus.value" (change)="onChange($event, 'campus')">
+          {{campus.label}}
+      </mat-checkbox>
+    </div>
+      </section>
+    </mat-expansion-panel>
+
+        <!-- <mat-form-field class="space">
+          <mat-select multiple placeholder="Campus"
+                               [(ngModel)]="filterParams.campus"
+                               (selectionChange)="onChange()"
+                               disableOptionCentering
+                               >
+            <mat-option *ngFor="let campus of campusChoices"
+                               [value]="campus.value">
+              {{campus.label}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field> -->
+      </mat-form-field>
+      </div>
+
+
+      <div>
+      <mat-form-field>
+        <mat-expansion-panel class="add-course-filter-panel" [(expanded)]="panelOpenStateStage">
+          <mat-expansion-panel-header class="add-course-filter-header">
+            <mat-panel-title class="add-course-filter-title"> 
+              Stages
+        </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <section class="radio-group-style" [ngModel]="filterParams.stage" ngDefaultControl>
+          <div class="mat-checkbox-whole" *ngFor="let stage of stageChoices">
+        <mat-checkbox [value]="stage.value.toString()" (change)="onChange($event, 'stage')">
+          {{stage.label}}
+      </mat-checkbox>
+    </div>
+      </section>
+    </mat-expansion-panel>
+
+
+        <!-- <mat-form-field class="space">
+          <mat-select multiple placeholder="Stages"
+                      [(ngModel)]="filterParams.stage"
+                      (selectionChange)="onChange()"
+                      disableOptionCentering>
+            <mat-option *ngFor="let stage of stageChoices"
+                      [value]="stage.value">
+              {{stage.label}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field> -->
+      </mat-form-field>
+
+      </div>
+
+      <div class="slide-toggle-group">
+      <mat-slide-toggle class="slide-toggle" [(ngModel)]="filterParams.ineligible" labelPosition="before" (change)="onChange()">
+        Show eligible
+      </mat-slide-toggle>
+
+      <mat-slide-toggle class="slide-toggle" [(ngModel)]="filterParams.general" labelPosition="before" (change)="onChange($event, 'General')">
+        Show general
+      </mat-slide-toggle>
+
+      <!-- <mat-slide-toggle [(ngModel)]="filterParams.modules" labelPosition="before" (change)="onChange($event, 'modules')">
+        Modules
+      </mat-slide-toggle> -->
+
+      <mat-slide-toggle class="slide-toggle" [(ngModel)]="filterParams.hidePlanned" labelPosition="before" (change)="onChange()">
+        Hide planned
+      </mat-slide-toggle>
+    </div>
+
+    <div class="button-toggle-group">
+    <button class='btn remove-course-button' [class.spinner]="loading" [disabled]="loading" (click)="clearAll()">Clear</button>
+    <button class='btn collapse-filter-button' (click)="accordion.closeAll();collapseAll();">Done</button>
+    </div>
+    <!-- <mat-form-field> -->
+      <!-- <input
+                      matInput
+                      type="search"
+                      name="search"
+                      [(ngModel)]="filterParams.searchTerm"
+                      (ngModelChange)="onChange(null, null, true)"
+                      (blur)="onChange()">
+                      <mat-icon matPrefix>search</mat-icon> -->
+                      
+    <!-- </mat-form-field> -->
+  </mat-expansion-panel>
+  </mat-accordion>
+
+  <P></P>
+  </div>
+  <hr style="width:90%; margin:auto;"/>
+</div>
+</div>
