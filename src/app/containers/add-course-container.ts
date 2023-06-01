@@ -203,7 +203,7 @@ export class AddCourseContainer {
       course.isActive !== false // Remove inactive courses from the course selection
     )
     this.shown = this.allCourses;
-    console.log(this.shown)
+    // console.log(this.shown)
     this.modules = this.moduleService.getModules();
     this.departmentCourses = this.mapToDeptModel(
       this.groupByDepartment(this.allCourses)
