@@ -144,7 +144,7 @@
 
     <div class="pendo-add-course">
       <button *ngIf='!alreadyPlanned() && course.status === 3' class='btn add-course-button' routerLink="/planner" (click)='addCourse()'> Add Course</button>    
-      <button *ngIf='custom || showAddCourse && !course.disabled && alreadyPlanned() !== true && courseStatus !== undefined '
+      <button *ngIf='custom || showAddCourse && !course.disabled && alreadyPlanned() !== true'
            class='btn add-course-button' routerLink="/planner" (click)='addCourse()'> Add Course</button>     
       <a *ngIf='!course?.disabled && alreadyPlanned() === true'
            class='btn remove-course-button' (click)='deleteCourse()'> Remove Course</a>

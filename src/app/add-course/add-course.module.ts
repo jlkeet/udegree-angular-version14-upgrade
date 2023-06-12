@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CourseCard } from './course-card.component';
 import { CourseFilter } from './course-filter.component';
-import { AddCoursePanel } from './courses-panel.component';
+import { AddCoursePanel } from './add-courses-panel.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
@@ -36,7 +36,22 @@ import { CommonModule } from '@angular/common';
     MatFormFieldModule,
     MatExpansionModule,
     MatCheckboxModule,
+    MatSlideToggleModule,
 
+
+
+    MatToolbarModule,
+    MatDialogModule,
+
+
+    MatTabsModule,
+    MatButtonModule,
+    MatInputModule,
+    MatSidenavModule,
+    MatTooltipModule,
+    MatRadioModule,
+    MatIconModule,
+    MatListModule,
   ],
   declarations: [
     CourseFilter,

@@ -4,7 +4,7 @@
     (scrolled)="onScroll()"
     class="courses-panel">
       
-      <div *ngIf="curScroll.length !== 0">
+
         <div *ngFor="let department of curScroll; let i = index">
 
           <div class="department-title">
@@ -21,16 +21,16 @@
             </h3>
             <div *ngFor="let course of department.compulsary; let i = index" class="inline-block">
               <course-card [course]="mapCourse(course)" [id]="i"> </course-card>
-            </div>
+
           </div>
 
           
         </div>
       </div>
-      <div *ngIf="curScroll.length === 0">
+      <!-- <div *ngIf="curScroll.length === 0"> -->
         <h2>
           No results
         </h2>
-      </div>
+      <!-- </div> -->
 
     </div>

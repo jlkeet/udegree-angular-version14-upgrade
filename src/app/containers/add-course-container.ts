@@ -54,7 +54,7 @@ export class AddCourseContainer {
   public tabIndex = 0;
 
   // list of departments and their courses for a faculty
-  public departmentCourses!: DepartmentCoursesModel[];
+  public departmentCourses: DepartmentCoursesModel[];
   public messages: Message[] = [];
   public browseTitle: string = '';
   public showSemesterFullMessage: boolean = false;
@@ -104,8 +104,9 @@ export class AddCourseContainer {
       stage: this.mapToArray(this.route.snapshot.queryParams['stage']).map((n) => Number(n))
     };
     this.semesters = this.storeHelper.current('semesters');
-
-      this.reset();
+    
+    this.addCourseService.mapToDeptModel(this.addCourseService.groupByDepartment(this.coursesService.allCourses));
+    this.reset();
 
   }
 
@@ -115,15 +116,13 @@ export class AddCourseContainer {
 
   // sidebarfilter changed
   public filterChanged(event: any) {
-    // console.log(event)
-
     this.shown = event.shown;
 
     if (event.modules) {
-      this.departmentCourses = this.mapToModuleModel(this.shown);
+      this.addCourseService.departmentCourses = this.mapToModuleModel(this.shown);
     } else {
-      this.departmentCourses = this.mapToDeptModel(
-        this.groupByDepartment(this.shown)
+      this.addCourseService.departmentCourses = this.addCourseService.mapToDeptModel(
+        this.addCourseService.groupByDepartment(this.shown)
       );
     }
     /*if (event.noUpdate !== true) {
@@ -203,11 +202,11 @@ export class AddCourseContainer {
       course.isActive !== false // Remove inactive courses from the course selection
     )
     this.shown = this.allCourses;
-    // console.log(this.shown)
     this.modules = this.moduleService.getModules();
-    this.departmentCourses = this.mapToDeptModel(
-      this.groupByDepartment(this.allCourses)
-    );
+    // this.addCourseService.mapToDeptModel(this.addCourseService.groupByDepartment(this.allCourses));
+    // this.departmentCourses = this.addCourseService.mapToDeptModel(
+    //   this.addCourseService.groupByDepartment(this.allCourses)
+    // );
     this.subscriptions.forEach((subscription) => subscription.unsubscribe());
 
 
@@ -292,7 +291,7 @@ export class AddCourseContainer {
   }
 
   public flagIneligible(): void {
-    this.allCourses.forEach(
+    this.coursesService.allCourses.forEach(
       (course: ICourse) => {
         if (course.requirements !== undefined && course.requirements !== null) {
           // To find which courses are ineligible, flag all courses that have at least one unfilled requirement
@@ -306,39 +305,39 @@ export class AddCourseContainer {
       });
   }
 
-  public groupByDepartment(courses: ICourse[]) {
-    const grouped = courses.reduce((groups: any, course) => {
-    for (let i = 0; i < course.department.length; i++) {  
-      const key = course.department[i];
-      (groups[key] = groups[key] || []).push(course);
-    }
-      return groups;
-    }, {});
-    return grouped;
-  }
+  // public groupByDepartment(courses: ICourse[]) {
+  //   const grouped = courses.reduce((groups: any, course) => {
+  //   for (let i = 0; i < course.department.length; i++) {  
+  //     const key = course.department[i];
+  //     (groups[key] = groups[key] || []).push(course);
+  //   }
+  //     return groups;
+  //   }, {});
+  //   return grouped;
+  // }
 
-  public mapToDeptModel(grouped: any) {
-    const departmentCourses: DepartmentCoursesModel[] = [];
-    for (const property in grouped) {
-      if (grouped.hasOwnProperty(property)) {
-        const department = departmentCourses.find(
-          (dept: DepartmentCoursesModel) => dept.department === property);
-        if (department === undefined) {
-          departmentCourses.push(
-            new DepartmentCoursesModel(
-              null as any,
-              property,
-              property,
-              grouped[property]
-            )
-          );
-        } else {
-          department.courses.push(grouped[property]);
-        }
-      }
-    }
-    return departmentCourses;
-  }
+  // public mapToDeptModel(grouped: any) {
+  //   const departmentCourses: DepartmentCoursesModel[] = [];
+  //   for (const property in grouped) {
+  //     if (grouped.hasOwnProperty(property)) {
+  //       const department = departmentCourses.find(
+  //         (dept: DepartmentCoursesModel) => dept.department === property);
+  //       if (department === undefined) {
+  //         departmentCourses.push(
+  //           new DepartmentCoursesModel(
+  //             null as any,
+  //             property,
+  //             property,
+  //             grouped[property]
+  //           )
+  //         );
+  //       } else {
+  //         department.courses.push(grouped[property]);
+  //       }
+  //     }
+  //   }
+  //   return departmentCourses;
+  // }
 
   public getSemesterNameInWords(period: Period) {
     switch (period) {

@@ -20,7 +20,7 @@ import { CommonModule } from '@angular/common';
 import { MobileService } from '../services/mobile.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-
+import { RouterLink } from '@angular/router';
 
 
 @NgModule({
@@ -35,7 +35,7 @@ import { MatSelectModule } from '@angular/material/select';
     CommonModule,
     MatFormFieldModule,
     MatSelectModule,
-
+    RouterLink
 
 
   ],

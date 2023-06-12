@@ -13,6 +13,7 @@ import { CommonCourseModule } from '../common/common-course.module';
 import { RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 
 
@@ -29,7 +30,7 @@ import { MatSelectModule } from '@angular/material/select';
     RouterLink,
     MatFormFieldModule,
     MatSelectModule,
-
+    NgbDropdownModule
 
 
   ],

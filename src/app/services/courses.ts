@@ -322,6 +322,7 @@ export class CourseService {
   }
 
   public isGeneral(courseName: string): boolean {
+    // console.log(courseName)
     return courseName.lastIndexOf("G") === courseName.length - 1;
   }
 

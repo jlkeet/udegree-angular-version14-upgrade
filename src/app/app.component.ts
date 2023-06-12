@@ -7,6 +7,8 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { DepartmentService } from 'src/app/services/department.service'
 import { SplashAnimationType } from './splash-screen/splash-animation-type';
+import { CourseService, FacultyService } from './services';
+import { Course } from './common';
 declare let gtag: Function;
 
 // const mapValuesToArray = obj => Object.keys(obj).map(key => obj[key]);
@@ -44,10 +46,13 @@ export class App implements OnInit {
 
   SplashAnimationType = SplashAnimationType;
 
+
   constructor(
     private appHeader: AppHeader,
     private router: Router,
     private departmentService: DepartmentService,
+    private facultyService: FacultyService,
+    private courseService: CourseService,
 
     ) {
       this.isMobile = appHeader.mobile;
@@ -56,6 +61,8 @@ export class App implements OnInit {
     ngOnInit() {
       // this.setUpAnalytics();
       this.departmentService.getDepartments();
+      this.facultyService.getFaculties();
+      this.courseService.getAllCourses();
     }
 
   //   setUpAnalytics() {

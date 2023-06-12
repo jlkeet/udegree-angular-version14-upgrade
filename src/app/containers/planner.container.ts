@@ -126,6 +126,7 @@ export class PlannerContainer {
   }
 
   public handleCourseClicked(event: ClickedEvent) {
+    console.log(event)
     // remove course from semester
     const course = event.course;
     if (course.requirements !== undefined && course.period !== undefined && course.year !== undefined) {
@@ -133,7 +134,7 @@ export class PlannerContainer {
         (plannedCourse.period !== undefined && plannedCourse.year !== undefined) &&
         ((plannedCourse.period < course.period! && plannedCourse.year === course.year) || plannedCourse.year < course.year!)
       );
-      this.messages = course.requirements.filter((requirement: IRequirement) =>
+      this.messages = course.requirements?.filter((requirement: IRequirement) =>
         !this.requirementService.requirementFilled(requirement, beforeSemester)
       ).map((requirement: IRequirement) => this.requirementService.toString(requirement, false));
     } else {

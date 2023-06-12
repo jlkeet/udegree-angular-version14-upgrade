@@ -9,6 +9,7 @@ import { AvatarModule } from 'ngx-avatars';
 import { CommonCourseModule } from '../common/common-course.module';
 import { ContainerModule } from '../containers/container.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 
 @NgModule({
@@ -20,6 +21,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     ContainerModule,
     FormsModule,
     ReactiveFormsModule,
+    NgbDropdownModule,
 
 
 

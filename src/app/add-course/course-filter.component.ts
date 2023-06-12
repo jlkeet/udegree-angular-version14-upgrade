@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { ICourse } from '../interfaces';
 import { CourseStatus } from '../models';
-import { DepartmentService, FacultyService, RequirementService, ConjointService } from '../services';
+import { DepartmentService, FacultyService, RequirementService, ConjointService, CourseService } from '../services';
 import { AppHeader } from '../app.header.component';
 import { GoogleAnalyticsService } from '../services/google-analytics.service';
 
@@ -36,6 +36,8 @@ export class CourseFilter {
   public panelOpenStateStage = false;
   public loading = false;
 
+  public initialDataLoaded: boolean = false;
+
   public facultyChoices: any[] = [];
   public conjointChoices: any[] = [];
   public departmentChoices: any[] = [];
@@ -60,17 +62,22 @@ export class CourseFilter {
     private facultyService: FacultyService,
     private requirementService: RequirementService,
     private conjointService: ConjointService,
+    private courseService: CourseService,
     public appHeader: AppHeader,
     public googleAnalyticsService: GoogleAnalyticsService
   ) { }
 
   public async ngOnInit() {
-    this.departmentChoices = await this.departmentService.getDepartments()
+    // this.departmentChoices = await this.departmentService.getDepartments()
+    this.departmentChoices = this.departmentService.departments;
+
     this.departmentChoices = this.departmentChoices.map((department) => {
         return { value: department.name, label: department.name };
       });
 
-    this.facultyChoices = await this.facultyService.getFaculties()
+    // this.facultyChoices = await this.facultyService.getFaculties()
+    this.facultyChoices = this.facultyService.faculties;
+
     this.facultyChoices = this.facultyChoices.map((faculty) => {
         return { value: faculty.name, label: faculty.name };
       });
@@ -79,6 +86,12 @@ export class CourseFilter {
   .map((conjoint: any) => {
     return { value: conjoint.name, label: conjoint.name };
   });
+
+      // Set the initial data loaded flag to true
+      this.initialDataLoaded = true;
+
+      // Perform the first onChange manually
+      // this.onChange();
   
 }
 
@@ -89,7 +102,14 @@ export class CourseFilter {
   }
 
   public onChange(event?: any, whichSwitch?: any, noUpdate?: any) {
-    let shown = this.courses;
+
+    if (!this.initialDataLoaded) {
+      return;
+    }
+
+    // let shown = this.courses;
+    let shown = this.courseService.allCourses;
+    // console.log(shown)
     const flags: any = [];
     const modules = this.filterParams.modules;
     if (this.filterParams.ineligible) {

@@ -33,7 +33,7 @@
       <button class="btn btn--custom" (click)="addCustom();newCustomCourseEvent()">
         CUSTOM COURSE
       </button> 
-      <button class="btn btn--next" routerLink="/planner">
+      <button class="btn btn--next" [routerLink]="['/planner']">
         DONE
       </button> 
     </mat-toolbar>
@@ -48,7 +48,7 @@
     <add-course-panel
                                     (addCourseClicked)="toggleCourse($event)"
                                     (courseClicked)="courseSelected($event)"
-                                    [departmentCourses]="departmentCourses">
+                                    [departmentCourses]="this.addCourseService.departmentCourses">
     </add-course-panel>
 
   </div>
