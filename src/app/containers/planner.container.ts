@@ -126,7 +126,6 @@ export class PlannerContainer {
   }
 
   public handleCourseClicked(event: ClickedEvent) {
-    console.log(event)
     // remove course from semester
     const course = event.course;
     if (course.requirements !== undefined && course.period !== undefined && course.year !== undefined) {
