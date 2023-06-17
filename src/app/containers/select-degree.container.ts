@@ -9,7 +9,7 @@ import { FacultyService, ConjointService, StoreHelper } from '../services';
 import { pluck } from 'rxjs/operators';
 
 /*
-  Container for select major page.
+  Container for select degree page.
  */
 @Component({
   selector: 'select-degree-container',

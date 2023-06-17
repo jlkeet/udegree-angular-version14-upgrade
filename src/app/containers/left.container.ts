@@ -15,9 +15,7 @@ import { MobileService } from "../services/mobile.service";
         border: 1px solid #f4f7f8;
         border-radius: 10px;
         margin-top: 10px;
-        float: left;
-        display: inline;
-        overflow-y: scroll;
+        display: inline-block;
         max-height: 80vh;
       }
 

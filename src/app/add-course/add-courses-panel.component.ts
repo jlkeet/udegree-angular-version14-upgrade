@@ -28,14 +28,14 @@ export class AddCoursePanel {
   ngOnChanges(changes: SimpleChanges){
     this.scrollTo = 10;
 
-    this.curScroll = this.addCourseService.departmentCourses?.slice(0, this.scrollTo);
+    this.addCourseService.curScroll = this.addCourseService.departmentCourses?.slice(0, this.scrollTo);
     // this.curScroll = this.departmentService.departments.slice(0, this.scrollTo);    
   }
 
   // should change to appending to curScroll
   public onScroll() {
     this.scrollTo = Math.min(this.scrollTo + 2, this.addCourseService.departmentCourses.length);
-    this.curScroll = this.addCourseService.departmentCourses.slice(0, this.scrollTo);
+    this.addCourseService.curScroll = this.addCourseService.departmentCourses.slice(0, this.scrollTo);
 
   }
 

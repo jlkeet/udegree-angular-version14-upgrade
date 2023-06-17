@@ -63,7 +63,7 @@ export class CoursesPanel {
   private onPageChange = new EventEmitter<null>();
   dbCoursesSavedArrayById: any[] = [];
   newOpen: boolean = false;
-  filteredCourses: ICourse[][] = [];
+  public filteredCourses: ICourse[][] = [];
 
   constructor(
     public courseService: CourseService,

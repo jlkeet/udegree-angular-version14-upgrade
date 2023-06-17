@@ -87,12 +87,6 @@ export class CourseFilter {
     return { value: conjoint.name, label: conjoint.name };
   });
 
-      // Set the initial data loaded flag to true
-      this.initialDataLoaded = true;
-
-      // Perform the first onChange manually
-      // this.onChange();
-  
 }
 
   public ngOnChanges() {
@@ -102,10 +96,6 @@ export class CourseFilter {
   }
 
   public onChange(event?: any, whichSwitch?: any, noUpdate?: any) {
-
-    if (!this.initialDataLoaded) {
-      return;
-    }
 
     // let shown = this.courses;
     let shown = this.courseService.allCourses;

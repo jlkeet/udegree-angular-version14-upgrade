@@ -6,6 +6,7 @@ import { DepartmentCoursesModel } from '../models';
 @Injectable()
 export class AddCourseService {
 
+  public curScroll: any;
 
   public departmentCourses: DepartmentCoursesModel[] = [];
   
@@ -33,20 +34,20 @@ export class AddCourseService {
       }
       return groups;
     }, {});
-    
     return grouped;
   }
   
 
   public mapToDeptModel(grouped: any) {
+    const departmentCourses: DepartmentCoursesModel[] = [];
     for (const property in grouped) {
       if (grouped.hasOwnProperty(property)) {
-        const department = this.departmentCourses.find(
+        const department = departmentCourses.find(
           (dept: DepartmentCoursesModel) => dept.department === property);
         if (department === undefined) {
-          this.departmentCourses.push(
+          departmentCourses.push(
             new DepartmentCoursesModel(
-              null as any,
+              null,
               property,
               property,
               grouped[property]
@@ -57,6 +58,7 @@ export class AddCourseService {
         }
       }
     }
-    return this.departmentCourses;
+    this.departmentCourses = departmentCourses;
+    return departmentCourses;
   }
 }

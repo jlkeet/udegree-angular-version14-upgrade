@@ -30,8 +30,7 @@
 
     <mat-expansion-panel class="pg-bar" [disabled]="isDisabled" [expanded]="true" hideToggle>
 
-
-      <div [ngStyle]="{'box-shadow': progressPanelService?.degreeFullyPlanned ? '0px 0px 20px 5px #65cc01' : '0px 0px 20px 5px #fff'}">
+        <div [ngStyle]="{'box-shadow': progressPanelService?.degreeFullyPlanned ? '0px 0px 20px 5px #65cc01' : '0px 0px 20px 5px #fff'}">
 
         <mat-expansion-panel-header *ngIf="faculty?.name" style="margin-top: 0px; margin-bottom: 0px"
         (click)="expansionOnClick()">

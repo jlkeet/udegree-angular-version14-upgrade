@@ -125,6 +125,7 @@ export class AddCourseContainer {
         this.addCourseService.groupByDepartment(this.shown)
       );
     }
+    // console.log(this.addCourseService.departmentCourses);
     /*if (event.noUpdate !== true) {
        this.router.navigate(['/add'], {queryParams});
     }*/

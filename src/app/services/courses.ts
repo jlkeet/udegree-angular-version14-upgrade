@@ -313,12 +313,16 @@ export class CourseService {
   }
 
   public generalToggle(courseName: string): string {
+  if (courseName) {  
     if (this.isGeneral(courseName)) {
       return courseName.substring(0, courseName.length - 1);
     } else {
      // return courseName + 'G';
      return courseName; // If there's an error check this, I needed to return something couldn't have it not a return a value.
     }
+  } else {
+    return "";
+  }
   }
 
   public isGeneral(courseName: string): boolean {
