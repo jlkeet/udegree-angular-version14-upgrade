@@ -15,9 +15,7 @@ declare const require: any;
   template: `
       <div class="item noselect pointer"
         [ngClass]="{selected: item.selected}"
-        class="item noselect pointer"
-        (click)="explorer.select(item, i)"
-        >
+        class="item noselect pointer">
         {{item.title}}
       </div>
   `,

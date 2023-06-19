@@ -94,6 +94,7 @@ export class ExplorerComponent {
   }
 
   public select(item: Item, index: number): void {
+    console.log(item)
     item.selected = !item.selected;
     const prev = index > 0 ? this.lists[index - 1].items : [];
     const next = index < this.lists.length - 1 ? this.lists[index + 1].items : [];

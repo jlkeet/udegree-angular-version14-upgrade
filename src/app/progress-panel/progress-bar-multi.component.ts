@@ -195,63 +195,41 @@ export class ProgressBarMulti implements OnChanges {
   }
 
   private degreeCheck() {
-    // let degreeCheckArray = this.progressPanelService.requirements.map(obj => ({...obj}));
-
     let degreeCheckArray = this.progressPanelService.requirements;
     let count = 0;
-    for (let i = 0; i < this.progressPanelService.requirements.length; i++) {
+  
+    for (let i = 0; i < degreeCheckArray.length; i++) {
       if (i === this.barThree.index) {
-        if (degreeCheckArray[i].required === this.barThree.value) {
-          degreeCheckArray[i].full = true;
-        } else {
-          degreeCheckArray[i].full = false;
-        }
+        degreeCheckArray[i].full = degreeCheckArray[i].required === this.barThree.value;
       }
-    }
-    for (let j = 0; j < degreeCheckArray.length; j++) {
-      if (degreeCheckArray[j].full === true) {
+  
+      if (degreeCheckArray[i].full) {
         count++;
       }
-      if (count === this.progressPanelService.requirements.length) {
-        this.progressPanelService.setFullyPlanned(true);
-      } else {
-        this.progressPanelService.setFullyPlanned(false);
-      }
     }
+  
+    this.progressPanelService.setFullyPlanned(count === degreeCheckArray.length);
   }
 
   private majorCheck() {
     let majorCheckArray = this.progressPanelService.majorRequirements;
     let majCount = 0;
-    for (
-      let i = 0;
-      i < this.progressPanelService.majorRequirements.length;
-      i++
-    ) {
-    if (majorCheckArray[i] !== undefined) {
-      if (i === this.barThree.majIndex) {
-        if (majorCheckArray[i].required === this.barThree.value) {
-          majorCheckArray[i].full = true;
-        } else {
-          majorCheckArray[i].full = false;
-          }
+  
+    for (let i = 0; i < majorCheckArray.length; i++) {
+      if (majorCheckArray[i] !== undefined) {
+        if (i === this.barThree.majIndex) {
+          majorCheckArray[i].full = majorCheckArray[i].required === this.barThree.value;
         }
-      }
-    }
-
-    for (let j = 0; j < majorCheckArray.length; j++) {
-      if (majorCheckArray[j] !== undefined) {
-        if (majorCheckArray[j].full === true) {
+  
+        if (majorCheckArray[i].full) {
           majCount++;
         }
-        if (majCount === this.progressPanelService.majorRequirements.length) {
-          this.progressPanelService.setMajorPlanned(true);
-        } else {
-          this.progressPanelService.setMajorPlanned(false);
-        }
       }
     }
+  
+    this.progressPanelService.setMajorPlanned(majCount === majorCheckArray.length);
   }
+  
 }
 
 
