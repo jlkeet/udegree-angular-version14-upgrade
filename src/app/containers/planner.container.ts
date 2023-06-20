@@ -145,7 +145,6 @@ export class PlannerContainer {
 
   public explorerClick() {
     this.router.navigate(["/explorer"]);
-    console.log("firing")
   }
 
   public cancelCourse(even: any) {
