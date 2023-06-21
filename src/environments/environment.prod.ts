@@ -1,11 +1,15 @@
+
+// Angular 2
+// rc2 workaround
 import { enableDebugTools, disableDebugTools } from '@angular/platform-browser';
 import { enableProdMode, ApplicationRef } from '@angular/core';
 
 import { getAnalytics } from "firebase/analytics";
 
+
 export const environment = {
-  production: true,
-  firebase: {
+  production: false,
+  firebaseConfig: {
     apiKey: "AIzaSyB_-zvddGTVsnNhKj4rT10BSs6g_kU4PUE",
     authDomain: "udegree-angular.firebaseapp.com",
     databaseURL: "https://udegree-angular-courses-us-5d785.firebaseio.com/",
@@ -18,6 +22,15 @@ export const environment = {
   headTags: require('./head-config.common')
 };
 
+// const helpers = require('./helpers');
+// const path = helpers.root('dist');
+// const CopyWebpackPlugin = require('copy-webpack-plugin');
+// const HtmlWebpackPlugin = require('html-webpack-plugin');
+// const HtmlElementsPlugin = require('./html-elements-plugin');
+// const AssetsPlugin = require('assets-webpack-plugin');
+
+
+// const HMR = helpers.hasProcessFlag('hot');
 
 
 // Environment Providers

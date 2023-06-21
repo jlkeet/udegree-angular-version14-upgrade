@@ -8,7 +8,4 @@ import { Router, Params } from '@angular/router';
 })
 export class PrivacyContainer {
 
-  constructor(
-    private router: Router,
-  ) { }
 }

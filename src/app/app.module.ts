@@ -61,6 +61,8 @@ import { RegisterModule } from './register/register.module';
 import { ProgressPanelModule } from './progress-panel/progress-panel.module';
 import { CourseSelectionModule } from './select-major/course-selection.module';
 import { UserStatusModule } from './user/user-status.module';
+import { ExplorerModule } from './explorer/explorer.module';
+import { PrivacyPolicyModule } from './privacy-policy/privacy-policy.module';
 
 // Application wide providers
 const APP_PROVIDERS = [
@@ -86,8 +88,6 @@ type StoreType = {
     AppHeader,
     SplashScreenComponent,
     AdminExport,
-    ExplorerComponent,
-    ItemComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -105,7 +105,9 @@ type StoreType = {
     RegisterModule,
     ProgressPanelModule,
     CourseSelectionModule,
-    UserStatusModule
+    UserStatusModule,
+    ExplorerModule,
+    PrivacyPolicyModule,
   ],
   providers: [
     AppHeader,
