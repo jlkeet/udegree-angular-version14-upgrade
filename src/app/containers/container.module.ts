@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 
 import { LeftPanelContainer } from './left.container';
 import { NotificationContainer } from './notification.container';
-// import { AddCourseContainer } from './add-course-container';
 import { PlannerContainer } from './planner.container';
 import { PlannerContainerMobile } from './planner.container-mobile';
 import { SelectDegreeContainer } from './select-degree.container';
@@ -34,7 +33,6 @@ import { RouterLink } from '@angular/router';
     RouterLink
   ],
   declarations: [
-    // AddCourseContainer,
     LeftPanelContainer,
     NotificationContainer,
     PlannerContainer,

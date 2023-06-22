@@ -1,8 +1,7 @@
 import { formatDate } from "@angular/common";
 import { Injectable } from "@angular/core";
-import { Component, Input } from "@angular/core";
 import { getAuth } from "@angular/fire/auth";
-import { Firestore, addDoc, collection, doc, getDoc, getDocs, getFirestore, setDoc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc, getFirestore, updateDoc } from '@angular/fire/firestore';
 import { initializeApp } from "@angular/fire/app";
 import { StoreHelper } from "./store-helper";
 import { environment } from "../../environments/environment";

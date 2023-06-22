@@ -1,6 +1,4 @@
 import { Component, EventEmitter, Injectable, Input, Output, SimpleChanges } from '@angular/core';
-import { Database } from '@angular/fire/database';
-import { FirestoreModule } from '@angular/fire/firestore';
 import { ICourse } from '../interfaces';
 import { CourseService, StoreHelper } from '../services';
 import { AddCourseService } from './add-course.service';

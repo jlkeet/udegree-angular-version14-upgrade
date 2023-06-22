@@ -1,4 +1,4 @@
-import { OnChanges, SimpleChange, Component, Input } from '@angular/core';
+import { SimpleChange, Component, Input } from '@angular/core';
 import { CourseEventService } from '../services';
 import { Message, MessageStatus } from '../models';
 

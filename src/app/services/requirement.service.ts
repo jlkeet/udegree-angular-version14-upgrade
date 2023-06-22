@@ -1,7 +1,4 @@
 import { Injectable } from '@angular/core';
-import { exit } from 'process';
-import { isMappedTypeNode } from 'typescript';
-// import { Course } from '../common';
 import { ICourse } from '../interfaces';
 import { CourseStatus } from '../models';
 import { RequirementType } from '../models/requirement.enum';

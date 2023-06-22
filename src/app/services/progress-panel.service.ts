@@ -1,6 +1,4 @@
 import { Injectable } from '@angular/core';
-// import { ProgressBarMulti } from '../progress-panel/progress-bar-multi.component';
-// import { ProgressPanel } from '../progress-panel/progress-panel.component';
 
 @Injectable()
 export class ProgressPanelService {

@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-// import 'rxjs/add/operator/toPromise';
 import { Auth, User, getAuth, onAuthStateChanged, updateProfile } from '@angular/fire/auth';
 import { initializeApp } from "@angular/fire/app";
 import { environment } from "src/environments/environment";

@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { Store } from './app.store';
 import { HostListener } from "@angular/core";
 import { pluck } from 'rxjs/operators';
 

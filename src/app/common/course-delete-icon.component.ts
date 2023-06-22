@@ -1,6 +1,4 @@
 import { Component, EventEmitter, Input, Output} from '@angular/core';
-import { FirebaseDbService } from '../core/firebase.db.service';
-
 /*
     A component for a delete button on a course
 */

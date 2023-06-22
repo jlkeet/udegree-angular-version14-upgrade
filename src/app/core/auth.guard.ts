@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from "@angular/router";
-// import { Auth } from '@angular/fire/auth';
 import { UserService } from '../core/user.service';
 
 
@@ -8,7 +7,6 @@ import { UserService } from '../core/user.service';
 export class AuthGuard implements CanActivate {
 
   constructor(
-    // public afAuth: Auth,
     public userService: UserService,
     private router: Router
   ) {}

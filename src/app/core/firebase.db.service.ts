@@ -1,11 +1,8 @@
 import { EventEmitter, Injectable, Output } from "@angular/core";
-// import "rxjs/add/operator/toPromise";
 import { Auth, getAuth } from '@angular/fire/auth';
 import { FirebaseUserModel } from "./user.model";
 import { Firestore, addDoc, collection, doc, getDoc, getDocs, getFirestore, setDoc } from '@angular/fire/firestore';
-// import { UserService } from "./user.service";
 import { StoreHelper } from "../services";
-import { formatDate } from "@angular/common";
 import { AdminExportService } from "../services/admin-export.service";
 import { initializeApp } from "@angular/fire/app";
 import { environment } from 'src/environments/environment';
@@ -22,7 +19,6 @@ export class FirebaseDbService {
 
   constructor(
     public userdata: FirebaseUserModel,
-    // private userService: UserService,
     private storeHelper: StoreHelper,
     public adminExportService: AdminExportService
   ) {

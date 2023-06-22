@@ -1,4 +1,4 @@
-import { OnChanges, SimpleChange, Component, Input, Output, EventEmitter } from '@angular/core';
+import { SimpleChange, Component, Input, Output, EventEmitter } from '@angular/core';
 import { Message, MessageStatus }from '../models';
 import { GoogleAnalyticsService } from '../services/google-analytics.service';
 

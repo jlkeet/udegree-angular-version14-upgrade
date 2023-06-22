@@ -26,10 +26,6 @@ import { SplashScreenComponent } from './splash-screen/splash-screen-component';
 
 import { AppRoutingModule } from './app-routing.module';
 /* App */
-import {
-  AddCourseService,
-} from './add-course';
-// import { CourseFilter } from './add-course/course-filter.component';
 import { App } from './app.component';
 import { AppHeader } from './app.header.component';
 import { AppReadyEvent } from './app.ready.event';
@@ -43,7 +39,6 @@ import { FirebaseDbService } from './core/firebase.db.service';
 import { CourseDialogComponent } from './courses-panel/course-dialog.component';
 import { ProgressDialogComponent } from './progress-panel/progress-dialog.component'
 import { UserDialogComponent } from './user/user-dialog-component';
-import { ExplorerComponent } from './explorer/explorer.component';
 
 import { GoogleAnalyticsService } from './services/google-analytics.service';
 import { ProgressPanelService } from './services/progress-panel.service';
@@ -51,9 +46,7 @@ import { AdminExport } from './admin-export/admin-export.component';
 import { AdminExportService } from './services/admin-export.service';
 import { ErrorRequirementService } from './services/error.requirement.service';
 import { SamplePlanService } from './services/sample-plan.service';
-import { ItemComponent } from './explorer/item.component';
 import { FooterModule } from './footer/footer.module';
-import { AddCourseModule } from './add-course/add-course.module';
 import { ContainerModule } from './containers/container.module';
 import { CommonCourseModule } from './common/common-course.module';
 import { LoginModule } from './login/login.module';
@@ -61,8 +54,6 @@ import { RegisterModule } from './register/register.module';
 import { ProgressPanelModule } from './progress-panel/progress-panel.module';
 import { CourseSelectionModule } from './select-major/course-selection.module';
 import { UserStatusModule } from './user/user-status.module';
-import { ExplorerModule } from './explorer/explorer.module';
-import { PrivacyPolicyModule } from './privacy-policy/privacy-policy.module';
 
 // Application wide providers
 const APP_PROVIDERS = [
@@ -98,7 +89,6 @@ type StoreType = {
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideDatabase(() => getDatabase()),
     FooterModule,
-    AddCourseModule,
     ContainerModule,
     CommonCourseModule,
     LoginModule,
@@ -106,8 +96,6 @@ type StoreType = {
     ProgressPanelModule,
     CourseSelectionModule,
     UserStatusModule,
-    ExplorerModule,
-    PrivacyPolicyModule,
   ],
   providers: [
     AppHeader,
@@ -124,7 +112,6 @@ type StoreType = {
     FirebaseUserModel,
     SamplePlanService,
     ProgressPanelService,
-    AddCourseService,
     ModuleService,
     CourseEventService,
     GoogleAnalyticsService,
@@ -137,7 +124,7 @@ type StoreType = {
     UserResolver,
     ErrorRequirementService,
   ],
-   entryComponents: [CourseDialogComponent, ProgressDialogComponent, UserDialogComponent],
+   entryComponents: [ProgressDialogComponent, UserDialogComponent],
 })
 export class AppModule {
  

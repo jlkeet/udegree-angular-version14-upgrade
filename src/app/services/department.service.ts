@@ -1,6 +1,5 @@
-import { getDatabase, ref, child, get, orderByChild, query } from "firebase/database";
+import { getDatabase, ref, get, orderByChild, query } from "firebase/database";
 import { Injectable } from '@angular/core';
-import { filter } from 'rxjs-compat/operator/filter';
 import { initializeApp } from "@angular/fire/app";
 import { environment } from "src/environments/environment";
 import { Database } from "@angular/fire/database";

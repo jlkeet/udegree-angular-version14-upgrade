@@ -7,7 +7,7 @@ import {
   Output,
 } from "@angular/core";
 import { ICourse } from "../interfaces";
-import { CourseStatus, Message, Period } from "../models";
+import { CourseStatus, Period } from "../models";
 import {
   CourseService,
   DepartmentService,

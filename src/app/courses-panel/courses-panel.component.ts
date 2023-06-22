@@ -1,12 +1,9 @@
-import { UserContainer } from "../user/user-status.component";
 import {
   Component,
   EventEmitter,
   Input,
   Output
 } from "@angular/core";
-import { Database } from '@angular/fire/database';
-import { Firestore, addDoc, collection, doc, getDoc, getDocs, query } from '@angular/fire/firestore';
 import { Store } from "../app.store";
 import { AuthService } from "../core/auth.service";
 import { ICourse } from "../interfaces";
@@ -20,9 +17,7 @@ import {
   CourseService,
   MovedEvent,
   RemovedEvent,
-  StoreHelper,
 } from "../services";
-import { DegreeSelection } from "../select-major";
 import { FirebaseDbService } from "../core/firebase.db.service";
 import{ GoogleAnalyticsService } from '../services/google-analytics.service';
 import { ProgressPanelService } from "../services/progress-panel.service";
@@ -69,12 +64,7 @@ export class CoursesPanel {
     public courseService: CourseService,
     private courseEventService: CourseEventService,
     private store: Store,
-    private storeHelper: StoreHelper,
-    private db_courses: Database,
-    private db: Firestore,
     public authService: AuthService,
-    private userContainer: UserContainer,
-    private degreeSelection: DegreeSelection,
     private dbCourses: FirebaseDbService,
     public googleAnalyticsService: GoogleAnalyticsService,
     public progressPanelService: ProgressPanelService,

@@ -1,8 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
-import { forEach } from "@angular/router/src/utils/collection";
 import { IRequirement } from ".";
-import { ICourse } from "../interfaces";
 import { StoreHelper } from "./store-helper";
 
 @Injectable()

@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { FacultyService, ConjointService, StoreHelper } from '../services';
+import { FacultyService, StoreHelper } from '../services';
 
 /*
     Simply displays a list of faculty tiles.

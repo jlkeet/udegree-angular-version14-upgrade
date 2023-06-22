@@ -11,7 +11,6 @@ import {
 } from "../services";
 import { FirebaseDbService } from "../core/firebase.db.service";
 import { UserContainer } from "../common";
-// import { Auth } from "@angular/fire/auth";
 
 @Component({
   selector: "degree-select",

@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output, ViewEncapsulation, ElementRef, ViewChild } from "@angular/core";
+import { Component, Input, EventEmitter, ViewEncapsulation } from "@angular/core";
 import { collection, doc, getDocs, query, updateDoc, where, deleteDoc } from "firebase/firestore";
 import { DragulaService } from "ng2-dragula";
 import { DragulaModule } from "ng2-dragula";

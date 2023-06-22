@@ -1,9 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { CourseDialogComponent } from './course-dialog.component';
 import { CoursesPanel } from './courses-panel.component';
-import { ExportButton } from './export-button.component';
 import { SemesterPanel } from './semester-panel.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -31,15 +29,10 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
     MatFormFieldModule,
     MatSelectModule,
     NgbDropdownModule
-
-
   ],
   declarations: [
-    CourseDialogComponent,
     CoursesPanel,
-    ExportButton,
     SemesterPanel,
-    
   ],
   providers: [
 

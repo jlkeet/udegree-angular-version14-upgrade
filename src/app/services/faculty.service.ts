@@ -1,4 +1,4 @@
-import { getDatabase, ref, child, get, orderByChild, query } from "firebase/database";
+import { getDatabase, ref, get, orderByChild, query } from "firebase/database";
 import { Injectable } from '@angular/core';
 import { Database } from "@angular/fire/database";
 import { initializeApp } from "@angular/fire/app";

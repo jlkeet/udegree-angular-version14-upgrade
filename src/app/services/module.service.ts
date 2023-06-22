@@ -1,6 +1,4 @@
 import { Injectable } from '@angular/core';
-// import { CourseService } from './courses';
-import { ICourse } from '../interfaces';
 
 @Injectable()
 export class ModuleService {

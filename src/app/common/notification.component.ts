@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Message, MessageStatus } from '../models';
+import { Message } from '../models';
 import { ErrorRequirementService } from '../services/error.requirement.service';
 
 

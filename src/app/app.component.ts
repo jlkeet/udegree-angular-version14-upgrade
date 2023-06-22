@@ -3,12 +3,10 @@
  */
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { AppHeader } from './app.header.component';
-import { NavigationEnd, Router } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { DepartmentService } from 'src/app/services/department.service'
 import { SplashAnimationType } from './splash-screen/splash-animation-type';
 import { CourseService, FacultyService } from './services';
-import { Course } from './common';
 declare let gtag: Function;
 
 // const mapValuesToArray = obj => Object.keys(obj).map(key => obj[key]);

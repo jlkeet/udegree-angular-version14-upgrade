@@ -6,7 +6,6 @@ import {
   Message,
   SemesterModel
 } from './models';
-import { IRequirement } from './services';
 import { distinctUntilChanged } from 'rxjs/operators';
 
 

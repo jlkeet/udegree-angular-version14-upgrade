@@ -1,12 +1,10 @@
-import { Component, Input, ViewChild } from "@angular/core";
+import { Component } from "@angular/core";
 import { FirebaseUserModel } from "../core/user.model";
 import { UserService } from "../core/user.service";
 import { AuthService } from "../core/auth.service";
-import { ActivatedRoute, Router } from "@angular/router";
+import { Router } from "@angular/router";
 import { FirestoreModule } from '@angular/fire/firestore';
-import { LeftPanelContainer } from "../containers";
 import { MatDialog, MatDialogConfig } from "@angular/material/dialog";
-import { CourseDialogComponent } from "../courses-panel/course-dialog.component";
 import { UserDialogComponent } from "./user-dialog-component";
 import { doc, getDoc } from 'firebase/firestore';
 import { FirebaseDbService } from "../core/firebase.db.service";
@@ -32,8 +30,6 @@ export class UserContainer {
     public authService: AuthService,
     public db: FirestoreModule,
     private router: Router,
-    private user: FirebaseUserModel,
-    // private leftPanel: LeftPanelContainer,
     private dialog: MatDialog,
     public firebaseDbService: FirebaseDbService,
   ) {

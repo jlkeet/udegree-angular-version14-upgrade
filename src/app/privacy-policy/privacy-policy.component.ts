@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { Router, Params } from '@angular/router';
 
 @Component({
   selector: 'privacy-policy',

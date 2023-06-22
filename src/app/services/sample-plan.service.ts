@@ -1,14 +1,10 @@
-// import { formatDate } from "@angular/common";
 import { Injectable } from "@angular/core";
-// import { Component, Input } from "@angular/core";
-import { Auth } from "@angular/fire/auth";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { StoreHelper } from "./store-helper";
 import { AuthService } from "../core/auth.service";
 import { CourseService } from "./courses";
 import { FirebaseDbService } from "../core/firebase.db.service";
 import { Period } from "../models";
-// import { RequirementService } from "./requirement.service";
 import { ProgressPanelService } from "./progress-panel.service";
 import { async } from "@angular/core/testing";
 import { ICourse } from "../interfaces";

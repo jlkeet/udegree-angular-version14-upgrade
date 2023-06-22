@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { MatExpansionPanel } from '@angular/material/expansion';
 import { RequirementService } from '../services';
 import { ProgressPanelService } from '../services/progress-panel.service';

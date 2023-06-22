@@ -5,8 +5,6 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { Database } from '@angular/fire/database';
-import { FirestoreModule } from '@angular/fire/firestore';
 import { ICourse } from '../interfaces';
 import { CourseStatus } from '../models';
 import { StoreHelper } from '../services';
@@ -41,8 +39,6 @@ export class Course {
   constructor(
     public el: ElementRef,
     public storeHelper: StoreHelper,
-    public db_courses: Database,
-    public db: FirestoreModule,
   ) {}
 
   public addCourse() {

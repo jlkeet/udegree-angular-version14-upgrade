@@ -1,5 +1,4 @@
 import { Component, Injectable, Input } from '@angular/core';
-import { Database } from '@angular/fire/database';
 import { AddCourseService } from './add-course.service';
 
 @Component({
@@ -13,7 +12,7 @@ export class CourseCard {
   @Input() public course : any;
   @Input() public id: number = 0;
 
-  constructor(public addCourseService: AddCourseService, public db_courses: Database) { }
+  constructor(public addCourseService: AddCourseService) { }
 
   public toggleDetails(course: any) {
     this.addCourseService.raiseDetailsToggled(course);    
