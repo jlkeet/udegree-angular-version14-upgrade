@@ -1,8 +1,6 @@
 import { Component } from "@angular/core";
 import { StoreHelper } from "../services";
-
 import { HostListener } from "@angular/core";
-import { AddCourseContainer } from "./add-course-container";
 import { MobileService } from "../services/mobile.service";
 
 @Component({
