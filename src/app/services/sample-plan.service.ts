@@ -6,7 +6,6 @@ import { CourseService } from "./courses";
 import { FirebaseDbService } from "../core/firebase.db.service";
 import { Period } from "../models";
 import { ProgressPanelService } from "./progress-panel.service";
-import { async } from "@angular/core/testing";
 import { ICourse } from "../interfaces";
 
 @Injectable()

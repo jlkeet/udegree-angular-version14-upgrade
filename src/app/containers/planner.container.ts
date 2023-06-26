@@ -8,14 +8,12 @@ import {
   MovedEvent,
   RemovedEvent,
   RequirementService,
-  StoreHelper
 } from '../services';
 
 import { AppHeader } from '../app.header.component';
-import * as confetti from 'canvas-confetti';
 import { FirebaseDbService } from '../core/firebase.db.service';
 import { SamplePlanService } from '../services/sample-plan.service';
-import { Router, Params } from '@angular/router';
+import { Router } from '@angular/router';
 import { pluck } from 'rxjs/operators';
 
 /*
@@ -92,7 +90,6 @@ export class PlannerContainer {
 
   constructor(
     private requirementService: RequirementService,
-    private storeHelper: StoreHelper,
     private store: Store,
     private courseService: CourseService,
     private appHeader: AppHeader,

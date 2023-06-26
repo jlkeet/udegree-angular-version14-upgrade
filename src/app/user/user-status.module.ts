@@ -3,7 +3,6 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { UserContainer } from './user-status.component';
 import { UserDialogComponent } from './user-dialog-component';
-import { UserComponent } from './user.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { AvatarModule } from 'ngx-avatars';
 import { CommonCourseModule } from '../common/common-course.module';
@@ -29,7 +28,6 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
   declarations: [
     UserContainer,
     UserDialogComponent,
-    UserComponent
 ],
   exports: [
     UserContainer

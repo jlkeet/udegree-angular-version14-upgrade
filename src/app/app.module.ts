@@ -1,5 +1,5 @@
 /* Angular */
-import 'reflect-metadata'
+// import 'reflect-metadata'
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -13,7 +13,6 @@ import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 
 
 import { environment } from '../environments/environment';
-import { UserResolver } from './user/user.resolver';
 import { AuthGuard } from './core/auth.guard';
 import { UserService } from './core/user.service';
 
@@ -36,7 +35,6 @@ import { DegreeSelection } from './select-major';
 import { ConjointService, CourseEventService, CourseService, DepartmentService, ErrorsChangedEvent, FacultyService, IRequirement, LocationRef, ModuleService, MovedEvent, PathwayService, RemovedEvent, RequirementService, StatusEvent, StoreHelper, WindowRef } from './services';
 import { UserContainer } from './user/user-status.component';
 import { FirebaseDbService } from './core/firebase.db.service';
-import { CourseDialogComponent } from './courses-panel/course-dialog.component';
 import { ProgressDialogComponent } from './progress-panel/progress-dialog.component'
 import { UserDialogComponent } from './user/user-dialog-component';
 
@@ -89,8 +87,6 @@ type StoreType = {
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideDatabase(() => getDatabase()),
     FooterModule,
-    ContainerModule,
-    CommonCourseModule,
     LoginModule,
     RegisterModule,
     ProgressPanelModule,
@@ -121,10 +117,8 @@ type StoreType = {
     ConjointService,
     PathwayService,
     AuthGuard,
-    UserResolver,
     ErrorRequirementService,
   ],
-   entryComponents: [ProgressDialogComponent, UserDialogComponent],
 })
 export class AppModule {
  
