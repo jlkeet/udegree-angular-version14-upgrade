@@ -7,7 +7,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "public": "dist",
+    "public": "dist/udegree-master-version-14",
     "ignore": [
       "firebase.json",
       "**/.*",
