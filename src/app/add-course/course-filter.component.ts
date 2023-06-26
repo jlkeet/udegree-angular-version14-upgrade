@@ -68,22 +68,21 @@ export class CourseFilter {
   ) { }
 
   public async ngOnInit() {
-    // this.departmentChoices = await this.departmentService.getDepartments()
     this.departmentChoices = this.departmentService.departments;
 
     this.departmentChoices = this.departmentChoices.map((department) => {
         return { value: department.name, label: department.name };
       });
 
-    // this.facultyChoices = await this.facultyService.getFaculties()
     this.facultyChoices = this.facultyService.faculties;
 
     this.facultyChoices = this.facultyChoices.map((faculty) => {
         return { value: faculty.name, label: faculty.name };
       });
 
-  this.conjointChoices = this.conjointService.getConjoints()
-  .map((conjoint: any) => {
+  this.conjointChoices = this.conjointService.conjoints;
+
+  this.conjointChoices.map((conjoint: any) => {
     return { value: conjoint.name, label: conjoint.name };
   });
 

@@ -461,7 +461,7 @@ export class DegreeSelection {
     });
 
     if (this.currentFaculties[0] != null) { 
-    this.conjoints = this.conjointService.getConjoints().filter((v: { name: any; }) => v.name !== this.currentFaculties[0].name).map((conjoint: { name: any; }) => {
+    this.conjoints = (await this.conjointService.getConjoints()).filter((v: { name: any; }) => v.name !== this.currentFaculties[0].name).map((conjoint: { name: any; }) => {
       return { value: conjoint, view: conjoint.name };
     });
   }
@@ -502,8 +502,8 @@ export class DegreeSelection {
   })
 }
 
-  public getFilteredConjoints() {
-    this.conjoints = this.conjointService.getConjoints().filter((v: { name: any; }) => v.name !== this.currentFaculties[0].name).map((conjoint: { name: any; }) => {
+  public async getFilteredConjoints() {
+    this.conjoints = (await this.conjointService.getConjoints()).filter((v: { name: any; }) => v.name !== this.currentFaculties[0].name).map((conjoint: { name: any; }) => {
       return { value: conjoint, view: conjoint.name };
   });
   }
