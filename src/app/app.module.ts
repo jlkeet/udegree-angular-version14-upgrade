@@ -1,5 +1,4 @@
 /* Angular */
-// import 'reflect-metadata'
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -35,8 +34,6 @@ import { DegreeSelection } from './select-major';
 import { ConjointService, CourseEventService, CourseService, DepartmentService, ErrorsChangedEvent, FacultyService, IRequirement, LocationRef, ModuleService, MovedEvent, PathwayService, RemovedEvent, RequirementService, StatusEvent, StoreHelper, WindowRef } from './services';
 import { UserContainer } from './user/user-status.component';
 import { FirebaseDbService } from './core/firebase.db.service';
-import { ProgressDialogComponent } from './progress-panel/progress-dialog.component'
-import { UserDialogComponent } from './user/user-dialog-component';
 
 import { GoogleAnalyticsService } from './services/google-analytics.service';
 import { ProgressPanelService } from './services/progress-panel.service';
@@ -45,8 +42,6 @@ import { AdminExportService } from './services/admin-export.service';
 import { ErrorRequirementService } from './services/error.requirement.service';
 import { SamplePlanService } from './services/sample-plan.service';
 import { FooterModule } from './footer/footer.module';
-import { ContainerModule } from './containers/container.module';
-import { CommonCourseModule } from './common/common-course.module';
 import { LoginModule } from './login/login.module';
 import { RegisterModule } from './register/register.module';
 import { ProgressPanelModule } from './progress-panel/progress-panel.module';

@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
 import { UserContainer } from './user-status.component';
 import { UserDialogComponent } from './user-dialog-component';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -21,9 +20,6 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
     FormsModule,
     ReactiveFormsModule,
     NgbDropdownModule,
-
-
-
 ],
   declarations: [
     UserContainer,
