@@ -25,7 +25,6 @@ import { CommonModule } from '@angular/common';
     ReactiveFormsModule,
     CommonModule,
 
-
   ],
   declarations: [
     CourseDeleteIcon,

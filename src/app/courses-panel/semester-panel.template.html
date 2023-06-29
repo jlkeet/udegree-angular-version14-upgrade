@@ -44,7 +44,7 @@
     </span>
 
   </mat-expansion-panel-header>
-  <div *ngIf="toggled" class="courses">
+  <!-- <div *ngIf="toggled" class="courses">
     <div class="flex dragula-container">
       <div class="semester-courses" [dragula]="bagName" [dragulaModel]="courses" [attr.period]="semester.period"
         [attr.year]="semester.year">
@@ -62,5 +62,37 @@
     </div>
     <ng-template #semCheckPass>
     </ng-template>
-  </div>
+  </div> -->
+
+  
+  <div *ngIf="toggled" class="courses">
+    <div class="flex dragula-container">
+        <div class="semester-courses" cdkDropList [cdkDropListData]="courses" (cdkDropListDropped)="drop($event)"
+             [attr.period]="semester.period" [attr.year]="semester.year">
+            <div class="course-draggable" *ngFor="let course of courses; let i = index" cdkDrag [cdkDragData]="course" 
+                 (click)="courseClicked(course)" (longClick)="longCourseClicked(course)">
+                <course-draggable 
+                (deleteCourseClicked)="deleteCourse(course)"
+                (courseClicked)="courseClicked(course)" 
+                (longClick)="longCourseClicked(course)" 
+                [course]="course" 
+                [attr.data-id]="course.id"
+                [attr.data-period]="semester.period" 
+                [attr.data-year]="semester.year">
+              </course-draggable>
+            </div>
+            <div fake *ngIf="!atMaxPoints && boolCheck" class="fakecourse" [routerLink]="['/add']"
+                 [queryParams]="{ period: semester.period, year: semester.year }">
+                <div class="position-text" (click)="newCourseEvent()">Add course</div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="boolCheck === false; else semCheckPass">
+        <P class="semCheckFail">Selected Semester already in plan!</P>
+    </div>
+    <ng-template #semCheckPass>
+    </ng-template>
+</div>
+
+
 </mat-expansion-panel>

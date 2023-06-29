@@ -1,14 +1,13 @@
 import { Component, Input, EventEmitter, ViewEncapsulation } from "@angular/core";
 import { collection, doc, getDocs, query, updateDoc, where, deleteDoc } from "firebase/firestore";
-import { DragulaService } from "ng2-dragula";
-import { DragulaModule } from "ng2-dragula";
 import { ICourse } from "../interfaces";
 import { CourseStatus } from "../models";
 import { CourseEventService, CourseService, StoreHelper } from "../services";
 import { Router } from "@angular/router";
 import { UserContainer } from "../common";
-import{ GoogleAnalyticsService } from '../services/google-analytics.service';
+import { GoogleAnalyticsService } from '../services/google-analytics.service';
 import { FirebaseDbService } from "../core/firebase.db.service";
+import { CdkDrag, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: "semester-panel",
@@ -43,12 +42,13 @@ export class SemesterPanel {
   public onPageChange = new EventEmitter<null>();
 
   public course: ICourse = null as any;
+  public semesters: any[] = [];
+
+  public groupedCourses: {semester: any, courses: ICourse[]}[] = [];
 
   constructor(
     public courseService: CourseService,
     public courseEventService: CourseEventService,
-    public dragulaService: DragulaService,
-    public dragulaModule: DragulaModule,
     public storeHelper: StoreHelper,
     public router: Router,
     public userContainer: UserContainer,
@@ -57,96 +57,25 @@ export class SemesterPanel {
   ) {
     this.email = this.courseService.email;
     
+    
   }
 
   public ngOnInit() {
-
-        // // AutoScroll
-        // setTimeout(() => {
-        //   let scroll = autoScroll([
-        //     this.autoscroll.nativeElement,
-        //   ], {
-        //       margin: 20,
-        //       maxSpeed: 5,
-        //       scrollWhenOutside: true,
-        //       autoScroll: function () {
-        //         //Only scroll when the pointer is down.
-        //         return this.down;
-        //         //return true;
-        //       }
-        //     });
-        // }, 3000);
-
-    this.bagName = "courses";
-    const bag = this.dragulaService.find(this.bagName);
-
-    // if (bag === undefined) {
-    //   this.dragulaService.createGroup(this.bagName, {
-    //     isContainer: (el) => el!.classList.contains("dragula-container"),
-    //     moves: (el, source, handle, sibling) => {
-    //     if (this.userContainer.isMobile) {  
-    //       if (this.course) {
-    //         return this.course.dragIt;
-    //       } else {
-    //         return false;
-    //       }
-    //     } else {
-    //       return !el!.hasAttribute("fake");
-    //     }
-    //     },
-    //   });
-    // }
-
-    if (bag === undefined) {
-      this.dragulaService.createGroup(this.bagName, {
-        isContainer: (el: any) => el!.classList.contains("dragula-container"),
-        moves: (el: Element | undefined, source: Element | undefined, handle: Element | undefined, sibling: Element | undefined) => {
-          if (this.userContainer.isMobile) {  
-            return handle ? handle.className === 'handle' : false;
-          } else {
-            return el ? !el.hasAttribute("fake") : false;
-          }
-        },
-      });
-    }
-    
-
-    this.dragulaService.drop().subscribe((value: any) => {
-      // need to handle event for this bag only! TODO and semester too?
-      if (value.name === this.bagName) {
-        this.onDropModel(value);
-      }
-    });
-
-    this.dragulaService.remove().subscribe((value: any) => {
-      this.onRemoveModel(value.slice(1));
-    });
   }
 
-  public onDropModel(args: any) {
-    const [el, target, source] = args;
-
-    // Extract all the info form the course and set it. The newPeriod and newYear are set from the target destination of the bag
+  public drop(event: CdkDragDrop<ICourse[]>) {
     const droppedCourse = {
-      id: Number(args.el.dataset.id),
-      period: Number(args.el.dataset.period),
-      year: Number(args.el.dataset.year),
-      newPeriod: Number(args.target.attributes.period.value),
-      newYear: Number(args.target.attributes.year.value),
+      id: Number(event.item.data.id),
+      period: Number(event.item.data.period),
+      year: Number(event.item.data.year),
+      newPeriod: Number(event.container.data),
+      newYear: Number(event.container.data),
     };
-    // this logic is essentially saying only handle this for the semester that is not the same
-    // as the semester the course started in.
+
     if (!this.sameTime(droppedCourse)) {
-      // this index will be greater than one when a semester contains this course - this is waiting on model sync?
-      let moveHere =
-        this.courses.filter((course: ICourse) => {
-          course.id === droppedCourse.id;
-        }).length !== 0;
-      moveHere = true;
+      let moveHere = this.courses.some((course: ICourse) => course.id === droppedCourse.id);
       if (!moveHere) {
-        console.error(
-          `could not move course id: ${droppedCourse.id} to semester ${this.semester.id} `
-        );
+        console.error(`could not move course id: ${droppedCourse.id} to semester ${this.semester.id} `);
       } else {
         this.droppedCourseSaveDB(droppedCourse);
         this.courseEventService.raiseCourseMoved({
@@ -155,7 +84,15 @@ export class SemesterPanel {
           year: droppedCourse.newYear,
         });
       }
+    }
+
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
+      transferArrayItem(event.previousContainer.data,
+                        event.container.data,
+                        event.previousIndex,
+                        event.currentIndex);
     }
   }
 
@@ -435,50 +372,6 @@ export class SemesterPanel {
     this.courseService.loadPlanFromDbAfterDel();
     return this.storeHelper.update("courses", this.courseService.planned);
   }
-
-  // public delSemDB() {
-  //   this.db.collection("users").doc(this.email).collection("semesters", (ref: { where: (arg0: string, arg1: string, arg2: string) => any; }) => {
-  //     const query = ref.where('both', '==', this.semester.year + " " + this.semester.period);
-  //     query.get().then( (snapshot: any[]) => {
-  //       snapshot.forEach((sem: { id: any; }) => {
-  //         this.db
-  //         .collection("users")
-  //         .doc(this.email)
-  //         .collection("semesters")
-  //         .doc(sem.id)
-  //         .delete()
-  //        })
-  //       }
-  //     )
-  //   return query
-  //   })
-  // }
-
-  // public changeSemDB() {
-
-  //   this.db.collection("users").doc(this.email).collection("semesters", (ref: { where: (arg0: string, arg1: string, arg2: string) => any; }) => {
-  //     const query = ref.where('both', '==', this.previousYear + " " + this.previousPeriod);
-  //     query.get().then( (snapshot: any[]) => {
-  //       snapshot.forEach((sem: { id: any; }) => {
-  //         this.db
-  //         .collection("users")
-  //         .doc(this.email)
-  //         .collection("semesters")
-  //         .doc(sem.id)
-  //         .update({
-  //           year: this.savedNewYear,
-  //           period: this.savedNewSem,
-  //           both: this.savedNewYear + " " + this.savedNewSem
-  //         });
-  //        })
-  //       }
-  //     )
-  //   return query
-  //   })
-
-  // }
-
-  // This is fucked - can be optimized
 
   public checkIfArrayIsUnique(myArray: string | any[]) 
   {

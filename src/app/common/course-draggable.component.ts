@@ -6,10 +6,10 @@ import {
   Output,
   Renderer2
 } from '@angular/core';
-import { DragulaService } from 'ng2-dragula';
 import { ICourse } from '../interfaces';
 import { CourseStatus, Period } from '../models';
 import { StoreHelper } from '../services';
+
 
 /*
     A component for a displaying a course that can be dragged.
@@ -39,7 +39,6 @@ export class CourseDraggable {
   public showDelete: boolean = false;
   public backgroundColor: string;
   public displayGrade: string;
-  // public isDragging: boolean = false;
   public status: boolean = false;
   public group: any;
   public canDrag: any;
@@ -50,23 +49,7 @@ export class CourseDraggable {
     public el: ElementRef,
     public renderer: Renderer2,
     public storeHelper: StoreHelper,
-    public dragulaService: DragulaService
-  ) {
-    /*const self = this;
-    dragulaService.drag.subscribe((value) => self.isDragging = true);
-    dragulaService.drop.subscribe((value) => self.isDragging = false);
-    dragulaService.over.subscribe((value) => self.isDragging = true);
-    dragulaService.out.subscribe((value) => self.isDragging = false);*/
-
-
-
-    // let scrollPosition = 0;
-    // const body_el = document.getElementById('body');
-    // ...or whatever you want to do to get the body element; I gave it an id='body' attribute
-
-    // dragula_obj.on('drag', function (el) { scroll_disable(); });
-    // dragula_obj.on('dragend', function (el) { scroll_enable(); }); 
-  }
+  ) {}
 
   public addCourse() {
     this.addCourseClicked.emit({

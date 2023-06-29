@@ -20,10 +20,6 @@
 // import 'rxjs/add/operator/map';
 // import 'rxjs/add/operator/mergeMap';
 
-// // import 'ng2-dragula';
-// import 'dragula/dist/dragula.css';
-// // import 'dragula';
-
 // // if ('production' === ENV) {
 // //   // Production
 
