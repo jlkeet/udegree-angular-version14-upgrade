@@ -153,7 +153,7 @@ export class CourseService {
     this.storeHelper.add('courses', course);
     let result = course;
     
-    const coursesRef = collection(doc(this.user_db, `users/${this.email}`), "courses");
+    const coursesRef = collection(doc(this.user_db, `users/${this.authService.auth.currentUser.email}`), "courses");
   
     await addDoc(coursesRef, Object.assign({
       department: result['department'] || null,
