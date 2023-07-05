@@ -198,14 +198,13 @@ export class CourseService {
     
     this.updateErrors();
     this.courseCounter--;
-  
-    const coursesRef = collection(doc(this.user_db, `users/${this.email}`), "courses");
+    const coursesRef = collection(doc(this.user_db, `users/${this.authService.auth.currentUser.email}`), "courses");
     const q = query(coursesRef, where('generatedId', '==', course.generatedId));
     
     const snapshot = await getDocs(q);
     
     snapshot.forEach(docSnap => {
-      deleteDoc(doc(this.user_db, `users/${this.email}/courses/${docSnap.id}`));
+      deleteDoc(doc(this.user_db, `users/${this.authService.auth.currentUser.email}/courses/${docSnap.id}`));
     });
   }
 
