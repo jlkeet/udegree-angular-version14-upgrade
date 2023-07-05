@@ -9,6 +9,7 @@ import { Router } from "@angular/router";
 import { UserContainer } from "../common";
 import{ GoogleAnalyticsService } from '../services/google-analytics.service';
 import { FirebaseDbService } from "../core/firebase.db.service";
+import { AuthService } from "../core/auth.service";
 
 @Component({
   selector: "semester-panel",
@@ -54,8 +55,8 @@ export class SemesterPanel {
     public userContainer: UserContainer,
     public googleAnalyticsService: GoogleAnalyticsService,
     public dbCourses: FirebaseDbService,
+    public authService: AuthService,
   ) {
-    this.email = this.courseService.email;
     
   }
 
@@ -229,11 +230,11 @@ export class SemesterPanel {
   }
 
   public async droppedCourseSaveDB(course: { id: any; period?: number; year?: number; newPeriod: any; newYear: any; }) {
-    const userCoursesQuery = query(collection(this.dbCourses.db, `users/${this.email}/courses`), where("id", "==", course.id));
+    const userCoursesQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses`), where("id", "==", course.id));
     const snapshot = await getDocs(userCoursesQuery);
   
     snapshot.forEach((ref) => {
-      const courseRef = doc(this.dbCourses.db, `users/${this.email}/courses/${ref.id}`);
+      const courseRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses/${ref.id}`);
       updateDoc(courseRef, {
         year: course.newYear,
         period: course.newPeriod,
@@ -256,11 +257,11 @@ export class SemesterPanel {
       }
     }
   
-    const userCoursesQuery = query(collection(this.dbCourses.db, `users/${this.email}/courses`), where("generatedId", "==", course.generatedId));
+    const userCoursesQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses`), where("generatedId", "==", course.generatedId));
     const snapshot = await getDocs(userCoursesQuery);
   
     snapshot.forEach((ref) => {
-      const courseRef = doc(this.dbCourses.db, `users/${this.email}/courses/${ref.id}`);
+      const courseRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses/${ref.id}`);
       deleteDoc(courseRef);
     });
   }
@@ -407,12 +408,12 @@ export class SemesterPanel {
 
     if (this.boolCheck) {
       for (let j = 0; j < courses.length; j++) {
-        const userCoursesQuery = query(collection(this.dbCourses.db, `users/${this.email}/courses`), where("id", "==", String(courses[j].id)));
+        const userCoursesQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses`), where("id", "==", String(courses[j].id)));
         const snapshot = await getDocs(userCoursesQuery);
       
         snapshot.forEach((ref) => {
           if (courses[j].year === this.previousYear && courses[j].period === this.previousPeriod) {
-            const courseRef = doc(this.dbCourses.db, `users/${this.email}/courses/${ref.id}`);
+            const courseRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses/${ref.id}`);
             updateDoc(courseRef, {
               year: this.savedNewYear,
               period: this.savedNewSem,
