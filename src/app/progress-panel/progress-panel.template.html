@@ -18,7 +18,7 @@
         </mat-toolbar>
       </mat-expansion-panel-header>
 
-      <div *ngIf="gpa" class="gpa">Total GPA {{gpa.toFixed(2)}}</div>
+      <div *ngIf="gpa && conjoint" class="gpa">Total GPA {{gpa.toFixed(2)}}</div>
       <div *ngIf="faculty?.name && conjoint?.name" class="progress-panel-bar-container flex flex-col flex-start">
         <div class="progress-bar-group">
           <progress-bar-multi-container [requirement]="conjointRequirements[conjointRequirements.length-1]"

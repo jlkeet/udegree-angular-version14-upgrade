@@ -6,7 +6,9 @@
         "title": "Accounting",
         "info": "unknown",
         "forward": [
-          "Accounting"
+          "Accounting",
+          "Business Studies",
+          "Mathematics and Statistics"
         ],
         "backward": []
       },
@@ -904,26 +906,19 @@
     "title": "Majors",
     "items": [
       {
-        "title": "Anthropology",
+        "title": "Accounting",
         "backward": [
-          "Biology",
-          "Mathematics and Statistics",
-          "Classical Studies",
-          "English",
-          "Geography",
-          "History",
-          "Art History",
-          "Digital Technologies"
+          "Accounting",
+          "Business Studies",
+          "Mathematics and Statistics"
         ]
       },
       {
-        "title": "Applied Physics",
+        "title": "Ancient History",
         "backward": [
-          "Biology",
-          "Chemistry",
-          "Physics",
-          "Mathematics and Statistics",
-          "Digital Technologies"
+          "History",
+          "Classical Studies",
+          "Latin"
         ]
       },
       {
@@ -937,28 +932,23 @@
         ]
       },
       {
-        "title": "Biomedical Sciences",
+        "title": "Anthropology",
         "backward": [
           "Biology",
-          "Mathematics and Statistics",
-          "Chemistry",
-          "Geography",
-          "Digital Technologies"
+          "Sociology",
+          "Social Studies"
         ]
       },
       {
-        "title": "Chemistry",
+        "title": "Applied Behavior Analysis",
         "backward": [
           "Biology",
-          "Mathematics and Statistics",
-          "Chemistry",
-          "Geography",
-          "Digital Technologies",
-          "Physics"
+          "Sociology",
+          "Pyschology"
         ]
       },
       {
-        "title": "Computer Science",
+        "title": "Applied Mathematics",
         "backward": [
           "Physics",
           "Mathematics and Statistics",
@@ -966,39 +956,36 @@
         ]
       },
       {
-        "title": "Computer Science",
+        "title": "Architecture",
+        "backward": [
+          "Art History",
+          "Mathematics and Statistics",
+          "Design & Visual Communication"
+        ]
+      },
+      {
+        "title": "Art History",
+        "backward": [
+          "Art History",
+          "History",
+          "Visual Arts"
+        ]
+      },
+      {
+        "title": "Asian Studies",
+        "backward": [
+          "History",
+          "Chinese",
+          "Japanese"
+        ]
+      },
+      {
+        "title": "Astrophysics",
         "backward": [
           "Physics",
-          "Mathematics and Statistics",
-          "Digital Technologies"
-        ]
-      },
-      {
-        "title": "Data Science",
-        "backward": [
-          "Mathematics and Statistics",
-          "Digital Technologies"
-        ]
-      },
-      {
-        "title": "Earth Sciences",
-        "backward": [
-          "Chemistry",
-          "Earth and Space Science",
-          "Physics",
-          "Mathematics and Statistics",
-          "Geography",
-          "Digital Technologies"
-        ]
-      },
-      {
-        "title": "Environmental Science",
-        "backward": [
-          "Biology",
           "Earth and Space Science",
           "Mathematics and Statistics",
-          "Geography",
-          "Digital Technologies"
+          "Chemistry"
         ]
       },
       {
