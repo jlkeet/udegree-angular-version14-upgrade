@@ -524,6 +524,9 @@ export class CourseService {
     }
 
     public newSemester(): void {
+      if (this.selectedYear === 0) {
+        this.selectedYear = 2023;
+      }
       const newSemester = {
         year: Number(this.selectedYear),
         period: Number(this.selectedPeriod),
