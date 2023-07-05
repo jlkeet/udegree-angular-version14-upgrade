@@ -281,8 +281,9 @@ export class DegreeSelection {
       this.currentMajors[which] = null;
     }
     this.storeHelper.update("faculty", event.value);
+    console.log(event)
     this.dbCourses.setSelection(
-      this.authService.auth.currentUser!.email,
+      this.authService.auth.currentUser.email,
       "faculty",
       event.value,
       "degree"
@@ -447,10 +448,10 @@ export class DegreeSelection {
       return { value: faculty, view: faculty.name };
     });
 
-    this.majors = await this.departmentService.getDepartments()
-   this.majors = this.majors.map((majors: { name: any; }) => {
-      return { value: majors, view: majors.name };
-    });
+  //   this.majors = await this.departmentService.getDepartments()
+  //  this.majors = this.majors.map((majors: { name: any; }) => {
+  //     return { value: majors, view: majors.name };
+  //   });
 
   // this.majors.map((majors) => {
   //    return { value: majors, view: majors.name };
