@@ -65,9 +65,9 @@
   </div> -->
 
   
-  <div *ngIf="toggled" class="courses">
-    <div class="flex dragula-container">
-        <div class="semester-courses" cdkDropList [cdkDropListData]="courses" (cdkDropListDropped)="drop($event)"
+  <div *ngIf="toggled" class="courses" cdkDropList (cdkDropListDropped)="dropSemester($event)">
+    <div class="flex dragula-container" cdkDropListGroup>
+        <div class="semester-courses" cdkDropList [cdkDropListData]="semesters" (cdkDropListDropped)="drop($event)"
              [attr.period]="semester.period" [attr.year]="semester.year">
             <div class="course-draggable" *ngFor="let course of courses; let i = index" cdkDrag [cdkDragData]="course" 
                  (click)="courseClicked(course)" (longClick)="longCourseClicked(course)">

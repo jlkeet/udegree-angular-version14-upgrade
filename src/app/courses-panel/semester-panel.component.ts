@@ -61,6 +61,11 @@ export class SemesterPanel {
   }
 
   public ngOnInit() {
+    this.semesters = this.storeHelper.current("semesters")
+  }
+
+  public dropSemester(event: CdkDragDrop<any>) {
+    moveItemInArray(this.semesters, event.previousIndex, event.currentIndex);
   }
 
   public drop(event: CdkDragDrop<ICourse[]>) {
