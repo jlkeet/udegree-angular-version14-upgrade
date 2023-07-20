@@ -266,7 +266,7 @@ export class AddCourseContainer {
       //     .map((requirement: IRequirement) => this.requirementService.toString(requirement, false));
       // } else {
       return course.requirements.filter((requirement: IRequirement) =>
-        !this.requirementService.requirementFilled(requirement, this.beforeSemester))
+        !this.requirementService.requirementFilled(requirement, this.beforeSemester, course))
           .map((requirement: IRequirement) => this.requirementService.toString(requirement, false));
       // }
 
@@ -297,7 +297,7 @@ export class AddCourseContainer {
         if (course.requirements !== undefined && course.requirements !== null) {
           // To find which courses are ineligible, flag all courses that have at least one unfilled requirement
           course.canAdd = course.requirements.filter((requirement: IRequirement) =>
-            !this.requirementService.requirementFilled(requirement, this.beforeSemester)
+            !this.requirementService.requirementFilled(requirement, this.beforeSemester, course)
           ).length === 0;
         } else {
           course.canAdd = true;

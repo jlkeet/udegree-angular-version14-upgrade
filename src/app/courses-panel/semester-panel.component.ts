@@ -62,41 +62,8 @@ export class SemesterPanel {
 
   public ngOnInit() {
 
-        // // AutoScroll
-        // setTimeout(() => {
-        //   let scroll = autoScroll([
-        //     this.autoscroll.nativeElement,
-        //   ], {
-        //       margin: 20,
-        //       maxSpeed: 5,
-        //       scrollWhenOutside: true,
-        //       autoScroll: function () {
-        //         //Only scroll when the pointer is down.
-        //         return this.down;
-        //         //return true;
-        //       }
-        //     });
-        // }, 3000);
-
     this.bagName = "courses";
     const bag = this.dragulaService.find(this.bagName);
-
-    // if (bag === undefined) {
-    //   this.dragulaService.createGroup(this.bagName, {
-    //     isContainer: (el) => el!.classList.contains("dragula-container"),
-    //     moves: (el, source, handle, sibling) => {
-    //     if (this.userContainer.isMobile) {  
-    //       if (this.course) {
-    //         return this.course.dragIt;
-    //       } else {
-    //         return false;
-    //       }
-    //     } else {
-    //       return !el!.hasAttribute("fake");
-    //     }
-    //     },
-    //   });
-    // }
 
     if (bag === undefined) {
       this.dragulaService.createGroup(this.bagName, {
@@ -125,7 +92,7 @@ export class SemesterPanel {
   }
 
   public onDropModel(args: any) {
-    const [el, target, source] = args;
+    // const [el, target, source] = args;
 
     // Extract all the info form the course and set it. The newPeriod and newYear are set from the target destination of the bag
     const droppedCourse = {
@@ -278,7 +245,6 @@ export class SemesterPanel {
         semester.period !== this.semester.period
     );
     this.storeHelper.update("semesters", semesters);
-    // this.delSemDB();
     setTimeout(() => {
       this.semesterSort();
     }, 1000);
@@ -347,14 +313,14 @@ export class SemesterPanel {
     return this.periodListArray[0 - 2];
   }
 
-  public getSelectedYear(i: string | number) {
+  public getSelectedYear(i: number) {
     
     this.previousYear = this.semester.year;
     this.semester.year = i;
     this.saveChangedSemCourse(i);
   }
 
-  public getSelectedSem(j: any) {
+  public getSelectedSem(j: string) {
     this.previousPeriod = this.semester.period;
     let k;
     switch (j) {
@@ -383,49 +349,74 @@ export class SemesterPanel {
   }
 
   public async saveChangedSemCourse(i: any) {
-
     this.boolCheck = true;
-    let courses = this.storeHelper.current("courses");
-    if (i < 10) {
-      this.savedNewSem = this.updatePeriodsInCourse(i);
-    } else {
-      this.savedNewSem = this.semester.period;
-      this.previousPeriod = this.semester.period;
-    }
-    if (i > 10) {
-      this.savedNewYear = this.updateYearsInCourse(i);
-    } else {
-      this.savedNewYear = this.semester.year;
-      // this.previousYear = this.semester.year;
-    }
-
+    const courses = this.storeHelper.current("courses");
+  
+    this.updateSemester(i);
+  
     this.semcheck = {
       year: Number(this.savedNewYear),
       period: Number(this.savedNewSem),
     };
-
-    this.checkIfArrayIsUnique(this.storeHelper.current("semesters"))
-
-    if (this.boolCheck) {
-      for (let j = 0; j < courses.length; j++) {
-        const userCoursesQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses`), where("id", "==", String(courses[j].id)));
-        const snapshot = await getDocs(userCoursesQuery);
-      
-        snapshot.forEach((ref) => {
-          if (courses[j].year === this.previousYear && courses[j].period === this.previousPeriod) {
-            const courseRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses/${ref.id}`);
-            updateDoc(courseRef, {
-              year: this.savedNewYear,
-              period: this.savedNewSem,
-            });
-          }
-        });
-      }
   
-      // this.changeSemDB()
-      this.semesterSort();
+    if (!this.isUniqueSemester()) {
+      return;
+    }
+  
+    await this.updateUserCourses(courses);
+  
+    this.semesterSort();
+  }
+  
+  private updateSemester(i: any) {
+    this.savedNewSem = i < 10 
+      ? this.updatePeriodsInCourse(i) 
+      : this.semester.period;
+    this.previousPeriod = this.semester.period;
+  
+    this.savedNewYear = i > 10 
+      ? this.updateYearsInCourse(i) 
+      : this.semester.year;
+  }
+  
+  private isUniqueSemester() {
+    this.checkIfArrayIsUnique(this.storeHelper.current("semesters"));
+    return this.boolCheck;
+  }
+  
+  private async updateUserCourses(courses: ICourse[]) {
+    for (const course of courses) {
+      const snapshot = await this.getUserCoursesSnapshot();
+  
+      snapshot.forEach((ref) => {
+        if (this.shouldUpdateCourse(course, ref)) {
+          this.updateCourse(ref);
+        }
+      });
     }
   }
+  
+  private async getUserCoursesSnapshot() {
+    const userCoursesQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses`));
+    return await getDocs(userCoursesQuery);
+  }
+  
+  private shouldUpdateCourse(course: ICourse, ref: any) {
+    return course.year === this.previousYear &&
+      course.period === this.previousPeriod &&
+      course.generatedId === ref.data()['generatedId'];
+  }
+  
+  private updateCourse(ref: any) {
+    console.log("firing")
+    const courseRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses/${ref.id}`);
+    updateDoc(courseRef, {
+      year: this.savedNewYear,
+      period: this.savedNewSem,
+    });
+  }
+  
+
 
   public semesterSort() {
     this.storeHelper
@@ -433,70 +424,34 @@ export class SemesterPanel {
       .sort((s1: { year: number; period: number; }, s2: { year: number; period: number; }) =>
         s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year
       );
-    this.courseService.loadPlanFromDbAfterDel();
-    return this.storeHelper.update("courses", this.courseService.planned);
+      this.updateCourseSemesterAssignments();
+    return this.courseService.loadPlanFromDbAfterDel();
   }
 
-  // public delSemDB() {
-  //   this.db.collection("users").doc(this.email).collection("semesters", (ref: { where: (arg0: string, arg1: string, arg2: string) => any; }) => {
-  //     const query = ref.where('both', '==', this.semester.year + " " + this.semester.period);
-  //     query.get().then( (snapshot: any[]) => {
-  //       snapshot.forEach((sem: { id: any; }) => {
-  //         this.db
-  //         .collection("users")
-  //         .doc(this.email)
-  //         .collection("semesters")
-  //         .doc(sem.id)
-  //         .delete()
-  //        })
-  //       }
-  //     )
-  //   return query
-  //   })
-  // }
+  public updateCourseSemesterAssignments() {
+    let courses = this.storeHelper.current("courses");
+    let semesters = this.storeHelper.current("semesters");
 
-  // public changeSemDB() {
+    for (let course of courses) {
+        let currentSemester = semesters.find((sem: { year: number; period: number; }) => sem.year === course.year && sem.period === course.period);
 
-  //   this.db.collection("users").doc(this.email).collection("semesters", (ref: { where: (arg0: string, arg1: string, arg2: string) => any; }) => {
-  //     const query = ref.where('both', '==', this.previousYear + " " + this.previousPeriod);
-  //     query.get().then( (snapshot: any[]) => {
-  //       snapshot.forEach((sem: { id: any; }) => {
-  //         this.db
-  //         .collection("users")
-  //         .doc(this.email)
-  //         .collection("semesters")
-  //         .doc(sem.id)
-  //         .update({
-  //           year: this.savedNewYear,
-  //           period: this.savedNewSem,
-  //           both: this.savedNewYear + " " + this.savedNewSem
-  //         });
-  //        })
-  //       }
-  //     )
-  //   return query
-  //   })
+        if (currentSemester) {
+            course.year = currentSemester.year;
+            course.period = currentSemester.period;
+        }
+    }
 
-  // }
+    // Update the courses in the store with their new semester assignments
+    // this.storeHelper.update("courses", courses);
+    console.log(this.storeHelper.current("courses"));
+}
 
-  // This is fucked - can be optimized
-
-  public checkIfArrayIsUnique(myArray: string | any[]) 
-  {
-      for (var i = 0; i < myArray.length; i++) 
-      {
-          for (var j = 0; j < myArray.length; j++) 
-          {
-              if (i != j) 
-              {
-                  if (myArray[i].period === myArray[j].period && myArray[i].year === myArray[j].year) 
-                  {
-                      return this.boolCheck = false; // means there are duplicate values
-                  }
-              }
-          }
-      }
-      return this.boolCheck = true; // means there are no duplicate values.
+  public checkIfArrayIsUnique(myArray: any[]): boolean {
+    const seen = new Set();
+    return !myArray.some(item => {
+      const key = JSON.stringify({ period: item.period, year: item.year });
+      return seen.has(key) ? true : !seen.add(key);
+    });
   }
 
   newCourseEvent(){ 

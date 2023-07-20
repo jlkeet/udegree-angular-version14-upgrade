@@ -101,7 +101,7 @@ export class PlannerContainerMobile {
         ((plannedCourse.period < course.period! && plannedCourse.year === course.year) || plannedCourse.year < course.year!)
       );
       this.messages = course.requirements.filter((requirement: IRequirement) =>
-        !this.requirementService.requirementFilled(requirement, beforeSemester)
+        !this.requirementService.requirementFilled(requirement, beforeSemester, course)
       ).map((requirement: IRequirement) => this.requirementService.toString(requirement, false));
     } else {
       this.messages = [];

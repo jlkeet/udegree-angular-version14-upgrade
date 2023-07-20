@@ -249,33 +249,54 @@ export class CourseService {
 
   public updateErrors() {
     this.errors = [];
-    let courseErrors: any;
-    let courseErrorsCoreq;
-
+    
     this.planned.forEach((course: ICourse) => {
       if (course.requirements !== undefined && course.requirements !== null) {
-      courseErrors = course.requirements.filter((requirement: IRequirement) =>
-      {
-        if (this.requirementService.checkFlag(requirement, "isCorequesite")) {
-          return !this.requirementService.requirementFilled(requirement,this.currentSemester(course))
-        } else {
-          return !this.requirementService.requirementFilled(requirement,this.beforeSemester(course))
-        }
-      });
-      this.errors = this.errors.concat(courseErrors
-        .map((unfilled: IRequirement) => this.requirementService.toString(unfilled, false))
-        .map((unfilled: string) => new Message(course.name, course.name + ": " + unfilled, MessageStatus.Error, courseErrors)));
-        course.isError = courseErrors.length > 0;
+        let courseErrors: IRequirement[] = [];
+        
+        course.requirements.forEach((requirement: IRequirement) => {
+          if (this.requirementService.isComplex(requirement)) {
+            let complexErrors: IRequirement[] = [];
+            
+            requirement.complex.forEach((subRequirement: IRequirement) => {
+              if (this.requirementService.checkCoRequesiteFlag(subRequirement, "isCorequesite")) {
+                if (!this.requirementService.requirementFilled(subRequirement, this.currentSemester(course), course)) {
+                  complexErrors.push(subRequirement);
+                }
+              } else {
+                if (!this.requirementService.requirementFilled(subRequirement, this.beforeSemester(course), course)) {
+                  complexErrors.push(subRequirement);
+                }
+              }
+            });
   
+            // Only push complex errors if all requirements are not filled
+            if (complexErrors.length === requirement.complex.length) {
+              courseErrors = courseErrors.concat(complexErrors);
+            }
+          } else {
+            if (!this.requirementService.requirementFilled(requirement, this.planned, course)) {
+              courseErrors.push(requirement);
+            }
+          }
+        });
 
-        //this.errors.push({'course': course.title, 'errors': courseErrors});
+        if (courseErrors.length > 0) {
+          courseErrors.forEach((unfilled: IRequirement) => {
+            const errorMessage = this.requirementService.toString(unfilled, false);
+            const message = new Message(course.name, course.name + ": " + errorMessage, MessageStatus.Error, unfilled);
+            this.errors.push(message);
+          });
+        }
+        course.isError = courseErrors.length > 0;
       } else {
         course.isError = false;
       }
     });
+  
     this.storeHelper.update('messages', this.errors); // needs to be changed if different sources for messages
-    //this.errorsChanged.raiseErrorsChanged(this.errors);
   }
+  
 
   public beforeSemester(beforeCourse: any) {
     return this.planned.filter((course: ICourse) =>
@@ -405,14 +426,15 @@ export class CourseService {
             desc: copy[1],
             faculties: copy[2],
             id: copy[3],
-            name: copy[4],
-            period: copy[5],
-            points: copy[6],
-            requirements: copy[7],
-            stage: copy[8],
-            status: copy[9],
-            title: copy[10],
-            year: copy[11],
+            generatedId: copy[4],
+            name: copy[5],
+            period: copy[6],
+            points: copy[7],
+            requirements: copy[8],
+            stage: copy[9],
+            status: copy[10],
+            title: copy[11],
+            year: copy[12],
             canDelete: true,
           });
           this.getCourseFromDb(courseDbId).then((res) => {
@@ -422,39 +444,78 @@ export class CourseService {
         });
       }
     
-      private loadCourseFromDbAfterDel(courseDbId: string) {
-        const courseDb = this.getCourseFromDb(courseDbId).then((copy) => {
-          Object.assign({
-            department: copy[0] || null,
-            desc: copy[1] || null,
-            faculties: copy[2] || null,
-            id: copy[3] || null,
-            name: copy[4] || null,
-            period: copy[5] || null,
-            points: copy[6] || null,
-            requirements: copy[7] || null,
-            stage: copy[8] || null,
-            status: copy[9] || null,
-            title: copy[10] || null,
-            year: copy[11] || null,
-            canDelete: true,
-          })
-          this.getCourseFromDb(courseDbId).then((res) => {
-            this.planned = this.storeHelper.current("courses")
-        for (let i = 0; i < this.planned.length; i++) {    
-          if (res.id === this.planned[i].id) {
-            if (res.year !== this.planned[i].year || res.period !== this.planned[i].period) {
-          this.storeHelper.findAndDelete("courses", this.planned[i].id)  
-          this.storeHelper.add("courses", res)
+    //   private loadCourseFromDbAfterDel(courseDbId: string) {
+    //     const courseDb = this.getCourseFromDb(courseDbId).then((copy) => {
+    //       Object.assign({
+    //         department: copy[0] || null,
+    //         desc: copy[1] || null,
+    //         faculties: copy[2] || null,
+    //         id: copy[3] || null,
+    //         name: copy[4] || null,
+    //         period: copy[5] || null,
+    //         points: copy[6] || null,
+    //         requirements: copy[7] || null,
+    //         stage: copy[8] || null,
+    //         status: copy[9] || null,
+    //         title: copy[10] || null,
+    //         year: copy[11] || null,
+    //         canDelete: true,
+    //       })
+    //       this.getCourseFromDb(courseDbId).then((res) => {
+    //         this.planned = this.storeHelper.current("courses")
+    //     for (let i = 0; i < this.planned.length; i++) {    
+    //       if (res.generatedId === this.planned[i].generatedId) {
+    //         if (res.year !== this.planned[i].year || res.period !== this.planned[i].period) {
+    //       this.storeHelper.findAndDelete("courses", this.planned[i].generatedId)  
+    //       this.storeHelper.add("courses", res)
+    //       console.log(this.storeHelper.current("courses"))
             
-          // Will change this code when I eventually understand the findAndUpdate part of the storehelper.
+    //       // Will change this code when I eventually understand the findAndUpdate part of the storehelper.
         
+    //       }
+    //     }
+    //   }
+    //     })
+    //   })
+    // }
+
+    private async loadCourseFromDbAfterDel(courseDbId: string) {
+      try {
+          const copy = await this.getCourseFromDb(courseDbId);
+          const course = {
+              department: copy[0] || null,
+              desc: copy[1] || null,
+              faculties: copy[2] || null,
+              id: copy[3] || null,
+              generatedId: copy[4] || null,
+              name: copy[5] || null,
+              period: copy[6] || null,
+              points: copy[7] || null,
+              requirements: copy[8] || null,
+              stage: copy[9] || null,
+              status: copy[10] || null,
+              title: copy[11] || null,
+              year: copy[12] || null,
+              canDelete: true,
+          };
+  
+          const plannedCourses = this.storeHelper.current("courses");
+          const targetCourseIndex = plannedCourses.findIndex((c: { generatedId: any; }) => c.generatedId === course.generatedId);
+          
+          if (targetCourseIndex !== -1 && 
+             (course.year !== plannedCourses[targetCourseIndex].year || 
+             course.period !== plannedCourses[targetCourseIndex].period)) {
+              this.storeHelper.findAndDelete("courses", plannedCourses[targetCourseIndex].generatedId);
+              this.storeHelper.add("courses", course);
+              console.log(this.storeHelper.current("courses"));
           }
-        }
+  
+      } catch (error) {
+          // Handle the error here
+          console.error('Failed to load course:', error);
       }
-        })
-      })
-    }
+  }
+  
 
     private getSemesterFromDb(courseDbId: string) {
       return new Promise<any>((resolve) => {

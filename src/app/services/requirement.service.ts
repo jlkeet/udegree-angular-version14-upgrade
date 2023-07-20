@@ -4,6 +4,7 @@ import { CourseStatus } from '../models';
 import { RequirementType } from '../models/requirement.enum';
 import { DepartmentService } from './department.service';
 import { FacultyService } from './faculty.service';
+import { CourseService } from './courses';
 
 export interface IRequirement {
   type: RequirementType;
@@ -24,7 +25,7 @@ export interface IRequirement {
   aboveStage?: number;
   general?: boolean;
   futher?: boolean;
-  flags?: string[];
+  flags?: any;
   complex?: IRequirement[];
 }
 
@@ -49,7 +50,7 @@ export class RequirementService {
 
   constructor(
     private departmentService: DepartmentService,
-    private facultyService: FacultyService
+    private facultyService: FacultyService,
     ) { }
 
   private intersection<T>(array1: T[], array2: T[]): T[] {
@@ -130,9 +131,7 @@ export class RequirementService {
   }
 
   public requirementCheck(requirement: IRequirement, planned: ICourse[]) {
-
     if (this.isComplex(requirement)) {
-
       this.requirements = requirement.complex;
 
       let filled = requirement.complex!.map((subRequirement: IRequirement) => this.requirementFilled(subRequirement, planned))
@@ -204,17 +203,53 @@ export class RequirementService {
     return -1; // Check for errors, had to put this in to return a value to make code compile
   }
 
-  public requirementFilled(requirement: IRequirement, planned: ICourse[]): boolean {
+  // public requirementFilled(requirement: IRequirement, planned: ICourse[], course?: ICourse): boolean {
+  //   if (this.isComplex(requirement)) {
+  //     let filled = requirement.complex!.map((subRequirement: IRequirement) => this.requirementFilled(subRequirement, planned, course))
+  //       .filter((tested: boolean) => tested).length;
+  //    return filled >= requirement.required;
+  //   }  else {
+  //     return this.requirementCheck(requirement, planned) === requirement.required;
+  //   }
+  // }
+
+  public requirementFilled(requirement: IRequirement, planned: ICourse[], course?: ICourse): boolean {
     if (this.isComplex(requirement)) {
-
-      let filled = requirement.complex!.map((subRequirement: IRequirement) => this.requirementFilled(subRequirement, planned))
-        .filter((tested: boolean) => tested).length;
-
-     return filled >= requirement.required;
-    }  else {
-      return this.requirementCheck(requirement, planned) === requirement.required;
+        let filled = 0;
+        let subReqCheck;
+        for (let subRequirement of requirement.complex!) {
+            // check if it is a corequisite
+            if (subRequirement.flags && subRequirement.flags.isCorequesite) {
+                filled += this.corequisiteCheck(subRequirement, planned, course) ? 1 : 0;
+            } else {
+                // handle normal requirements
+                filled += this.requirementFilled(subRequirement, planned, course) ? 1 : 0;
+            }
+            subReqCheck = subRequirement.required
+        }
+        return filled >= subReqCheck;
+    } else {
+        return this.requirementCheck(requirement, planned) === requirement.required;
     }
+}
+
+
+public corequisiteCheck(subRequirement: IRequirement, planned: ICourse[], course?: ICourse): boolean {
+  for (let paper of subRequirement.papers) {
+      // Find the plannedCourse for the current paper
+      const plannedCourse = planned.find(coursePaper => coursePaper.name === paper);
+      // If the plannedCourse exists and its period and year match those of the corequisite requirement
+      // console.log(planned)
+      if (plannedCourse && subRequirement.flags.isCorequesite &&
+          plannedCourse.period === course.period && plannedCourse.year === course.year) {
+          return true;
+      }
   }
+  return false;
+}
+
+
+  
 
   // need to rework this to deal with certain rules
   // e.g. 3 different subjects faiils if given two different statuses
@@ -350,5 +385,15 @@ export class RequirementService {
     // .map((str: string) => str.toLowerCase())
     // .includes(flag.toLowerCase());
   }
+
+  public checkCoRequesiteFlag(requirement: IRequirement, flag: string): boolean {
+      // console.log(requirement)
+      if (requirement.flags !== undefined && requirement.flags.isCorequesite) {
+        return true;
+      } else {
+        return false;
+    }
+  }
+  
 
 }
