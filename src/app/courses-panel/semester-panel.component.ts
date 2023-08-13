@@ -93,7 +93,6 @@ export class SemesterPanel {
 
   public onDropModel(args: any) {
     // const [el, target, source] = args;
-
     // Extract all the info form the course and set it. The newPeriod and newYear are set from the target destination of the bag
     const droppedCourse = {
       id: Number(args.el.dataset.id),
@@ -120,7 +119,7 @@ export class SemesterPanel {
         this.courseEventService.raiseCourseMoved({
           courseId: droppedCourse.id,
           period: droppedCourse.newPeriod,
-          year: droppedCourse.newYear,
+          year: droppedCourse.newYear
         });
       }
     } else {
@@ -408,7 +407,6 @@ export class SemesterPanel {
   }
   
   private updateCourse(ref: any) {
-    console.log("firing")
     const courseRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses/${ref.id}`);
     updateDoc(courseRef, {
       year: this.savedNewYear,
@@ -440,10 +438,8 @@ export class SemesterPanel {
             course.period = currentSemester.period;
         }
     }
-
     // Update the courses in the store with their new semester assignments
     // this.storeHelper.update("courses", courses);
-    console.log(this.storeHelper.current("courses"));
 }
 
   public checkIfArrayIsUnique(myArray: any[]): boolean {

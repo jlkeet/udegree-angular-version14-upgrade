@@ -184,16 +184,20 @@ export class CourseService {
   // Note that this is also linked to semester-panel.component, called there to remove all courses when exiting semester.
 
   public async deselectCourseByName(courseObject: any) {
+
     let course: any;
+    course = courseObject; // gets rid of generatedId error issue, might have to fix later
   
-    if (courseObject.status !== 3) {
-      course = this.findPlanned(courseObject.name);
-    } else {
-      course = this.findFailed(courseObject.name);
-    }
-  
+    // if (courseObject.status !== 3) {
+    //   course = this.findPlanned(courseObject.name);
+    // } else {
+    //   course = this.findFailed(courseObject.name);
+    // }  
+
+    // console.log("Course Object:", courseObject);
+    // console.log("Course:", course);
+
     // this.dbCourses.setAuditLogDeleteCourse(courseName)
-  
     this.storeHelper.findAndDelete('courses', course);
     
     this.updateErrors();
@@ -507,7 +511,6 @@ export class CourseService {
              course.period !== plannedCourses[targetCourseIndex].period)) {
               this.storeHelper.findAndDelete("courses", plannedCourses[targetCourseIndex].generatedId);
               this.storeHelper.add("courses", course);
-              console.log(this.storeHelper.current("courses"));
           }
   
       } catch (error) {
@@ -585,9 +588,17 @@ export class CourseService {
     }
 
     public newSemester(): void {
+
+      this.semesters = this.storeHelper.current("semesters");
+
       if (this.selectedYear === 0) {
         this.selectedYear = 2023;
       }
+
+      this.nextSemesterCheck();
+
+
+
       const newSemester = {
         year: Number(this.selectedYear),
         period: Number(this.selectedPeriod),

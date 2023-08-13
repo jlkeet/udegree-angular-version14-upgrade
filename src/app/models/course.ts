@@ -19,6 +19,7 @@ export class CourseModel implements ICourse {
   public desc: string;
   public moreInfo?: string;
   public isError: boolean = false;
+  public generatedId: number;
 
   constructor(
     id: number,

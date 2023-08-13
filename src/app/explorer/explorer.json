@@ -7,78 +7,22 @@
         "info": "unknown",
         "forward": [
           "Accounting",
-          "Business Studies",
-          "Mathematics and Statistics"
+          "Finance"
         ],
         "backward": []
       },
       {
         "title": "Agricultural and Horticultural Science",
         "info": "unknown",
-        "forward": [
-          "Aquaculture Farmers",
-          "Chemical and Materials Engineers",
-          "Production Managers",
-          "Electronics Engineers",
-          "Geologists, Geophysicists and Hydrogeologists",
-          "Mining Engineers",
-          "Other Engineering Professionals",
-          "Industrial, Mechanical and Production Engineers",
-          "Engineering Managers",
-          "Mixed Crop and Livestock Farmers",
-          "Livestock Farmers",
-          "Construction Managers",
-          "Surveyors and Spatial Scientists",
-          "Manufacturers",
-          "Software and Applications Programmers",
-          "Telecommunications Engineering Professionals",
-          "Civil Engineering Professionals",
-          "ICT Support and Test Engineers",
-          "Interior Designers",
-          "Electrical Engineers",
-          "Crop Farmers",
-          "Architects and Landscape Architects"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Agribusiness",
-        "info": "unknown",
-        "forward": [
-          "Other Education Managers",
-          "Child Care Centre Managers",
-          "Counsellors",
-          "Primary School Teachers",
-          "Audiologists and Speech Pathologists/Therapists",
-          "Early Childhood (Pre-primary School) Teachers",
-          "Teachers of English to Speakers of Other Languages",
-          "Private Tutors and Teachers",
-          "Training and Development Professionals",
-          "Education Advisers and Reviewers",
-          "Middle School Teachers",
-          "University Lecturers and Tutors",
-          "School Principals",
-          "Special Education Teachers",
-          "Secondary School Teachers",
-          "Vocational Education Teachers",
-          "Ministers of Religion",
-          "Librarians"
-        ],
+        "forward": [],
         "backward": []
       },
       {
         "title": "Art History",
         "info": "unknown",
         "forward": [
-          "Policy and Planning Manager Intelligence and Policy Analysts",
-          "Archivists, Curators and Records Managers",
-          "Welfare, Recreation and Community Arts Workers",
-          "Health and Welfare Services Managers",
-          "Social Workers",
-          "Legislators",
-          "Social Professionals",
-          "Economists",
-          "Urban and Regional Planners"
+          "Architecture",
+          "Art History"
         ],
         "backward": []
       },
@@ -86,44 +30,30 @@
         "title": "Biology",
         "info": "unknown",
         "forward": [
-          "Land Economists and Valuers",
-          "ICT Sales Professionals",
-          "Human Resource Professionals",
-          "Other Specialist Managers",
-          "Public Relations Professionals",
-          "Chief Executives and Managing Directors",
-          "Advertising, Public Relations and Sales Managers",
-          "Supply, Distribution and Procurement Managers",
-          "General Managers",
-          "Commissioned Officers (Management)",
-          "Finance Managers",
-          "Other Information and Organisation Professionals",
-          "Management and Organisation Analysts",
-          "Financial Dealers",
-          "Financial Investment Advisers and Managers",
-          "Corporate Service Managers",
-          "Auditors, Company Secretaries and Corporate Treasurers",
-          "Advertising and Marketing Professionals",
-          "Accountants",
-          "Human Resource Managers",
-          "Technical Sales Representatives",
-          "Importers, Exporters and Wholesalers"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Business & Management",
-        "info": "unknown",
-        "forward": [
-          "Photographers",
-          "Fashion, Industrial and Jewellery Designers",
-          "Journalists and Other Writers",
-          "Visual Arts and Crafts Professionals",
-          "Artistic Directors, and Media Producers and Presenters",
-          "Authors, and Book and Script Editors",
-          "Music Professionals",
-          "Actors, Dancers and Other Entertainers",
-          "Film, Television, Radio and Stage Directors"
+          "Anthropology",
+          "Applied Behavior Analysis",
+          "Bioengineering",
+          "Bioinformatics",
+          "Bioinformatics and Computational Biology",
+          "Biosecurity and Conservation",
+          "Biotechnology",
+          "Cell and Molecular Bioscience",
+          "Ecology and Biodiversity",
+          "Environmental Science",
+          "Exercise Sciences",
+          "Health Sciences",
+          "Human Geography",
+          "Marine Science",
+          "Medical Imaging",
+          "Medicine",
+          "Neuroscience",
+          "Nursing",
+          "Optometry",
+          "Physiology",
+          "Psychology",
+          "Public Health",
+          "Speech Science",
+          "Sport and Exercise Science"
         ],
         "backward": []
       },
@@ -131,30 +61,62 @@
         "title": "Business Studies",
         "info": "unknown",
         "forward": [
-          "Life Scientists",
-          "Environmental Scientists",
-          "Actuaries, Mathematicians and Statisticians",
-          "Chemists, and Food and Wine Scientists",
-          "Agricultural and Forestry Scientists",
-          "Research and Development Managers",
-          "Other Natural and Physical Science Professionals"
+          "Accounting",
+          "Business Analytics",
+          "Economics",
+          "Innovation and Entrepreneurship",
+          "International Business",
+          "Management",
+          "Marketing",
+          "Operations and Supply Chain Management",
+          ""
         ],
         "backward": []
       },
       {
         "title": "Chemistry",
         "info": "unknown",
-        "forward": ["Psychologists"],
+        "forward": [
+          "Astrophysics",
+          "Bioengineering",
+          "Bioinformatics",
+          "Bioinformatics and Computational Biology",
+          "Biosecurity and Conservation",
+          "Biotechnology",
+          "Cell and Molecular Bioscience",
+          "Chemical and Materials Engineering",
+          "Chemistry",
+          "Earth Sciences",
+          "Ecology and Biodiversity",
+          "Energy Engineering",
+          "Engineering Science",
+          "Environmental Engineering",
+          "Environmental Science",
+          "Exercise Sciences",
+          "Geology",
+          "Health Sciences",
+          "Marine Science",
+          "Materials Science and Engineering",
+          "Medical Imaging",
+          "Medicine",
+          "Microbiology",
+          "Neuroscience",
+          "Nursing",
+          "Optometry",
+          "Physics",
+          "Physiology",
+          "Public Health",
+          "Speech Science",
+          "Sport and Exercise Science"
+      ],
         "backward": []
       },
       {
         "title": "Chinese",
         "info": "unknown",
         "forward": [
-          "Barristers",
-          "Solicitors",
-          "Judicial and Other Legal Professionals",
-          "Senior Non-commissioned Defence Force Members"
+          "Asian Studies",
+          "Chinese"
         ],
         "backward": []
       },
@@ -162,55 +124,25 @@
         "title": "Classical Studies",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Ancient History",
+          "Classical Studies",
+          "History",
+          "Latin",
+          "Middle Eastern Studies"
         ],
         "backward": []
       },
       {
         "title": "Cook Islands Māori",
         "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Core Skills",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
+        "forward": [],
         "backward": []
       },
       {
         "title": "Dance",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Dance Studies"
         ],
         "backward": []
       },
@@ -218,13 +150,12 @@
         "title": "Design and Visual Communication (Graphics)",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Architecture",
+          "Building Science",
+          "Construction Engineering",
+          "Innovation and Entrepreneurship",
+          "Mechanical Engineering",
+          "Urban Planning"
         ],
         "backward": []
       },
@@ -232,13 +163,10 @@
         "title": "Digital Technologies",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Computer Science",
+          "Electrical and Electronic Engineering",
+          "Information Systems",
+          "Software Engineering"
         ],
         "backward": []
       },
@@ -246,41 +174,28 @@
         "title": "Drama",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
+          "Dance Studies",
+          "Film, Television and Media Studies",
           "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Music",
+          "Screen Production"
         ],
         "backward": []
       },
       {
         "title": "Early Childhood Education",
         "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
+        "forward": [],
         "backward": []
       },
       {
         "title": "Earth and Space Science",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Earth Sciences",
+          "Geography",
+          "Geology",
+          "Marine Science"
         ],
         "backward": []
       },
@@ -288,27 +203,17 @@
         "title": "Economics",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Education For Sustainability",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Business Analytics",
+          "Development Studies",
+          "Economics",
+          "Finance",
+          "Innovation and Entrepreneurship",
+          "International Business",
+          "Management",
+          "Marketing",
+          "Operations and Supply Chain Management",
+          "Planning",
+          "Statistics"
         ],
         "backward": []
       },
@@ -316,55 +221,17 @@
         "title": "English",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "English for Academic Purposes",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "ESOL",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Māori Performing Arts",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Communication",
+          "Education",
+          "English",
+          "Film, Television and Media Studies",
+          "History",
+          "Law",
+          "Linguistics",
+          "Music",
+          "Philosophy",
+          "Screen Production",
+          "Women's and Gender Studies"
         ],
         "backward": []
       },
@@ -372,13 +239,9 @@
         "title": "French",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "European Studies",
+          "French",
+          "Linguistics"
         ],
         "backward": []
       },
@@ -386,13 +249,26 @@
         "title": "Geography",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Biosecurity and Conservation",
+          "Chinese",
+          "Development Studies",
+          "Earth Sciences",
+          "Ecology and Biodiversity",
+          "Environmental Engineering",
+          "Environmental Science",
+          "French",
+          "Geography",
+          "Global Politics and Human Rights",
+          "Human Geography",
+          "Italian",
+          "Japanese",
+          "Korean",
+          "Middle Eastern Studies",
+          "Pacific Studies",
+          "Planning",
+          "Politics and International Relations",
+          "Spanish",
+          "Urban Planning"
         ],
         "backward": []
       },
@@ -400,41 +276,9 @@
         "title": "German",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Hangarau",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Kaupapa Hauora",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "European Studies",
+          "German",
+          "Linguistics"
         ],
         "backward": []
       },
@@ -442,13 +286,9 @@
         "title": "Health",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Health Sciences",
+          "Nursing",
+          "Public Health"
         ],
         "backward": []
       },
@@ -456,41 +296,45 @@
         "title": "History",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Ancient History",
+          "Architecture",
+          "Art History",
+          "Asian Studies",
+          "Chinese",
+          "Classical Studies",
+          "English",
+          "European Studies",
+          "French",
+          "German",
+          "Global Politics and Human Rights",
+          "History",
+          "Indigenous Studies",
+          "Italian",
+          "Japanese",
+          "Korean",
+          "Latin",
+          "Law",
+          "Middle Eastern Studies",
+          "Pacific Studies",
+          "Philosophy",
+          "Politics and International Relations",
+          "Spanish",
+          "Te Reo Māori"
         ],
         "backward": []
       },
       {
         "title": "Home Economics",
         "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
+        "forward": [],
         "backward": []
       },
       {
         "title": "Japanese",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Asian Studies",
+          "Japanese"
         ],
         "backward": []
       },
@@ -498,13 +342,7 @@
         "title": "Korean",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Korean"
         ],
         "backward": []
       },
@@ -512,13 +350,9 @@
         "title": "Latin",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Ancient History",
+          "Classical Studies",
+          "Latin"
         ],
         "backward": []
       },
@@ -526,55 +360,8 @@
         "title": "Legal Studies",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Lea Faka-Tonga",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Classical Studies",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Classical Studies",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Criminology",
+          "Law"
         ],
         "backward": []
       },
@@ -582,13 +369,45 @@
         "title": "Mathematics and Statistics",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Accounting",
+          "Applied Mathematics",
+          "Architecture",
+          "Astrophysics",
+          "Aviation",
+          "Bioinformatics",
+          "Bioinformatics and Computational Biology",
+          "Biotechnology",
+          "Building Science",
+          "Business Analytics",
+          "Cell and Molecular Bioscience",
+          "Chemical and Materials Engineering",
+          "Chemistry",
+          "Computer Science",
+          "Construction Engineering",
+          "Data Science",
+          "Economics",
+          "Education",
+          "Electrical and Electronic Engineering",
+          "Energy Engineering",
+          "Engineering Science",
+          "Finance",
+          "Geography",
+          "Geology",
+          "Information Systems",
+          "International Business",
+          "Management",
+          "Materials Science and Engineering",
+          "Mathematics",
+          "Mechanical Engineering",
+          "Microbiology",
+          "Operations and Supply Chain Management",
+          "Physics",
+          "Planning",
+          "Psychology",
+          "Software Engineering",
+          "Statistics",
+          "Urban Planning"
+
         ],
         "backward": []
       },
@@ -596,13 +415,11 @@
         "title": "Media Studies",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Communication",
+          "English",
+          "Film, Television and Media Studies",
+          "Marketing",
+          "Screen Production"
         ],
         "backward": []
       },
@@ -610,13 +427,7 @@
         "title": "Māori Performing Arts",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Indigenous Studies"
         ],
         "backward": []
       },
@@ -624,27 +435,8 @@
         "title": "Music",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Ngā Toi",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Dance Studies",
+          "Music"
         ],
         "backward": []
       },
@@ -652,27 +444,7 @@
         "title": "Pacific Studies",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Pāngarau",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Pacific Studies"
         ],
         "backward": []
       },
@@ -680,13 +452,8 @@
         "title": "Physical Education",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Exercise Sciences",
+          "Sport and Exercise Science"
         ],
         "backward": []
       },
@@ -694,13 +461,31 @@
         "title": "Physics",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Applied Mathematics",
+          "Astrophysics",
+          "Aviation",
+          "Bioengineering",
+          "Building Science",
+          "Chemical and Materials Engineering",
+          "Chemistry",
+          "Computer Science",
+          "Construction Engineering",
+          "Data Science",
+          "Electrical and Electronic Engineering",
+          "Energy Engineering",
+          "Engineering Science",
+          "Environmental Engineering",
+          "Health Sciences",
+          "Materials Science and Engineering",
+          "Mathematics",
+          "Mechanical Engineering",
+          "Medical Imaging",
+          "Medicine",
+          "Optometry",
+          "Physics",
+          "Physiology",
+          "Speech Science"
+
         ],
         "backward": []
       },
@@ -708,83 +493,46 @@
         "title": "Psychology",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Pūtaiao",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Applied Behavior Analysis",
+          "Criminology",
+          "Education",
+          "Linguistics",
+          "Neuroscience",
+          "Psychology",
+          "Social Work",
+          "Sociology",
+          "Women's and Gender Studies"
         ],
         "backward": []
       },
       {
         "title": "Religious Studies",
         "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
+        "forward": [],
         "backward": []
       },
       {
         "title": "Samoan",
         "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
+        "forward": [],
         "backward": []
       },
       {
         "title": "Science",
         "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
+        "forward": [],
         "backward": []
       },
       {
         "title": "Social Studies",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Anthropology",
+          "Global Politics and Human Rights",
+          "Indigenous Studies",
+          "Social Work",
+          "Sociology",
+          "Te Reo Māori"
         ],
         "backward": []
       },
@@ -792,13 +540,15 @@
         "title": "Sociology",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Anthropology",
+          "Applied Behavior Analysis",
+          "Communication",
+          "Criminology",
+          "Development Studies",
+          "Human Geography",
+          "Social Work",
+          "Sociology",
+          "Women's and Gender Studies"
         ],
         "backward": []
       },
@@ -806,41 +556,7 @@
         "title": "Spanish",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Te Reo Māori",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Te Reo Rangatira",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Spanish"
         ],
         "backward": []
       },
@@ -848,41 +564,8 @@
         "title": "Technology",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Tikanga ā-Iwi",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
-        ],
-        "backward": []
-      },
-      {
-        "title": "Vagahau Niue",
-        "info": "unknown",
-        "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Aviation",
+          "Biotechnology"
         ],
         "backward": []
       },
@@ -890,13 +573,7 @@
         "title": "Visual Arts",
         "info": "unknown",
         "forward": [
-          "ICT Business and Systems analysts",
-          "Database and Systems Administrators, and ICT Security Specialists",
-          "Multimedia Specialists and Web Developers",
-          "ICT Trainers",
-          "ICT Managers",
-          "Computer Network Professionals",
-          "Graphic and Web Designers, and Illustrators"
+          "Art History"
         ],
         "backward": []
       }
@@ -919,16 +596,6 @@
           "History",
           "Classical Studies",
           "Latin"
-        ]
-      },
-      {
-        "title": "Biological Sciences",
-        "backward": [
-          "Biology",
-          "Mathematics and Statistics",
-          "Chemistry",
-          "Geography",
-          "Digital Technologies"
         ]
       },
       {
@@ -989,23 +656,343 @@
         ]
       },
       {
-        "title": "Food Science and Nutrition",
+        "title": "Aviation",
         "backward": [
-          "Chemistry",
-          "Biology",
           "Physics",
           "Mathematics and Statistics",
+          "Technology"
+        ]
+      },
+      {
+        "title": "Bioengineering",
+        "backward": [
+          "Biology",
+          "Chemistry",
+          "Physics"
+        ]
+      },
+      {
+        "title": "Bioinformatics",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry"
+        ]
+      },
+      {
+        "title": "Bioinformatics and Computational Biology",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry"
+        ]
+      },
+      {
+        "title": "Biosecurity and Conservation",
+        "backward": [
+          "Biology",
+          "Chemistry",
+          "Geography"
+        ]
+      },
+      {
+        "title": "Biotechnology",
+        "backward": [
+          "Biology",
+          "Chemistry",
+          "Mathematics and Statistics"
+        ]
+      },
+      {
+        "title": "Building Science",
+        "backward": [
+          "Physics",
+          "Mathematics and Statistics",
+          "Visual Communication"
+        ]
+      },
+      {
+        "title": "Biological Sciences",
+        "backward": [
+          "Biology"
+        ]
+      },
+      {
+        "title": "Business Analytics",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
           "Digital Technologies"
         ]
       },
       {
-        "title": "Geographic Information Science",
+        "title": "Cell and Molecular Bioscience",
         "backward": [
-          "Earth and Space Science",
-          "Physics",
+          "Biology",
           "Mathematics and Statistics",
-          "Digital Technologies",
-          "Geography"
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Chemical and Materials Engineering",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Chemistry",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Chinese",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Classical Studies",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Communication",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Computer Science",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Construction Engineering",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Criminology",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Dance Studies",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Data Science",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Development Studies",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Earth Sciences",
+        "backward": [
+          "Biology",
+          "Mathematics and Statistics",
+          "Chemistry",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Food Science and Nutrition",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Ecology and Biodiversity",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Economics",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Education",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Electrical and Electronic Engineering",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Energy Engineering",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Engineering Science",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "English",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Environmental Engineering",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Environmental Science",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "European Studies",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Exercise Sciences",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Film, Television and Media Studies",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Finance",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "Finance",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
+        ]
+      },
+      {
+        "title": "French",
+        "backward": [
+          "Mathematics and Statistics",
+          "Economics",
+          "Business Studies"
         ]
       },
       {
@@ -1029,7 +1016,225 @@
         ]
       },
       {
+        "title": "German",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Global Politics and Human Rights",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Health Sciences",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "History",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Human Geography",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Indigenous Studies",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Information Systems",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Innovation and Entrepreneurship",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "International Business",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Human Geography",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Italian",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Human Geography",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Japanese",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Korean",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Latin",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Law",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Linguistics",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Management",
+        "backward": [
+          "Chemistry",
+          "Earth and Space Science",
+          "Physics",
+          "Mathematics and Statistics",
+          "Geography",
+          "Digital Technologies"
+        ]
+      },
+      {
         "title": "Marine Science",
+        "backward": [
+          "Biology",
+          "Chemistry",
+          "Earth and Space Science",
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Marketing",
+        "backward": [
+          "Biology",
+          "Chemistry",
+          "Earth and Space Science",
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Materials Science and Engineering",
         "backward": [
           "Biology",
           "Chemistry",
@@ -1046,7 +1251,97 @@
         ]
       },
       {
-        "title": "Physics",
+        "title": "Mechanical Engineering",
+        "backward": [
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Media, Film and Television",
+        "backward": [
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Medical Imaging",
+        "backward": [
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },      {
+        "title": "Mathematics",
+        "backward": [
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Medicine",
+        "backward": [
+          "Physics",
+          "Earth and Space Science",
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Microbiology",
+        "backward": [
+          "Physics",
+          "Earth and Space Science",
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Middle Eastern Studies",
+        "backward": [
+          "Physics",
+          "Earth and Space Science",
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Medicine",
+        "backward": [
+          "Physics",
+          "Earth and Space Science",
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Music",
+        "backward": [
+          "Physics",
+          "Earth and Space Science",
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Neuroscience",
+        "backward": [
+          "Physics",
+          "Earth and Space Science",
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Nursing",
+        "backward": [
+          "Physics",
+          "Earth and Space Science",
+          "Mathematics and Statistics",
+          "Digital Technologies"
+        ]
+      },
+      {
+        "title": "Operations and Supply Chain Management",
         "backward": [
           "Physics",
           "Earth and Space Science",

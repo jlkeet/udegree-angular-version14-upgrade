@@ -89,7 +89,7 @@ export class SamplePlanService {
         });
       }
       })
-      .then((courseDb) => {
+      .then(() => {
         // Notice we return the next promise here
         return this.getCourseFromDb(courseDbId);
       })
@@ -177,7 +177,6 @@ export class SamplePlanService {
           "courses",
           courseDbId
         );
-
         if (res && res["year"]) {
           return res["year"];
         } else {

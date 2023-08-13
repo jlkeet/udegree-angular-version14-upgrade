@@ -51,10 +51,10 @@ export class StoreHelper {
   public findAndUpdate(prop: keyof State, state: ICourse) {
     const currentState = this.store.getState();
     const collection = currentState[prop];
-
+    if (state.generatedId) {
     this.store.setState(
       Object.assign({}, currentState, {
-        [prop]: collection.map((item: { id: any; generatedId: any; }) => {
+        [prop]: collection.map((item: { id: number; generatedId: number; }) => {
           // skip if this is not the droid we are looking for
           if (item.id !== state.id) {
             return item;
@@ -62,11 +62,15 @@ export class StoreHelper {
           if (item.generatedId !== state.generatedId) {
             return item;
           }
+          console.log(state.generatedId)
+          console.log(item.generatedId)
           // if it is, update it
           return Object.assign({}, item, state);
         })
       })
     );
+    } else {
+    }
   }
 
   public findAndDelete(prop: keyof State, course: any) {

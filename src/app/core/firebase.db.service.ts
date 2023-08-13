@@ -35,7 +35,6 @@ export class FirebaseDbService {
       if (this.auth.currentUser && this.auth.currentUser.email) {  
       const docRef = doc(this.db, `${firstCollection}/${this.auth.currentUser.email}/${secondCollection}/${courseDbId}`);
       const docSnap = await getDoc(docRef);
-  
       if (docSnap.exists()) {
         return Promise.resolve(docSnap.data());
       } else {
