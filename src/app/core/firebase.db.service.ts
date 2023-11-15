@@ -1,7 +1,7 @@
 import { EventEmitter, Injectable, Output } from "@angular/core";
 import { Auth, getAuth } from '@angular/fire/auth';
 import { FirebaseUserModel } from "./user.model";
-import { Firestore, addDoc, collection, doc, getDoc, getDocs, getFirestore, setDoc } from '@angular/fire/firestore';
+import { Firestore, addDoc, collection, doc, getDoc, getDocs, getFirestore, setDoc, updateDoc } from '@angular/fire/firestore';
 import { StoreHelper } from "../services";
 import { AdminExportService } from "../services/admin-export.service";
 import { initializeApp } from "@angular/fire/app";
@@ -63,14 +63,24 @@ export class FirebaseDbService {
     }
   }
   
-  async addSelection(email: any, collectionName: any, collectionData: any, document: any) {
+  async addSelection(email: string, collectionName: string, collectionData: any, document: string) {
     try {
-      const collectionRef = collection(this.db, `users/${email}/${document}`);
-      await addDoc(collectionRef, collectionData);
+      const collectionRef = collection(this.db, `users/${email}/${collectionName}`);
+      // Create the document with the initial data
+      const docRef = await addDoc(collectionRef, collectionData);
+      // Now, update the document with its ID
+      await updateDoc(docRef, {
+        id: docRef.id // This adds the ID to the document's data
+      });
+      console.log('Document written with ID: ', docRef.id);
+      console.log(collectionData)
+      return docRef.id; // Return the new document's ID so it can be used
     } catch (err) {
-      console.log('Error adding document:', err);
+      console.error('Error adding document:', err);
+      throw err; // It's better to throw the error so you can handle it in the calling code
     }
   }
+  
 
   async getID(email: any, collectionName: string, storeHelperName: string) {
     try {

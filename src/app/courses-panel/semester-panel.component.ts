@@ -232,7 +232,16 @@ export class SemesterPanel {
     });
   }
 
-  public deleteSemester() {
+  public async deleteSemester(semester: any) {
+
+    const userSemQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semester`), where("both", "==", semester.both));
+    const snapshot = await getDocs(userSemQuery);
+  
+    snapshot.forEach((ref) => {
+      const semRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semester/${ref.id}`);
+      deleteDoc(semRef);
+    });
+
     this.courseService.updateSemesterCheck();
     this.courses.forEach((course: ICourse) =>
       this.courseService.deselectCourseByName(course)

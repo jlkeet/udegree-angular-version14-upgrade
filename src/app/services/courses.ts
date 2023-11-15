@@ -363,6 +363,7 @@ export class CourseService {
   }
 
   public async loadPlanFromDb() {
+    this.addSemesterFromDb();
 
     this.authService.authState.subscribe(async (user: any) => {
       
@@ -381,7 +382,6 @@ export class CourseService {
             // Check to see if documents exist in the courses collection
             coursesSnapshot.forEach((doc) => {
               // Loop to get all the ids of the docs
-              this.addSemesterFromDb(doc.id);
               this.loadCourseFromDb(doc.id); // Call to loading the courses on the screen, by id
             });
           } else {
@@ -518,76 +518,58 @@ export class CourseService {
           console.error('Failed to load course:', error);
       }
   }
-  
 
-    private getSemesterFromDb(courseDbId: string) {
-      return new Promise<any>((resolve) => {
-        const semesterFromDb = {
-          year:
-            this.dbCourses.getCollection("users", "courses", courseDbId).then( (res) => {resolve((res["year"]))} )
-        };
-      });
-    }
+  private async getSemesterFromDb(semesterDbId: string): Promise<number> {
+    const res = await this.dbCourses.getCollection("users", "semesters", semesterDbId);
+    return res.year; // Assuming 'year' is a number
+  }
   
-    // This function gets the semester period from the course
-  
-    private getPeriodFromDb(courseDbId: string) {
-      return new Promise<any>((resolve) => {
-        const periodFromDb = {
-          period: Number(
-            this.dbCourses.getCollection("users", "courses", courseDbId).then( (res) => {resolve((res["period"]))} )
-          ),
-        };
-      });
-    }
+  private async getPeriodFromDb(periodDbId: string): Promise<number> {
+    const res = await this.dbCourses.getCollection("users", "semesters", periodDbId);
+    return res.period; // Assuming 'period' is a number
+  }
 
-    public addSemesterFromDb(courseDbId: string) {
-    
+
+    public async addSemesterFromDb() {
       var newSemesterFromDb = { year: Number(), period: Number(), both: String() };
   
-      // The following code is super gumby, because of the promised value not being returned before executing the next lines
-      // I put everything into the promise on line 194 by chaining then() functions. It works though.
+      const userDocRef = doc(this.dbCourses.db, 'users', this.authService.auth.currentUser.email);
+      const userDocSnap = await getDoc(userDocRef);
   
-      this.getSemesterFromDb(courseDbId)
-        .then((theYear) => {
-          this.selectedYear = theYear;
-        })
-        .then(
-          () => (newSemesterFromDb = { year: this.selectedYear, period: null as any, both: null as any})
-        ); // Updates the year value withing the newSemesterFromDb variable
-      this.getPeriodFromDb(courseDbId)
-        .then(
-          // This call is the first chained then
-          (thePeriod) => (this.selectedPeriod = thePeriod)
-        )
-        .then(
-          () =>
-            (newSemesterFromDb = {
-              year: this.selectedYear,
-              period: this.selectedPeriod,
-              both: this.selectedYear + " " + this.selectedPeriod
-            }
-          )
-        )
-        .then(() => {
-          // Updates the period value withing the newSemesterFromDb variable
-          if (this.canAddSemester(newSemesterFromDb)) {
-            // Here is the rest of the code to execute within the chained then statements. So that it can occur within the promise
-            this.semesters.push(newSemesterFromDb);
-            this.semesters.sort((s1, s2) =>
-              s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year
-            );
-           // this.dbCourses.addSelection(this.email, "semester", newSemesterFromDb, "semesters")
-            this.storeHelper.update("semesters", this.semesters);
-            this.addingSemester = false; // Reverts the semster panel back to neutral
-            this.selectedPeriod = Period.One; // Revert to the default value
-            this.selectedYear++; // Increment the selected year so that it defaults to the next one, this avoids confusion if accidentally trying to add the same period and year, probably worth putting in a catch on the error at some point
-          } else {
+      if (userDocSnap.exists()) {
+          const semestersQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semesters`));
+          const semestersSnapshot = await getDocs(semestersQuery);  // Fetch data directly from the server
+  
+          if (!semestersSnapshot.empty) {
+              for (let doc of semestersSnapshot.docs) {
+                  this.selectedYear = await this.getSemesterFromDb(doc.id);
+                  this.selectedPeriod = await this.getPeriodFromDb(doc.id);
+  
+                  newSemesterFromDb = {
+                      year: this.selectedYear,
+                      period: this.selectedPeriod,
+                      both: this.selectedYear + " " + this.selectedPeriod
+                  };
+  
+                  if (this.canAddSemester(newSemesterFromDb)) {
+                      this.semesters.push(newSemesterFromDb);
+                      this.semesters.sort((s1, s2) => s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year);
+                      // this.dbCourses.addSelection(this.authService.auth.currentUser.email, "semester", newSemesterFromDb, "semesters")
+                      this.storeHelper.update("semesters", this.semesters);
+                      this.addingSemester = false;
+                      this.selectedPeriod = Period.One;
+                      this.selectedYear++;
+                  } else {
+                      console.log("Not working");
+                  }
+              }
           }
-        });
-    }
+      }
+  }
+  
 
     public newSemester(): void {
+      // console.log("firing")
 
       this.semesters = this.storeHelper.current("semesters");
 
@@ -610,7 +592,6 @@ export class CourseService {
           s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year
         );
         this.storeHelper.update("semesters", this.semesters);
-       // this.dbCourses.addSelection(this.email, "semester", newSemester, "semesters")
         this.addingSemester = false;
         this.nextSemesterCheck();
       } else {
@@ -618,19 +599,19 @@ export class CourseService {
         const newSemester = {
           year: Number(this.selectedYear),
           period: Number(this.selectedPeriod),
-          both: this.selectedYear + " " + this.selectedPeriod
+          both: this.selectedYear + " " + this.selectedPeriod,
         };
         this.semesters.push(newSemester);
         this.semesters.sort((s1, s2) =>
           s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year
         );
         this.storeHelper.update("semesters", this.semesters);
-  
-        // this.dbCourses.addSelection(this.email, "semester", newSemester, "semesters")
         // this.dbCourses.setAuditLogSemester(newSemester);
   
         this.addingSemester = false;
       }
+     this.dbCourses.addSelection(this.authService.auth.currentUser.email, "semester", newSemester, "semesters")
+    //  console.log(semId)
     }
   
 

@@ -62,8 +62,6 @@ export class StoreHelper {
           if (item.generatedId !== state.generatedId) {
             return item;
           }
-          console.log(state.generatedId)
-          console.log(item.generatedId)
           // if it is, update it
           return Object.assign({}, item, state);
         })
@@ -84,7 +82,6 @@ export class StoreHelper {
     );
   }
   
-
   public deleteAll() {
     this.store.purge()
   }

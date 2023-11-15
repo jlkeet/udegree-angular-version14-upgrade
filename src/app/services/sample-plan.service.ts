@@ -134,8 +134,8 @@ export class SamplePlanService {
         () =>
           (newSemesterFromDb = {
             year: this.selectedYear,
-            period: null as any,
-            both: null as any,
+            period: 0,
+            both: "",
           })
       ); // Updates the year value withing the newSemesterFromDb variable
     this.getPeriodFromDb(courseDbId)
@@ -151,7 +151,7 @@ export class SamplePlanService {
             both: this.selectedYear + " " + this.selectedPeriod,
           })
       )
-      .then(() => {
+      .then(async () => {
         // Updates the period value withing the newSemesterFromDb variable
         if (this.canAddSemester(newSemesterFromDb)) {
           // Here is the rest of the code to execute within the chained then statements. So that it can occur within the promise
@@ -381,11 +381,14 @@ export class SamplePlanService {
   public yearPeriodChecker(addedCourses: number) {
     if (addedCourses > 0) {
       if (addedCourses % 8 == 0) {
+        this.addNewSemester(this.year, this.period);
         this.newYear();
       }
 
-      if (addedCourses % 4 == 0) {
+      if (addedCourses % 4 == 0 || addedCourses == 0) {
+        this.addNewSemester(this.year, this.period);
         this.periodSwitcheroo();
+
       }
     }
   }
@@ -397,4 +400,18 @@ export class SamplePlanService {
       return false;
     }
   }
+
+  public async addNewSemester(year: Number, period: Number) {
+    let newSemester = {
+      year: year,
+      period: period,
+      both: year + " " + period,
+    }
+
+    try {
+      this.dbCourseService.addSelection(this.authService.auth.currentUser.email, "semester", newSemester, "semesters");
+    } catch (error) {
+        console.error("Error adding new semester:", error);
+    }
+}
 }
