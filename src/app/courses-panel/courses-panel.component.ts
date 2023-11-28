@@ -241,7 +241,7 @@ export class CoursesPanel {
   //         );
   //        // this.dbCourses.addSelection(this.email, "semester", newSemesterFromDb, "semesters")
   //         this.storeHelper.update("semesters", this.semesters);
-  //         this.addingSemester = false; // Reverts the semster panel back to neutral
+  //         this.addingSemester = false; // Reverts the semester panel back to neutral
   //         this.selectedPeriod = Period.One; // Revert to the default value
   //         this.selectedYear++; // Increment the selected year so that it defaults to the next one, this avoids confusion if accidentally trying to add the same period and year, probably worth putting in a catch on the error at some point
   //       } else {

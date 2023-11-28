@@ -363,13 +363,14 @@ export class CourseService {
   }
 
   public async loadPlanFromDb() {
-    this.addSemesterFromDb();
 
+    this.addSemesterFromDb();
     this.authService.authState.subscribe(async (user: any) => {
-      
+
       if (user.email) {
         this.adminService.getAdmin(user.email);
         this.adminService.getExportStatus(user.email);
+
         
         const userDocRef = doc(this.dbCourses.db, 'users', user.email);
         const userDocSnap = await getDoc(userDocRef);
@@ -520,12 +521,12 @@ export class CourseService {
   }
 
   private async getSemesterFromDb(semesterDbId: string): Promise<number> {
-    const res = await this.dbCourses.getCollection("users", "semesters", semesterDbId);
+    const res = await this.dbCourses.getCollection("users", "semester", semesterDbId);
     return res.year; // Assuming 'year' is a number
   }
   
   private async getPeriodFromDb(periodDbId: string): Promise<number> {
-    const res = await this.dbCourses.getCollection("users", "semesters", periodDbId);
+    const res = await this.dbCourses.getCollection("users", "semester", periodDbId);
     return res.period; // Assuming 'period' is a number
   }
 
@@ -537,7 +538,7 @@ export class CourseService {
       const userDocSnap = await getDoc(userDocRef);
   
       if (userDocSnap.exists()) {
-          const semestersQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semesters`));
+          const semestersQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semester`));
           const semestersSnapshot = await getDocs(semestersQuery);  // Fetch data directly from the server
   
           if (!semestersSnapshot.empty) {

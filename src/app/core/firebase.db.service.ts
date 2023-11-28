@@ -72,8 +72,8 @@ export class FirebaseDbService {
       await updateDoc(docRef, {
         id: docRef.id // This adds the ID to the document's data
       });
-      console.log('Document written with ID: ', docRef.id);
-      console.log(collectionData)
+      // console.log('Document written with ID: ', docRef.id);
+      // console.log(collectionData)
       return docRef.id; // Return the new document's ID so it can be used
     } catch (err) {
       console.error('Error adding document:', err);
