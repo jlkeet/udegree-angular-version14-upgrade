@@ -362,38 +362,67 @@ export class CourseService {
     this.courseCounter--;
   }
 
-  public async loadPlanFromDb() {
+  // public async loadPlanFromDb() {
 
-    this.addSemesterFromDb();
-    this.authService.authState.subscribe(async (user: any) => {
+  //   this.addSemesterFromDb();
+  //   this.authService.authState.subscribe(async (user: any) => {
 
-      if (user.email) {
-        this.adminService.getAdmin(user.email);
-        this.adminService.getExportStatus(user.email);
+  //     if (user.email) {
+  //       this.adminService.getAdmin(user.email);
+  //       this.adminService.getExportStatus(user.email);
 
         
-        const userDocRef = doc(this.dbCourses.db, 'users', user.email);
-        const userDocSnap = await getDoc(userDocRef);
+  //       const userDocRef = doc(this.dbCourses.db, 'users', user.email);
+  //       const userDocSnap = await getDoc(userDocRef);
     
-        if (userDocSnap.exists()) {
-          const coursesQuery = query(collection(this.dbCourses.db, `users/${user.email}/courses`));
-          const coursesSnapshot = await getDocs(coursesQuery);
+  //       if (userDocSnap.exists()) {
+  //         const coursesQuery = query(collection(this.dbCourses.db, `users/${user.email}/courses`));
+  //         const coursesSnapshot = await getDocs(coursesQuery);
     
-          if (!coursesSnapshot.empty) {
-            // Check to see if documents exist in the courses collection
-            coursesSnapshot.forEach((doc) => {
-              // Loop to get all the ids of the docs
-              this.loadCourseFromDb(doc.id); // Call to loading the courses on the screen, by id
-            });
-          } else {
-            this.storeHelper.deleteAll();
-            this.storeHelper.update("semesters", []);
-            this.progressPanelService.setFullyPlanned(false);
+  //         if (!coursesSnapshot.empty) {
+  //           // Check to see if documents exist in the courses collection
+  //           coursesSnapshot.forEach((doc) => {
+  //             // Loop to get all the ids of the docs
+  //             this.loadCourseFromDb(doc.id); // Call to loading the courses on the screen, by id
+  //           });
+  //         } else {
+  //           this.storeHelper.deleteAll();
+  //           this.storeHelper.update("semesters", []);
+  //           this.progressPanelService.setFullyPlanned(false);
+  //         }
+  //       }
+  //     }
+  //   });
+  //     }
+
+  public async loadPlanFromDb() {
+    try {
+      const userEmail = this.authService.auth.currentUser.email;
+      const userDocRef = doc(this.dbCourses.db, 'users', userEmail);
+      const userDocSnap = await getDoc(userDocRef);
+  
+      if (userDocSnap.exists()) {
+        const coursesQuery = query(collection(this.dbCourses.db, `users/${userEmail}/courses`));
+        const coursesSnapshot = await getDocs(coursesQuery);
+  
+        if (!coursesSnapshot.empty) {
+          for (let doc of coursesSnapshot.docs) {
+            await this.loadCourseFromDb(doc.id); // Await each course load
           }
+        } else {
+          this.storeHelper.deleteAll();
+          this.storeHelper.update("semesters", []);
+          this.progressPanelService.setFullyPlanned(false);
         }
       }
-    });
-      }
+    } catch (error) {
+      console.error('Error loading plan from DB:', error);
+      // Handle the error appropriately
+    }
+  }
+
+  
+
     
       public async loadPlanFromDbAfterDel() {
         if (this.authService.auth.currentUser.email !== undefined) {
@@ -424,30 +453,58 @@ export class CourseService {
         });
       }
     
-      private loadCourseFromDb(courseDbId: string) {
-        const courseDb = this.getCourseFromDb(courseDbId).then((copy) => {
-          Object.assign({
-            department: copy[0],
-            desc: copy[1],
-            faculties: copy[2],
-            id: copy[3],
-            generatedId: copy[4],
-            name: copy[5],
-            period: copy[6],
-            points: copy[7],
-            requirements: copy[8],
-            stage: copy[9],
-            status: copy[10],
-            title: copy[11],
-            year: copy[12],
+      // private loadCourseFromDb(courseDbId: string) {
+      //   const courseDb = this.getCourseFromDb(courseDbId).then((copy) => {
+      //     Object.assign({
+      //       department: copy[0],
+      //       desc: copy[1],
+      //       faculties: copy[2],
+      //       id: copy[3],
+      //       generatedId: copy[4],
+      //       name: copy[5],
+      //       period: copy[6],
+      //       points: copy[7],
+      //       requirements: copy[8],
+      //       stage: copy[9],
+      //       status: copy[10],
+      //       title: copy[11],
+      //       year: copy[12],
+      //       canDelete: true,
+      //     });
+      //     this.getCourseFromDb(courseDbId).then((res) => {
+      //         this.storeHelper.addIfNotExists("courses", res);
+      //         this.updateErrors();
+      //     });
+      //   });
+      // }
+
+      private async loadCourseFromDb(courseDbId: string) {
+        try {
+          const copy = await this.getCourseFromDb(courseDbId);
+          const course: any = {
+            department: copy["department"],
+            desc: copy["desc"],
+            faculties: copy["faculties"],
+            id: copy["id"],
+            generatedId: copy["generatedId"],
+            name: copy["name"],
+            period: copy["period"],
+            points: copy["points"],
+            requirements: copy["requirements"],
+            stage: copy["stage"],
+            status: copy["status"],
+            title: copy["title"],
+            year: copy["year"],
             canDelete: true,
-          });
-          this.getCourseFromDb(courseDbId).then((res) => {
-              this.storeHelper.addIfNotExists("courses", res);
-              this.updateErrors();
-          });
-        });
+          };
+          this.storeHelper.addIfNotExists("courses", course);
+          this.updateErrors();
+        } catch (error) {
+          console.error('Error loading course from DB:', error);
+          // Handle the error appropriately
+        }
       }
+      
     
     //   private loadCourseFromDbAfterDel(courseDbId: string) {
     //     const courseDb = this.getCourseFromDb(courseDbId).then((copy) => {
@@ -531,42 +588,69 @@ export class CourseService {
   }
 
 
-    public async addSemesterFromDb() {
-      var newSemesterFromDb = { year: Number(), period: Number(), both: String() };
+  //   public async addSemesterFromDb() {
+  //     var newSemesterFromDb = { year: Number(), period: Number(), both: String() };
   
-      const userDocRef = doc(this.dbCourses.db, 'users', this.authService.auth.currentUser.email);
-      const userDocSnap = await getDoc(userDocRef);
+  //     const userDocRef = doc(this.dbCourses.db, 'users', this.authService.auth.currentUser.email);
+  //     const userDocSnap = await getDoc(userDocRef);
   
-      if (userDocSnap.exists()) {
-          const semestersQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semester`));
-          const semestersSnapshot = await getDocs(semestersQuery);  // Fetch data directly from the server
+  //     if (userDocSnap.exists()) {
+  //         const semestersQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semester`));
+  //         const semestersSnapshot = await getDocs(semestersQuery);  // Fetch data directly from the server
   
-          if (!semestersSnapshot.empty) {
-              for (let doc of semestersSnapshot.docs) {
-                  this.selectedYear = await this.getSemesterFromDb(doc.id);
-                  this.selectedPeriod = await this.getPeriodFromDb(doc.id);
+  //         if (!semestersSnapshot.empty) {
+  //             for (let doc of semestersSnapshot.docs) {
+  //                 this.selectedYear = await this.getSemesterFromDb(doc.id);
+  //                 this.selectedPeriod = await this.getPeriodFromDb(doc.id);
   
-                  newSemesterFromDb = {
-                      year: this.selectedYear,
-                      period: this.selectedPeriod,
-                      both: this.selectedYear + " " + this.selectedPeriod
-                  };
+  //                 newSemesterFromDb = {
+  //                     year: this.selectedYear,
+  //                     period: this.selectedPeriod,
+  //                     both: this.selectedYear + " " + this.selectedPeriod
+  //                 };
   
-                  if (this.canAddSemester(newSemesterFromDb)) {
-                      this.semesters.push(newSemesterFromDb);
-                      this.semesters.sort((s1, s2) => s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year);
-                      // this.dbCourses.addSelection(this.authService.auth.currentUser.email, "semester", newSemesterFromDb, "semesters")
-                      this.storeHelper.update("semesters", this.semesters);
-                      this.addingSemester = false;
-                      this.selectedPeriod = Period.One;
-                      this.selectedYear++;
-                  } else {
-                      console.log("Not working");
-                  }
-              }
+  //                 if (this.canAddSemester(newSemesterFromDb)) {
+  //                     this.semesters.push(newSemesterFromDb);
+  //                     this.semesters.sort((s1, s2) => s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year);
+  //                     // this.dbCourses.addSelection(this.authService.auth.currentUser.email, "semester", newSemesterFromDb, "semesters")
+  //                     this.storeHelper.update("semesters", this.semesters);
+  //                     this.addingSemester = false;
+  //                     this.selectedPeriod = Period.One;
+  //                     this.selectedYear++;
+  //                 } else {
+  //                     console.log("Not working");
+  //                 }
+  //             }
+  //         }
+  //     }
+  // }
+
+  public async addSemesterFromDb() {
+    try {
+      const userEmail = this.authService.auth.currentUser.email;
+      const semestersQuery = query(collection(this.dbCourses.db, `users/${userEmail}/semester`));
+      const semestersSnapshot = await getDocs(semestersQuery);
+  
+      if (!semestersSnapshot.empty) {
+        this.semesters = [];
+        for (let doc of semestersSnapshot.docs) {
+          const year = await this.getSemesterFromDb(doc.id);
+          const period = await this.getPeriodFromDb(doc.id);
+          const newSemester = { year, period, both: year + " " + period };
+  
+          if (this.canAddSemester(newSemester)) {
+            this.semesters.push(newSemester);
           }
+        }
+        this.semesters.sort((s1, s2) => s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year);
+        this.storeHelper.update("semesters", this.semesters);
       }
+    } catch (error) {
+      console.error('Error adding semester from DB:', error);
+      // Handle the error appropriately
+    }
   }
+  
   
 
     public newSemester(): void {

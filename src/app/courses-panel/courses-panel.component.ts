@@ -109,7 +109,13 @@ export class CoursesPanel {
     this.authService.authState.subscribe(async (user: any) => {
       if (user && !this.planLoaded) {
         this.planLoaded = true;
-        await this.courseService.loadPlanFromDb();
+        await this.courseService.loadPlanFromDb().then(() => {
+          this.courseService.addSemesterFromDb().then(() => {
+            this.updateFilteredCourses();
+          });
+        });
+        
+
         this.authService.logInCounter++;
       } else if (!user) {
         this.planLoaded = false;
@@ -126,9 +132,7 @@ export class CoursesPanel {
     this.courseService.nextSemesterCheck();
 
     this.newOpen = false;
-    this.filteredCourses = this.semesters.map((semester) =>
-      this.filterCourses(semester.year, semester.period)
-    );
+    this.updateFilteredCourses();
   }
 
   private filterCourses(year: number, period: Period) {
@@ -136,6 +140,15 @@ export class CoursesPanel {
       (course: ICourse) => course.year === year && course.period === period
     );
   }
+
+  private updateFilteredCourses() {
+    this.filteredCourses = this.semesters.map((semester) =>
+      this.filterCourses(semester.year, semester.period)
+    );
+  }
+  
+  // Call this method after data is loaded in the authService.authState subscription
+  
 
   // private canAddSemester(semester: any): boolean {
   //   return (

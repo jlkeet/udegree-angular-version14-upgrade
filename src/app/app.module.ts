@@ -72,6 +72,7 @@ type StoreType = {
     AppHeader,
     SplashScreenComponent,
     AdminExport,
+    
   ],
   imports: [
     AppRoutingModule,

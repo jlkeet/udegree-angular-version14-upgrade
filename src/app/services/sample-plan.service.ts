@@ -391,13 +391,11 @@ export class SamplePlanService {
 
     if (addedCourses > 0) {
       if (addedCourses % 8 == 0) {
-        console.log(this.period)
         this.addNewSemester(this.year, this.period);
         this.newYear();
       }
 
       if (addedCourses % 4 == 0 || addedCourses == 0) {
-        console.log(this.period)
         if (addedCourses % 8 != 0) {
         this.addNewSemester(this.year, this.period);
       }
@@ -405,25 +403,6 @@ export class SamplePlanService {
       }
     }
   }
-
-  // public yearPeriodChecker(addedCourses: number) {
-  //   if (addedCourses > 0) {
-  //     if (addedCourses % 8 == 0) {
-  //       console.log(this.period);
-  //       this.addNewSemester(this.year, this.period);
-  //       this.newYear();
-  //       this.periodSwitcheroo();
-  //     } else if (addedCourses % 4 == 0) {
-  //       console.log(this.period);
-  //       this.addNewSemester(this.year, this.period);
-  //       this.periodSwitcheroo();
-  //     } else if (addedCourses % 4 > 0) { // New condition for 1, 2, or 3 courses in the last semester
-  //       console.log(this.period);
-  //       this.addNewSemester(this.year, this.period);
-  //       // No need to call periodSwitcheroo or newYear since it's the last semester
-  //     }
-  //   }
-  // }
 
   public duplicateChecker(course: ICourse) {
     if (this.storeHelper.current("courses").includes(course)) {
@@ -439,7 +418,6 @@ export class SamplePlanService {
       period: period,
       both: year + " " + period,
     }
-    console.log(period)
     try {
       this.dbCourseService.addSelection(this.authService.auth.currentUser.email, "semester", newSemester, "semesters");
     } catch (error) {
