@@ -149,7 +149,8 @@ export class CourseService {
     this.setCourseDb(copy ,courseId, period, year, status)
   }
 
-  public async setCourseDb(course: any, courseId: any, coursePeriod: number, courseYear: number, status?: CourseStatus, grade?: null) {
+  public async setCourseDb(course: any, generatedId: any, coursePeriod: number, courseYear: number, status?: CourseStatus, grade?: null) {
+    course.generatedId = generatedId || Math.floor(Math.random() * 100000);
     this.storeHelper.add('courses', course);
     let result = course;
     
@@ -170,7 +171,7 @@ export class CourseService {
       status: status ? status : CourseStatus.Planned,
       grade: grade ? grade : null,
       canDelete: true,
-      generatedId: course.generatedId || Math.floor(Math.random() * 100000),
+      generatedId: generatedId,
     }));
   }
 
@@ -560,7 +561,7 @@ export class CourseService {
               year: copy[12] || null,
               canDelete: true,
           };
-  
+          
           const plannedCourses = this.storeHelper.current("courses");
           const targetCourseIndex = plannedCourses.findIndex((c: { generatedId: any; }) => c.generatedId === course.generatedId);
           

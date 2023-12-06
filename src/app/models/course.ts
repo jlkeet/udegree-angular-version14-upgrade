@@ -27,9 +27,11 @@ export class CourseModel implements ICourse {
     desc: string,
     faculties: string[],
     department: string[],
+    generatedId: number,
     status: CourseStatus = CourseStatus.None,
     period?: Period,
     year?: number,
+
   ) {
     this.id = id;
     this.name = name;
@@ -39,5 +41,6 @@ export class CourseModel implements ICourse {
     this.period = period = Period.One;
     this.year = year = 2023;
     this.status = status !== null ? status : CourseStatus.Enrolled;
+    this.generatedId = generatedId;
   }
 }

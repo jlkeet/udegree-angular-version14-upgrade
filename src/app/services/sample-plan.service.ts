@@ -7,6 +7,7 @@ import { FirebaseDbService } from "../core/firebase.db.service";
 import { Period } from "../models";
 import { ProgressPanelService } from "./progress-panel.service";
 import { ICourse } from "../interfaces";
+import { updateDoc } from "@angular/fire/firestore";
 
 @Injectable()
 export class SamplePlanService {
@@ -66,28 +67,32 @@ export class SamplePlanService {
     }
   }
 
+  private courseDocIds = new Map<any, any>();
+
   public loadCourseFromDb(courseDbId: any) {
     this.getCourseFromDb(courseDbId)
       .then((copy) => {
         if (copy) {
+        this.courseDocIds.set(copy.generatedId, courseDbId);
         return Object.assign({
-          department: copy[0],
-          desc: copy[1],
-          faculties: copy[2],
-          id: copy[3],
-          generatedId: copy[4],
-          name: copy[5],
-          period: copy[6],
-          points: copy[7],
-          requirements: copy[8],
-          stage: copy[9],
-          status: copy[10],
-          title: copy[11],
-          year: copy[12],
+          department: copy.department,
+          desc: copy.desc,
+          faculties: copy.faculties,
+          id: copy.id,
+          generatedId: copy.generatedId, 
+          name: copy.name,
+          period: copy.period,
+          points: copy.points,
+          requirements: copy.requirements,
+          stage: copy.stage,
+          status: copy.status,
+          title: copy.title,
+          year: copy.year,
           canDelete: true,
         
         });
       }
+
       })
       .then(() => {
         // Notice we return the next promise here
@@ -159,7 +164,7 @@ export class SamplePlanService {
           this.semesters.sort((s1: { year: number; period: number; }, s2: { year: number; period: number; }) =>
             s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year
           );
-          console.log(this.semesters)
+          // console.log(this.semesters)
           // this.dbCourses.addSelection(this.email, "semester", newSemesterFromDb, "semesters")
           this.storeHelper.update("semesters", this.semesters);
           this.addingSemester = false; // Reverts the semester panel back to neutral
@@ -284,7 +289,7 @@ export class SamplePlanService {
                     }
                     this.courseService.setCourseDb(
                       courseMap.get(paper),
-                      315,
+                      Math.floor(Math.random() * 100000),
                       this.period,
                       this.year
                     );
@@ -359,7 +364,7 @@ export class SamplePlanService {
               ) {
                 this.courseService.setCourseDb(
                   courseToAdd,
-                  315,
+                  Math.floor(Math.random() * 100000),
                   this.period,
                   this.year
                 );
@@ -378,6 +383,7 @@ export class SamplePlanService {
       }
     }
     this.finalizeCourseAdding();
+    this.sortCoursesIntoYears();
   }
 
   private finalizeCourseAdding() {
@@ -424,4 +430,87 @@ export class SamplePlanService {
         console.error("Error adding new semester:", error);
     }
 }
+
+// Code for sorting courses into levels after they have been automatically added to the plan
+
+
+private async sortCoursesIntoYears() {
+  const sortedCourses: ICourse[][] = [[], [], []]; // Adjust for more years if needed
+
+  for (const course of this.storeHelper.current("courses")) {
+    const yearIndex = course.stage - 1; // As stage gives 1, 2, or 3
+    if (yearIndex >= 0 && yearIndex < sortedCourses.length) {
+      sortedCourses[yearIndex].push(course);
+    }
+  }
+
+  this.distributeCoursesAcrossSemesters(sortedCourses);
+  await this.updateCoursesInFirebase();
+}
+
+private distributeCoursesAcrossSemesters(sortedCourses: ICourse[][]) {
+  this.year = 2024
+  sortedCourses.forEach((yearCourses, yearIndex) => {
+    let semesterIndex = 0; // Reset for each year
+
+    yearCourses.forEach(course => {
+      const actualYear = this.year + yearIndex;
+      const period = (semesterIndex % 2 === 0) ? Period.One : Period.Two;
+
+      if (!this.semesterExists(actualYear, period)) {
+        this.addNewSemester(actualYear, period);
+      }
+
+      course.year = actualYear;
+      course.period = period;
+      semesterIndex++; // Increment for each course
+    });
+
+    // Check if there's a need to add an empty second semester
+    if (semesterIndex % 2 !== 0) {
+      const actualYear = this.year + yearIndex;
+      if (!this.semesterExists(actualYear, Period.Two)) {
+        this.addNewSemester(actualYear, Period.Two);
+      }
+    }
+  });
+
+  this.storeHelper.update("courses", this.flattenCourses(sortedCourses));
+  this.storeHelper.update("semesters", this.semesters);
+}
+
+
+private semesterExists(year: number, period: Period): boolean {
+  return this.semesters.some((semester: { year: number; period: Period; }) => semester.year === year && semester.period === period);
+}
+
+
+private flattenCourses(sortedCourses: ICourse[][]): ICourse[] {
+  return sortedCourses.reduce((acc, val) => acc.concat(val), []);
+}
+
+private async updateCoursesInFirebase() {
+  const userEmail = this.authService.auth.currentUser.email;
+  for (const course of this.storeHelper.current("courses")) {
+    // console.log(course)
+  setTimeout( async () => {
+    if (course.generatedId) {
+      const firebaseDocId = this.courseDocIds.get(course.generatedId);
+
+      console.log(firebaseDocId)
+
+    if (firebaseDocId != undefined) {
+    const courseRef = doc(this.dbCourseService.db, `users/${userEmail}/courses`, firebaseDocId);
+    console.log(course.year + " " + course.period)
+    await updateDoc(courseRef, {
+      year: course.year,
+      period: course.period
+    });
+  }
+  }}, 1500)
+  }
+  // console.log(this.storeHelper.current("courses"))
+}
+
+
 }
