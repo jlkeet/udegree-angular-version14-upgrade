@@ -523,4 +523,10 @@ public getSemesters() {
   return this.semesters;
 }
 
+
+
+public getPrereqs() {
+  console.log("Firing")
+}
+
 }
