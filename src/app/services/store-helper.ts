@@ -16,6 +16,7 @@ export class StoreHelper {
   constructor(private store: Store) {}
 
   public update(prop: any, state: any) {
+    // console.log('update called from', new Error().stack);
     const currentState = this.store.getState();
     this.store.setState(Object.assign({}, currentState, { [prop]: state }));
   }
@@ -26,6 +27,7 @@ export class StoreHelper {
   }
 
   public add(prop: keyof State, state: ICourse) {
+    // console.log('add called from', new Error().stack);
     const currentState = this.store.getState();
     const collection = currentState[prop];
     this.store.setState(

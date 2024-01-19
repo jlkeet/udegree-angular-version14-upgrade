@@ -17,12 +17,14 @@ import {
   CourseService,
   MovedEvent,
   RemovedEvent,
+  StoreHelper,
 } from "../services";
 import { FirebaseDbService } from "../core/firebase.db.service";
 import{ GoogleAnalyticsService } from '../services/google-analytics.service';
 import { ProgressPanelService } from "../services/progress-panel.service";
 import { AdminExportService } from "../services/admin-export.service";
 import { pluck } from 'rxjs/operators';
+import { SamplePlanService } from "../services/sample-plan.service";
 
 /*
   Component for displaying a list of courses organised by year and semester
@@ -64,11 +66,13 @@ export class CoursesPanel {
     public courseService: CourseService,
     private courseEventService: CourseEventService,
     private store: Store,
+    private storeHelper: StoreHelper,
     public authService: AuthService,
     private dbCourses: FirebaseDbService,
     public googleAnalyticsService: GoogleAnalyticsService,
     public progressPanelService: ProgressPanelService,
     public adminService: AdminExportService,
+    public samplePlanService: SamplePlanService,
   ) {
 
     this.courseMoved = new EventEmitter<MovedEvent>();
@@ -132,10 +136,18 @@ export class CoursesPanel {
     this.courseService.nextSemesterCheck();
 
     this.newOpen = false;
+
+    // This is where change detection is executed for the courses panel
+    // For sample plan we need to find a way of updating the change detection without disturbing the regular usage of udegree
+    // I don't know how to do this lol
+
+    this.semesters = this.samplePlanService.getSemesters()
     this.updateFilteredCourses();
+
   }
 
   private filterCourses(year: number, period: Period) {
+    this.courses = this.storeHelper.current("courses");
     return this.courses.filter(
       (course: ICourse) => course.year === year && course.period === period
     );

@@ -2,13 +2,13 @@ import { CourseStatus, Period } from '../models';
 import { IRequirement } from '../services';
 
 export interface ICourse {
-  id: number;
-  generatedId: number;
-  name: string;
+  id?: number;
+  generatedId?: number;
+  name?: string;
   title?: string;
-  desc: string;
-  faculties: string[];
-  department: string[];
+  desc?: string;
+  faculties?: string[];
+  department?: string[];
   status?: CourseStatus;
   period?: Period; // This is the period where the course is taken
   periods?: Period[]; // This is the periods where the course is offered

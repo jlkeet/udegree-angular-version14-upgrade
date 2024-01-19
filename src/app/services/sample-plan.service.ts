@@ -45,7 +45,7 @@ export class SamplePlanService {
 
   public setCourse() {
     this.getEssentialCourses();
-    this.complexCourses();
+    this.complexCourses()
   }
 
   public async loadPlanFromDb() {
@@ -99,8 +99,9 @@ export class SamplePlanService {
         return this.getCourseFromDb(courseDbId);
       })
       .then((res) => {
-        this.storeHelper.findAndDelete("courses", res);
-        this.storeHelper.add("courses", res);
+        // this.storeHelper.findAndDelete("courses", res);
+        // this.storeHelper.add("courses", res);
+        this.storeHelper.findAndUpdate("courses", res);
         this.courseService.updateErrors();
       })
       .catch((error) => {
@@ -378,7 +379,6 @@ export class SamplePlanService {
             }
           }
         }
-
         this.loadPlanFromDb();
       }
     }
@@ -418,7 +418,7 @@ export class SamplePlanService {
     }
   }
 
-  public async addNewSemester(year: Number, period: Number) {
+  public async addNewSemester(year: number, period: Period) {
     let newSemester = {
       year: year,
       period: period,
@@ -426,6 +426,8 @@ export class SamplePlanService {
     }
     try {
       this.dbCourseService.addSelection(this.authService.auth.currentUser.email, "semester", newSemester, "semesters");
+      this.storeHelper.add("semesters", newSemester);
+      this.semesters = this.storeHelper.current("semesters");
     } catch (error) {
         console.error("Error adding new semester:", error);
     }
@@ -497,20 +499,28 @@ private async updateCoursesInFirebase() {
     if (course.generatedId) {
       const firebaseDocId = this.courseDocIds.get(course.generatedId);
 
-      console.log(firebaseDocId)
+      // console.log(firebaseDocId)
 
     if (firebaseDocId != undefined) {
     const courseRef = doc(this.dbCourseService.db, `users/${userEmail}/courses`, firebaseDocId);
-    console.log(course.year + " " + course.period)
     await updateDoc(courseRef, {
       year: course.year,
       period: course.period
     });
   }
-  }}, 1500)
   }
-  // console.log(this.storeHelper.current("courses"))
+  // I have to run this function in a timeout because it was running before the courses were loaded from the database
+  // and therefore the courseDocIds map was empty, and the firebaseDocId was undefined
+  // this is not the best way and will have to be fixed, but it works for now.
+  // Additionally, I hafe to run loadPlanFromDb() again to update the courses in the store and the UI
+
+  this.loadPlanFromDb();
+}, 1000)
+  }
 }
 
+public getSemesters() {
+  return this.semesters;
+}
 
 }
