@@ -109,21 +109,40 @@ export class CoursesPanel {
     this.selectedYear = 2024;
     this.selectedPeriod = Period.One;
 
-    this.authService.authState.subscribe(async (user: any) => {
-      if (user && !this.planLoaded) {
-        this.planLoaded = true;
-        await this.courseService.loadPlanFromDb().then(() => {
-          this.courseService.addSemesterFromDb().then(() => {
-            this.updateFilteredCourses();
-          });
-        });
+    // this.authService.authState.subscribe(async (user: any) => {
+    //   if (user && !this.planLoaded) {
+    //     this.planLoaded = true;
+    //     await this.courseService.loadPlanFromDb().then(() => {
+    //       this.courseService.addSemesterFromDb().then(() => {
+    //         this.updateFilteredCourses();
+    //       });
+    //     });
         
 
-        this.authService.logInCounter++;
+    //     this.authService.logInCounter++;
+    //   } else if (!user) {
+    //     this.planLoaded = false;
+    //   }
+    // });
+
+    this.authService.authState.subscribe(async (user: any) => {
+      if (user && !this.planLoaded) {
+        try {
+          this.planLoaded = true;
+          await this.courseService.loadPlanFromDb();
+          await this.courseService.addSemesterFromDb();
+          this.updateFilteredCourses();
+          
+          this.authService.logInCounter++;
+        } catch (error) {
+          console.error('Error during loading plan or adding semester:', error);
+          // Handle the error appropriately
+        }
       } else if (!user) {
         this.planLoaded = false;
       }
     });
+    
   }
 
   public ngOnInit() {
@@ -133,8 +152,11 @@ export class CoursesPanel {
   public ngOnChanges(): void {
 
     this.courseService.nextSemesterCheck();
+    
+    if (this.samplePlanService.autoButtonClicked === true) {
+      this.semesters = this.samplePlanService.getSemesters()
+    }
 
-    this.semesters = this.samplePlanService.getSemesters()
     this.updateFilteredCourses();
 
   }

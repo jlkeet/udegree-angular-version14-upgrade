@@ -19,6 +19,7 @@ export class SamplePlanService {
   public period = 1;
   public year = 2024;
 
+  public autoButtonClicked: boolean = false;
   public addedCourses = 0;
 
   public majReqs: any = [];
@@ -44,6 +45,7 @@ export class SamplePlanService {
   }
 
   public setCourse() {
+    this.autoButtonClicked = true;
     this.getEssentialCourses();
     this.complexCourses()
   }
@@ -520,6 +522,7 @@ private async updateCoursesInFirebase() {
 }
 
 public getSemesters() {
+  this.autoButtonClicked = false;
   return this.semesters;
 }
 
