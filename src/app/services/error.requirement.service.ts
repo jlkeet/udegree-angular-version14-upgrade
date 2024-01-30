@@ -14,7 +14,6 @@ export class ErrorRequirementService {
     }
 
     public getCourse(course: any) {
-  
       // let errorCourse = course.requirement[0]
       let errorCourse = course.requirement
       this.selectErrorRequirements(errorCourse)

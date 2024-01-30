@@ -4,10 +4,12 @@ import { StoreHelper } from "./store-helper";
 import { AuthService } from "../core/auth.service";
 import { CourseService } from "./courses";
 import { FirebaseDbService } from "../core/firebase.db.service";
-import { Period } from "../models";
+import { Message, Period } from "../models";
 import { ProgressPanelService } from "./progress-panel.service";
 import { ICourse } from "../interfaces";
 import { updateDoc } from "@angular/fire/firestore";
+import { RequirementService } from "./requirement.service";
+import { NotificationListComponent } from "../common";
 
 @Injectable()
 export class SamplePlanService {
@@ -29,12 +31,22 @@ export class SamplePlanService {
   public moduleReqs: any = [];
   public secondModuleReqs: any = [];
 
+  private courseMap: any;
+
+  public coursePreReqAutoFill: any
+  public courseSelectFromLevelData = {
+    faculty: "",
+    level: 0,
+    points: 0,
+  }
+
   constructor(
     public authService: AuthService,
     public storeHelper: StoreHelper,
     public courseService: CourseService,
     public dbCourseService: FirebaseDbService,
-    public progressPanelService: ProgressPanelService
+    public progressPanelService: ProgressPanelService,
+
   ) {
     this.selectedYear = 2024;
     this.selectedPeriod = Period.One;
@@ -45,9 +57,11 @@ export class SamplePlanService {
   }
 
   public setCourse() {
-    this.autoButtonClicked = true;
-    this.getEssentialCourses();
-    this.complexCourses()
+    // this.autoButtonClicked = true;
+    // this.getEssentialCourses();
+    // this.complexCourses();
+    this.getPrereqs();
+    
   }
 
   public async loadPlanFromDb() {
@@ -262,9 +276,9 @@ export class SamplePlanService {
     ];
 
     // Create a map for easy lookup of course names
-    const courseMap = new Map();
+    this.courseMap = new Map();
     for (let course of this.courseService.allCourses) {
-      courseMap.set(course.name, course);
+      this.courseMap.set(course.name, course);
     }
 
     for (let z = 0; z < allReqs.length; z++) {
@@ -274,7 +288,7 @@ export class SamplePlanService {
             if (!allReqs[z][x].papers[0].includes("-")) {
               for (let paper of allReqs[z][x].papers) {
                 // Use the map for constant time lookup
-                if (courseMap.has(paper)) {
+                if (this.courseMap.has(paper)) {
                   const existingCourse = this.storeHelper
                     .current("courses")
                     .find((course: { name: any; }) => course.name === paper);
@@ -291,7 +305,7 @@ export class SamplePlanService {
                       }
                     }
                     this.courseService.setCourseDb(
-                      courseMap.get(paper),
+                      this.courseMap.get(paper),
                       Math.floor(Math.random() * 100000),
                       this.period,
                       this.year
@@ -310,7 +324,7 @@ export class SamplePlanService {
     }
   }
 
-  public complexCourses() {
+  public async complexCourses() {
     this.majReqs.push(this.progressPanelService.getMajReqs());
     this.secondMajReqs.push(this.progressPanelService.getSecondMajReqs());
     this.thirdMajReqs.push(this.progressPanelService.getThirdMajReqs());
@@ -515,7 +529,6 @@ private async updateCoursesInFirebase() {
   // and therefore the courseDocIds map was empty, and the firebaseDocId was undefined
   // this is not the best way and will have to be fixed, but it works for now.
   // Additionally, I hafe to run loadPlanFromDb() again to update the courses in the store and the UI
-
   this.loadPlanFromDb();
 }, 1000)
   }
@@ -526,10 +539,166 @@ public getSemesters() {
   return this.semesters;
 }
 
-
-
 public getPrereqs() {
-  console.log("Firing")
+  // console.log(this.courseService.errors);
+  // console.log(this.courseService.planned);
+  this.getPreReqCourse()
+
+  for (let e = 0; e < this.courseService.errors.length; e++) {
+    if (this.courseService.errors[e].requirement.type === 0 && this.courseService.errors[e].requirement.faculties) {
+       this.courseSelectFromLevelData = {
+        faculty: this.courseService.errors[e].requirement.faculties[0],
+        level: this.courseService.errors[e].requirement.stage,
+        points: this.courseService.errors[e].requirement.required,
+      };
+
+      let courseSelectFromLevel = 0;
+
+      for (let i = 0; i < this.courseService.planned.length; i++) {
+        if (this.courseService.planned[i].faculties[0] == this.courseSelectFromLevelData.faculty && this.courseService.planned[i].stage == this.courseSelectFromLevelData.level) {
+          if (courseSelectFromLevel + this.courseService.planned[i].points <= this.courseSelectFromLevelData.points) {
+            courseSelectFromLevel += 15;
+          } 
+        }
+      }
+
+      // Process the data for the current error
+      // console.log(this.courseSelectFromLevelData.points - courseSelectFromLevel);
+      this.coursePreReqAutoFill = (this.courseSelectFromLevelData.points - courseSelectFromLevel) / 15;
+      this.coursePreReqAutoFill = Array.from({ length: this.coursePreReqAutoFill }, (_, i) => i + 1);
+      // Now, coursePreReqAutoFill is specific to the current error
+      // You might want to collect these results in an array or handle them as needed
+      // this.processAutoFillForError(coursePreReqAutoFill, e); // Example function call
+    }
+  }
 }
+
+
+public async getPreReqCourse() {
+  // Map to hold the course references
+  this.courseMap = new Map();
+
+
+  for (let course of this.courseService.allCourses) {
+    this.courseMap.set(course.name, course);
+  }
+
+  // // Process each error to find and add prerequisite courses
+  // for (let e = 0; e < this.courseService.errors.length; e++) {
+  //   const error = this.courseService.errors[e];
+  //   const requirement = error.requirement;
+
+  //   // Check if the requirement is of the correct type and has the 'required' flag
+  //   if (requirement.type === 1 && requirement.required === 1 && !requirement.complex) {
+  //     const courseName = requirement.papers[0]; // Assuming the required course name is here
+  //     const course = this.courseMap.get(courseName);
+
+    
+  //     if (!this.isCourseAlreadyAdded(course)) {
+  //       // this.storeHelper.add("courses", course); // Add the course to the store
+  //       // Add the course to the database and increment the counter
+  //       await this.courseService.setCourseDb(
+  //         course,
+  //         Math.floor(Math.random() * 100000),
+  //         this.period,
+  //         this.year
+  //       );
+  //       this.addedCourses++; // Increment the count of added courses
+  //     } else {
+  //       console.error(`Course not found: ${courseName}`);
+  //     }
+  //   }
+  // }
+
+  for (let e = 0; e < this.courseService.errors.length; e++) {
+    const error = this.courseService.errors[e];
+    const requirement = error.requirement;
+
+    if (requirement.type === 1 && requirement.required === 1 && !requirement.complex) {
+      const courseName = requirement.papers[0];
+      const course = this.courseMap.get(courseName);
+
+      if (!this.isCourseAlreadyAdded(course)) {
+        const { correctYear, correctPeriod } = this.findAvailableSemesterForPreReq(course, error);
+
+        await this.courseService.setCourseDb(
+          course,
+          Math.floor(Math.random() * 100000),
+          correctPeriod,
+          correctYear
+        );
+        this.addedCourses++;
+      } else {
+        console.error(`Course not found or already added: ${courseName}`);
+      }
+    }
+  }
+
+  // Finalize the addition of courses and sort them into years
+  // this.finalizeCourseAdding();
+  // await this.sortCoursesIntoYears();
+
+  // Reload the plan from the database to reflect the changes
+  await this.loadPlanFromDb();
+}
+
+private isCourseAlreadyAdded(courseName: string): boolean {
+  return this.storeHelper.current("courses").some((course: { name: string }) => 
+    course.name === courseName);
+}
+
+
+private findAvailableSemesterForPreReq(course: { stage: any; }, error: Message) {
+    const targetCourseName = error.name; // Stage of prerequisite course
+    const targetCourse = this.courseMap.get(targetCourseName);
+    const requiredCourseName = error.requirement.papers[0];
+    const requiredCourse = this.courseMap.get(requiredCourseName);
+    if (!requiredCourse) {
+      console.error(`Required course not found: ${requiredCourseName}`);
+      return { correctYear: this.selectedYear, correctPeriod: Period.One }; // Default value or handle error
+    }
+  
+    const targetCourseStage = targetCourse.stage; // Stage of the course that requires the prerequisite
+    const prereqTargetYear = this.selectedYear + targetCourseStage - 1; // Assuming prerequisite should be taken one year before
+    const semestersInTargetYear = this.semesters.filter((s: { year: number; }) => s.year === prereqTargetYear);
+  
+    let availableSemester = null;
+
+  // Find a semester before the required course with space
+  for (const semester of semestersInTargetYear) {
+    if (semester.period < targetCourseStage && this.countCoursesInSemester(semester) < 4) {
+      availableSemester = semester;
+      break;
+    }
+  }
+
+  // If no semester found in the target year, use the first available semester in the previous year
+  if (!availableSemester) {
+    availableSemester = this.findFirstAvailableSemester(prereqTargetYear - 1, course);
+  }
+
+  return { correctYear: availableSemester.year, correctPeriod: availableSemester.period };
+}
+
+
+private countCoursesInSemester(semester: { year: any; period: any; }) {
+  return this.storeHelper.current("courses").filter((course: { year: any; period: any; }) => course.year === semester.year && course.period === semester.period).length;
+}
+
+private findFirstAvailableSemester(startYear: number, course: ICourse) {
+  let year = startYear;
+  while (year >= this.selectedYear - course.stage) {
+    for (const period of [Period.One, Period.Two]) {
+      if (this.countCoursesInSemester({ year, period }) <= 4) {
+        return { year, period };
+      }
+    }
+    year--;
+  }
+  // If no semester found, return a default value or handle the error
+  return { year: this.selectedYear, period: Period.One };
+}
+
+
 
 }

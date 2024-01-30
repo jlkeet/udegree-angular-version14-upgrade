@@ -19,6 +19,7 @@ import {
 } from "../services";
 import * as confetti from 'canvas-confetti';
 import { ErrorRequirementService } from "../services/error.requirement.service";
+import { SamplePlanService } from "../services/sample-plan.service";
 /*
     A component for a displaying the details or adding course
     Should break up custom card part
@@ -43,7 +44,7 @@ export class CourseDetails {
   @Input() public messages: string[] = [];
   @Input() public custom: boolean = false;
   @Input() public period: Period = Period.One;
-  @Input() public year: number = 2023;
+  @Input() public year: number = 2024;
 
   public prerequisitesRequiredMessage: string = null as any;
   public alreadyPlannedMessage: string = null as any;
@@ -99,6 +100,7 @@ export class CourseDetails {
     public moduleService: ModuleService,
     public storeHelper: StoreHelper,
     public errorService: ErrorRequirementService,
+    public samplePlanService: SamplePlanService
   ) {
     // this.departments = this.departmentService.getDepartments();
     // this.faculties = this.facultyService.getFaculties();
@@ -162,7 +164,9 @@ export class CourseDetails {
         status: this.courseStatus,
       });
       this.closeDetails();
+      this.samplePlanService.getPrereqs();
     }
+
   }
 
   public deleteCourse() {
@@ -341,4 +345,5 @@ public async getAllMaps() {
     }
     return '';
   }
+
 }

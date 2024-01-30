@@ -81,6 +81,22 @@
     font-size: 15px;
     font-weight: bold;
   }
+
+  .course-select-fake {
+    order: 99;
+    width: 190px;
+    height: 100px;
+    border: 1px dashed;
+    border-radius: 5px;
+    display: flex;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 5px;
+    margin-right: 2.5px;
+    margin-bottom: 5px;
+    margin-left: 0px;
+  }
   .position-text {
     margin: auto;
   }

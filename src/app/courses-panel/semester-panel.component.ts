@@ -10,6 +10,7 @@ import { UserContainer } from "../common";
 import{ GoogleAnalyticsService } from '../services/google-analytics.service';
 import { FirebaseDbService } from "../core/firebase.db.service";
 import { AuthService } from "../core/auth.service";
+import { SamplePlanService } from "../services/sample-plan.service";
 
 @Component({
   selector: "semester-panel",
@@ -56,6 +57,7 @@ export class SemesterPanel {
     public googleAnalyticsService: GoogleAnalyticsService,
     public dbCourses: FirebaseDbService,
     public authService: AuthService,
+    public sampleService: SamplePlanService
   ) {
     
   }
@@ -464,5 +466,6 @@ export class SemesterPanel {
     .googleAnalyticsService
     .eventEmitter("new_course", "semester-panel", "course", "click", 10);
   } 
+
 
 }

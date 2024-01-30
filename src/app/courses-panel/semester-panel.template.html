@@ -51,6 +51,12 @@
         <course-draggable *ngFor="let course of courses; let i = index" (deleteCourseClicked)="deleteCourse(course)"
           (courseClicked)="courseClicked(course)" (longClick)="longCourseClicked(course)" [course]="course" [attr.data-id]="course.id"
           [attr.data-period]="semester.period" [attr.data-year]="semester.year"></course-draggable>
+        
+          <div *ngFor="let element of sampleService.coursePreReqAutoFill">
+          <div fake *ngIf="semester.year == 2024 && semester.period == 1" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, faculties: sampleService.courseSelectFromLevelData.faculty, stage: sampleService.courseSelectFromLevelData.level }">
+          <div class="position-text">Select {{sampleService.courseSelectFromLevelData.level}}00-level {{sampleService.courseSelectFromLevelData.faculty}}</div></div>
+        </div>
+
         <div fake *ngIf="!atMaxPoints && boolCheck" class="fakecourse" [routerLink]="['/add']"
           [queryParams]="{ period: semester.period, year: semester.year }">
           <div class="position-text" (click)="newCourseEvent()">Add course</div>
