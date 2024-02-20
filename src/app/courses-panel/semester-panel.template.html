@@ -52,9 +52,20 @@
           (courseClicked)="courseClicked(course)" (longClick)="longCourseClicked(course)" [course]="course" [attr.data-id]="course.id"
           [attr.data-period]="semester.period" [attr.data-year]="semester.year"></course-draggable>
         
-          <div *ngFor="let element of sampleService.coursePreReqAutoFill">
-          <div fake *ngIf="semester.year == 2024 && semester.period == 1" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, faculties: sampleService.courseSelectFromLevelData.faculty, stage: sampleService.courseSelectFromLevelData.level }">
-          <div class="position-text">Select {{sampleService.courseSelectFromLevelData.level}}00-level {{sampleService.courseSelectFromLevelData.faculty}}</div></div>
+          <div *ngFor="let element of sampleService.coursePreReqAutoFillFac">
+          <div fake *ngIf="semester.year == 2024 && semester.period == 1" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, faculties: sampleService.courseSelectFromLevelDataFaculty.faculty, stage: sampleService.courseSelectFromLevelDataFaculty.level }">
+          <div *ngIf="sampleService.courseSelectFromLevelDataFaculty.level > 0; else noLevelFac" class="position-text">Select {{sampleService.courseSelectFromLevelDataFaculty.level}}00-level {{sampleService.courseSelectFromLevelDataFaculty.faculty}}</div>
+          <ng-template #noLevelFac class="position-text">Select {{sampleService.courseSelectFromLevelDataFaculty.faculty}} course</ng-template>
+        </div>
+        </div>
+
+        <div *ngFor="let element of sampleService.coursePreReqAutoFillDep">
+          <div fake *ngIf="semester.year == 2024 && semester.period == 1" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, department: sampleService.courseSelectFromLevelDataDepartment.department, stage: sampleService.courseSelectFromLevelDataDepartment.level }">
+          <div *ngIf="sampleService.courseSelectFromLevelDataDepartment.level > 0; else noLevelDep" class="position-text">Select {{sampleService.courseSelectFromLevelDataDepartment.level}}00-level {{sampleService.courseSelectFromLevelDataDepartment.department}}</div>
+          <ng-template #noLevelDep>
+            <div class="position-text">Select {{sampleService.courseSelectFromLevelDataDepartment.department}} Course</div>
+          </ng-template>
+        </div>
         </div>
 
         <div fake *ngIf="!atMaxPoints && boolCheck" class="fakecourse" [routerLink]="['/add']"

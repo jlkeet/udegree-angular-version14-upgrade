@@ -33,9 +33,16 @@ export class SamplePlanService {
 
   private courseMap: any;
 
-  public coursePreReqAutoFill: any
-  public courseSelectFromLevelData = {
+  public coursePreReqAutoFillFac: any
+  public coursePreReqAutoFillDep: any
+  public courseSelectFromLevelDataFaculty = {
     faculty: "",
+    level: 0,
+    points: 0,
+  }
+
+  public courseSelectFromLevelDataDepartment = {
+    department: "",
     level: 0,
     points: 0,
   }
@@ -60,7 +67,8 @@ export class SamplePlanService {
     // this.autoButtonClicked = true;
     // this.getEssentialCourses();
     // this.complexCourses();
-    this.getPrereqs();
+    // this.getPrereqs();
+    this.getPreReqPointsDept();
     
   }
 
@@ -451,7 +459,6 @@ export class SamplePlanService {
 
 // Code for sorting courses into levels after they have been automatically added to the plan
 
-
 private async sortCoursesIntoYears() {
   const sortedCourses: ICourse[][] = [[], [], []]; // Adjust for more years if needed
 
@@ -542,11 +549,11 @@ public getSemesters() {
 public getPrereqs() {
   // console.log(this.courseService.errors);
   // console.log(this.courseService.planned);
-  this.getPreReqCourse()
+  // this.getPreReqCourse()
 
   for (let e = 0; e < this.courseService.errors.length; e++) {
     if (this.courseService.errors[e].requirement.type === 0 && this.courseService.errors[e].requirement.faculties) {
-       this.courseSelectFromLevelData = {
+       this.courseSelectFromLevelDataFaculty = {
         faculty: this.courseService.errors[e].requirement.faculties[0],
         level: this.courseService.errors[e].requirement.stage,
         points: this.courseService.errors[e].requirement.required,
@@ -555,8 +562,8 @@ public getPrereqs() {
       let courseSelectFromLevel = 0;
 
       for (let i = 0; i < this.courseService.planned.length; i++) {
-        if (this.courseService.planned[i].faculties[0] == this.courseSelectFromLevelData.faculty && this.courseService.planned[i].stage == this.courseSelectFromLevelData.level) {
-          if (courseSelectFromLevel + this.courseService.planned[i].points <= this.courseSelectFromLevelData.points) {
+        if (this.courseService.planned[i].faculties[0] == this.courseSelectFromLevelDataFaculty.faculty && this.courseService.planned[i].stage == this.courseSelectFromLevelDataFaculty.level) {
+          if (courseSelectFromLevel + this.courseService.planned[i].points <= this.courseSelectFromLevelDataFaculty.points) {
             courseSelectFromLevel += 15;
           } 
         }
@@ -564,13 +571,45 @@ public getPrereqs() {
 
       // Process the data for the current error
       // console.log(this.courseSelectFromLevelData.points - courseSelectFromLevel);
-      this.coursePreReqAutoFill = (this.courseSelectFromLevelData.points - courseSelectFromLevel) / 15;
-      this.coursePreReqAutoFill = Array.from({ length: this.coursePreReqAutoFill }, (_, i) => i + 1);
+      this.coursePreReqAutoFillFac = (this.courseSelectFromLevelDataFaculty.points - courseSelectFromLevel) / 15;
+      this.coursePreReqAutoFillFac = Array.from({ length: this.coursePreReqAutoFillFac }, (_, i) => i + 1);
       // Now, coursePreReqAutoFill is specific to the current error
       // You might want to collect these results in an array or handle them as needed
       // this.processAutoFillForError(coursePreReqAutoFill, e); // Example function call
     }
   }
+}
+
+public getPreReqPointsDept() {
+
+  for (let e = 0; e < this.courseService.errors.length; e++) {
+    if (this.courseService.errors[e].requirement.type === 0 && this.courseService.errors[e].requirement.departments) {
+       this.courseSelectFromLevelDataDepartment = {
+        department: this.courseService.errors[e].requirement.departments[0],
+        level: this.courseService.errors[e].requirement.stage,
+        points: this.courseService.errors[e].requirement.required,
+      };
+
+      let courseSelectFromLevel = 0;
+
+      for (let i = 0; i < this.courseService.planned.length; i++) {
+        if (this.courseService.planned[i].faculties[0] == this.courseSelectFromLevelDataDepartment.department && this.courseService.planned[i].stage == this.courseSelectFromLevelDataDepartment.level) {
+          if (courseSelectFromLevel + this.courseService.planned[i].points <= this.courseSelectFromLevelDataDepartment.points) {
+            courseSelectFromLevel += 15;
+          } 
+        }
+      }
+
+      // Process the data for the current error
+      // console.log(this.courseSelectFromLevelData.points - courseSelectFromLevel);
+      this.coursePreReqAutoFillDep = (this.courseSelectFromLevelDataDepartment.points - courseSelectFromLevel) / 15;
+      this.coursePreReqAutoFillDep = Array.from({ length: this.coursePreReqAutoFillDep }, (_, i) => i + 1);
+      // Now, coursePreReqAutoFill is specific to the current error
+      // You might want to collect these results in an array or handle them as needed
+      // this.processAutoFillForError(coursePreReqAutoFill, e); // Example function call
+    }
+  }
+
 }
 
 
@@ -582,34 +621,6 @@ public async getPreReqCourse() {
   for (let course of this.courseService.allCourses) {
     this.courseMap.set(course.name, course);
   }
-
-  // // Process each error to find and add prerequisite courses
-  // for (let e = 0; e < this.courseService.errors.length; e++) {
-  //   const error = this.courseService.errors[e];
-  //   const requirement = error.requirement;
-
-  //   // Check if the requirement is of the correct type and has the 'required' flag
-  //   if (requirement.type === 1 && requirement.required === 1 && !requirement.complex) {
-  //     const courseName = requirement.papers[0]; // Assuming the required course name is here
-  //     const course = this.courseMap.get(courseName);
-
-    
-  //     if (!this.isCourseAlreadyAdded(course)) {
-  //       // this.storeHelper.add("courses", course); // Add the course to the store
-  //       // Add the course to the database and increment the counter
-  //       await this.courseService.setCourseDb(
-  //         course,
-  //         Math.floor(Math.random() * 100000),
-  //         this.period,
-  //         this.year
-  //       );
-  //       this.addedCourses++; // Increment the count of added courses
-  //     } else {
-  //       console.error(`Course not found: ${courseName}`);
-  //     }
-  //   }
-  // }
-
   for (let e = 0; e < this.courseService.errors.length; e++) {
     const error = this.courseService.errors[e];
     const requirement = error.requirement;
@@ -633,12 +644,6 @@ public async getPreReqCourse() {
       }
     }
   }
-
-  // Finalize the addition of courses and sort them into years
-  // this.finalizeCourseAdding();
-  // await this.sortCoursesIntoYears();
-
-  // Reload the plan from the database to reflect the changes
   await this.loadPlanFromDb();
 }
 
