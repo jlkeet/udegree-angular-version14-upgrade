@@ -38,6 +38,7 @@ export class CourseService {
   public planned: ICourse[] = [];
   public courseCounter = 0; // need to store this
   public errors: Message[] = [];
+  public complexReqsForSamplePlan: any[] = [];
   public email: string = "";
   public findIfCorequesite = false;
   public auth;
@@ -261,7 +262,10 @@ export class CourseService {
         
         course.requirements.forEach((requirement: IRequirement) => {
           if (this.requirementService.isComplex(requirement)) {
+            let complexReqSample = requirement
+            this.complexReqsForSamplePlan.push(requirement)
             let complexErrors: IRequirement[] = [];
+
             
             requirement.complex.forEach((subRequirement: IRequirement) => {
               if (this.requirementService.checkCoRequesiteFlag(subRequirement, "isCorequesite")) {
@@ -278,6 +282,7 @@ export class CourseService {
             // Only push complex errors if all requirements are not filled
             if (complexErrors.length === requirement.complex.length) {
               courseErrors = courseErrors.concat(complexErrors);
+              this.complexReqsForSamplePlan.push(complexReqSample)
             }
           } else {
             if (!this.requirementService.requirementFilled(requirement, this.planned, course)) {
@@ -363,65 +368,6 @@ export class CourseService {
     this.courseCounter--;
   }
 
-  // public async loadPlanFromDb() {
-
-  //   this.addSemesterFromDb();
-  //   this.authService.authState.subscribe(async (user: any) => {
-
-  //     if (user.email) {
-  //       this.adminService.getAdmin(user.email);
-  //       this.adminService.getExportStatus(user.email);
-
-        
-  //       const userDocRef = doc(this.dbCourses.db, 'users', user.email);
-  //       const userDocSnap = await getDoc(userDocRef);
-    
-  //       if (userDocSnap.exists()) {
-  //         const coursesQuery = query(collection(this.dbCourses.db, `users/${user.email}/courses`));
-  //         const coursesSnapshot = await getDocs(coursesQuery);
-    
-  //         if (!coursesSnapshot.empty) {
-  //           // Check to see if documents exist in the courses collection
-  //           coursesSnapshot.forEach((doc) => {
-  //             // Loop to get all the ids of the docs
-  //             this.loadCourseFromDb(doc.id); // Call to loading the courses on the screen, by id
-  //           });
-  //         } else {
-  //           this.storeHelper.deleteAll();
-  //           this.storeHelper.update("semesters", []);
-  //           this.progressPanelService.setFullyPlanned(false);
-  //         }
-  //       }
-  //     }
-  //   });
-  //     }
-
-  // public async loadPlanFromDb() {
-  //   try {
-  //     const userEmail = this.authService.auth.currentUser.email;
-  //     const userDocRef = doc(this.dbCourses.db, 'users', userEmail);
-  //     const userDocSnap = await getDoc(userDocRef);
-  
-  //     if (userDocSnap.exists()) {
-  //       const coursesQuery = query(collection(this.dbCourses.db, `users/${userEmail}/courses`));
-  //       const coursesSnapshot = await getDocs(coursesQuery);
-  
-  //       if (!coursesSnapshot.empty) {
-  //         for (let doc of coursesSnapshot.docs) {
-  //           await this.loadCourseFromDb(doc.id); // Await each course load
-  //         }
-  //       } else {
-  //         this.storeHelper.deleteAll();
-  //         this.storeHelper.update("semesters", []);
-  //         this.progressPanelService.setFullyPlanned(false);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('Error loading plan from DB:', error);
-  //     // Handle the error appropriately
-  //   }
-  // }
-
   public async loadPlanFromDb() {
     try {
       const userEmail = this.authService.auth.currentUser.email;
@@ -447,8 +393,6 @@ export class CourseService {
       // Handle the error appropriately
     }
   }
-  
-  
 
     
       public async loadPlanFromDbAfterDel() {
@@ -479,31 +423,6 @@ export class CourseService {
           };
         });
       }
-    
-      // private loadCourseFromDb(courseDbId: string) {
-      //   const courseDb = this.getCourseFromDb(courseDbId).then((copy) => {
-      //     Object.assign({
-      //       department: copy[0],
-      //       desc: copy[1],
-      //       faculties: copy[2],
-      //       id: copy[3],
-      //       generatedId: copy[4],
-      //       name: copy[5],
-      //       period: copy[6],
-      //       points: copy[7],
-      //       requirements: copy[8],
-      //       stage: copy[9],
-      //       status: copy[10],
-      //       title: copy[11],
-      //       year: copy[12],
-      //       canDelete: true,
-      //     });
-      //     this.getCourseFromDb(courseDbId).then((res) => {
-      //         this.storeHelper.addIfNotExists("courses", res);
-      //         this.updateErrors();
-      //     });
-      //   });
-      // }
 
       private async loadCourseFromDb(courseDbId: string) {
         try {
@@ -532,41 +451,6 @@ export class CourseService {
         }
       }
       
-    
-    //   private loadCourseFromDbAfterDel(courseDbId: string) {
-    //     const courseDb = this.getCourseFromDb(courseDbId).then((copy) => {
-    //       Object.assign({
-    //         department: copy[0] || null,
-    //         desc: copy[1] || null,
-    //         faculties: copy[2] || null,
-    //         id: copy[3] || null,
-    //         name: copy[4] || null,
-    //         period: copy[5] || null,
-    //         points: copy[6] || null,
-    //         requirements: copy[7] || null,
-    //         stage: copy[8] || null,
-    //         status: copy[9] || null,
-    //         title: copy[10] || null,
-    //         year: copy[11] || null,
-    //         canDelete: true,
-    //       })
-    //       this.getCourseFromDb(courseDbId).then((res) => {
-    //         this.planned = this.storeHelper.current("courses")
-    //     for (let i = 0; i < this.planned.length; i++) {    
-    //       if (res.generatedId === this.planned[i].generatedId) {
-    //         if (res.year !== this.planned[i].year || res.period !== this.planned[i].period) {
-    //       this.storeHelper.findAndDelete("courses", this.planned[i].generatedId)  
-    //       this.storeHelper.add("courses", res)
-    //       console.log(this.storeHelper.current("courses"))
-            
-    //       // Will change this code when I eventually understand the findAndUpdate part of the storehelper.
-        
-    //       }
-    //     }
-    //   }
-    //     })
-    //   })
-    // }
 
     private async loadCourseFromDbAfterDel(courseDbId: string) {
       try {
@@ -613,33 +497,6 @@ export class CourseService {
     const res = await this.dbCourses.getCollection("users", "semester", periodDbId);
     return res.period; // Assuming 'period' is a number
   }
-
-
-  // public async addSemesterFromDb() {
-  //   try {
-  //     const userEmail = this.authService.auth.currentUser.email;
-  //     const semestersQuery = query(collection(this.dbCourses.db, `users/${userEmail}/semester`));
-  //     const semestersSnapshot = await getDocs(semestersQuery);
-  
-  //     if (!semestersSnapshot.empty) {
-  //       this.semesters = [];
-  //       for (let doc of semestersSnapshot.docs) {
-  //         const year = await this.getSemesterFromDb(doc.id);
-  //         const period = await this.getPeriodFromDb(doc.id);
-  //         const newSemester = { year, period, both: year + " " + period };
-  
-  //         if (this.canAddSemester(newSemester)) {
-  //           this.semesters.push(newSemester);
-  //         }
-  //       }
-  //       this.semesters.sort((s1, s2) => s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year);
-  //       this.storeHelper.update("semesters", this.semesters);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error adding semester from DB:', error);
-  //     // Handle the error appropriately
-  //   }
-  // }
 
 
   public async addSemesterFromDb() {

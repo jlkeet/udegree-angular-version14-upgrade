@@ -31,6 +31,8 @@ export class SamplePlanService {
   public moduleReqs: any = [];
   public secondModuleReqs: any = [];
 
+  public complexPreReqs: any = [];
+
   private courseMap: any;
 
   public coursePreReqAutoFillFac: any
@@ -68,7 +70,8 @@ export class SamplePlanService {
     // this.getEssentialCourses();
     // this.complexCourses();
     // this.getPrereqs();
-    this.getPreReqPointsDept();
+    // this.getPreReqPointsDept();
+    this.getComplexReqs();
     
   }
 
@@ -549,7 +552,7 @@ public getSemesters() {
 public getPrereqs() {
   // console.log(this.courseService.errors);
   // console.log(this.courseService.planned);
-  // this.getPreReqCourse()
+  this.getPreReqCourse()
 
   for (let e = 0; e < this.courseService.errors.length; e++) {
     if (this.courseService.errors[e].requirement.type === 0 && this.courseService.errors[e].requirement.faculties) {
@@ -609,6 +612,14 @@ public getPreReqPointsDept() {
       // this.processAutoFillForError(coursePreReqAutoFill, e); // Example function call
     }
   }
+
+}
+
+public getComplexReqs() {
+  this.complexPreReqs = this.courseService.complexReqsForSamplePlan[0]
+
+  console.log(this.complexPreReqs)
+
 
 }
 

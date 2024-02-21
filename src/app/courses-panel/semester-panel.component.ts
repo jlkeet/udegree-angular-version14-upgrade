@@ -42,6 +42,7 @@ export class SemesterPanel {
   public previousPeriod: any
   public semcheck = {};
   public boolCheck = true;
+  public complexClickedBool = false;
   public onPageChange = new EventEmitter<null>();
 
   public course: ICourse = null as any;
@@ -459,6 +460,21 @@ export class SemesterPanel {
       const key = JSON.stringify({ period: item.period, year: item.year });
       return seen.has(key) ? true : !seen.add(key);
     });
+  }
+
+  public complexClicked() { 
+    this.complexClickedBool = !this.complexClickedBool;
+  }
+
+  public complexSelection(event: any) {
+    console.log(event);
+    if (event.papers) {
+      this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, searchTerm: event.papers[0] } });
+    } else if (event.departments) {
+      this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, departments: event.departments[0] } });
+    } else if (event.faculties) {
+      this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, faculties: event.faculties[0] } });
+    }
   }
 
   newCourseEvent(){ 
