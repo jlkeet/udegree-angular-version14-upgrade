@@ -66,12 +66,9 @@ export class SamplePlanService {
   }
 
   public setCourse() {
-    // this.autoButtonClicked = true;
-    // this.getEssentialCourses();
-    // this.complexCourses();
-    // this.getPrereqs();
-    // this.getPreReqPointsDept();
-    this.getComplexReqs();
+    this.autoButtonClicked = true;
+    this.getEssentialCourses();
+    this.complexCourses();
     
   }
 
@@ -539,8 +536,10 @@ private async updateCoursesInFirebase() {
   // and therefore the courseDocIds map was empty, and the firebaseDocId was undefined
   // this is not the best way and will have to be fixed, but it works for now.
   // Additionally, I hafe to run loadPlanFromDb() again to update the courses in the store and the UI
+  this.getPrereqs();
+  this.getComplexReqs();
   this.loadPlanFromDb();
-}, 1000)
+}, 2500)
   }
 }
 
@@ -552,7 +551,12 @@ public getSemesters() {
 public getPrereqs() {
   // console.log(this.courseService.errors);
   // console.log(this.courseService.planned);
-  this.getPreReqCourse()
+  this.getPreReqPointsFac();
+  this.getPreReqPointsDept();
+  this.getPreReqCourse();
+}
+
+public getPreReqPointsFac() {
 
   for (let e = 0; e < this.courseService.errors.length; e++) {
     if (this.courseService.errors[e].requirement.type === 0 && this.courseService.errors[e].requirement.faculties) {
@@ -617,10 +621,6 @@ public getPreReqPointsDept() {
 
 public getComplexReqs() {
   this.complexPreReqs = this.courseService.complexReqsForSamplePlan[0]
-
-  console.log(this.complexPreReqs)
-
-
 }
 
 
@@ -655,12 +655,12 @@ public async getPreReqCourse() {
       }
     }
   }
-  await this.loadPlanFromDb();
+  // await this.loadPlanFromDb();
 }
 
-private isCourseAlreadyAdded(courseName: string): boolean {
+private isCourseAlreadyAdded(courseName: ICourse): boolean {
   return this.storeHelper.current("courses").some((course: { name: string }) => 
-    course.name === courseName);
+    course.name === courseName.name);
 }
 
 
@@ -714,7 +714,5 @@ private findFirstAvailableSemester(startYear: number, course: ICourse) {
   // If no semester found, return a default value or handle the error
   return { year: this.selectedYear, period: Period.One };
 }
-
-
 
 }

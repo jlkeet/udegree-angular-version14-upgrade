@@ -68,7 +68,7 @@
         </div>
         </div>
 
-        <div fake class="course-select-fake" *ngIf="sampleService.complexPreReqs.complex && semester.year == 2024 && semester.period == 1 && complexClickedBool == false;">
+        <div fake class="course-select-fake" *ngIf="sampleService.complexPreReqs?.complex && semester.year == 2024 && semester.period == 1 && complexClickedBool == false;">
           <div class="position-text" (click)="complexClicked()">Click to see Options</div>
         </div>
 
