@@ -577,12 +577,10 @@ public getPreReqPointsFac() {
       }
 
       // Process the data for the current error
-      // console.log(this.courseSelectFromLevelData.points - courseSelectFromLevel);
-      this.coursePreReqAutoFillFac = (this.courseSelectFromLevelDataFaculty.points - courseSelectFromLevel) / 15;
+      this.coursePreReqAutoFillFac = this.courseSelectFromLevelDataFaculty.points / 15;
       this.coursePreReqAutoFillFac = Array.from({ length: this.coursePreReqAutoFillFac }, (_, i) => i + 1);
       // Now, coursePreReqAutoFill is specific to the current error
       // You might want to collect these results in an array or handle them as needed
-      // this.processAutoFillForError(coursePreReqAutoFill, e); // Example function call
     }
   }
 }
@@ -608,12 +606,10 @@ public getPreReqPointsDept() {
       }
 
       // Process the data for the current error
-      // console.log(this.courseSelectFromLevelData.points - courseSelectFromLevel);
       this.coursePreReqAutoFillDep = (this.courseSelectFromLevelDataDepartment.points - courseSelectFromLevel) / 15;
       this.coursePreReqAutoFillDep = Array.from({ length: this.coursePreReqAutoFillDep }, (_, i) => i + 1);
       // Now, coursePreReqAutoFill is specific to the current error
       // You might want to collect these results in an array or handle them as needed
-      // this.processAutoFillForError(coursePreReqAutoFill, e); // Example function call
     }
   }
 

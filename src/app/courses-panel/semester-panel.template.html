@@ -55,7 +55,7 @@
           <div *ngFor="let element of sampleService.coursePreReqAutoFillFac">
           <div fake *ngIf="semester.year == 2024 && semester.period == 1" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, faculties: sampleService.courseSelectFromLevelDataFaculty.faculty, stage: sampleService.courseSelectFromLevelDataFaculty.level }">
           <div *ngIf="sampleService.courseSelectFromLevelDataFaculty.level > 0; else noLevelFac" class="position-text">Select {{sampleService.courseSelectFromLevelDataFaculty.level}}00-level {{sampleService.courseSelectFromLevelDataFaculty.faculty}}</div>
-          <ng-template #noLevelFac class="position-text">Select {{sampleService.courseSelectFromLevelDataFaculty.faculty}} course</ng-template>
+          <ng-template #noLevelFac class="position-text">Select {{sampleService.courseSelectFromLevelDataFaculty.faculty}} Course</ng-template>
         </div>
         </div>
 
