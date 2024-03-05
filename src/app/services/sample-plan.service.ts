@@ -33,7 +33,7 @@ export class SamplePlanService {
 
   public complexPreReqs: any = [];
 
-  private courseMap: any;
+  // private courseMap: any;
 
   public coursePreReqAutoFillFac: any
   public coursePreReqAutoFillDep: any
@@ -49,6 +49,8 @@ export class SamplePlanService {
     points: 0,
   }
 
+  private courseMap: Map<string, ICourse> = new Map();
+
   constructor(
     public authService: AuthService,
     public storeHelper: StoreHelper,
@@ -61,6 +63,13 @@ export class SamplePlanService {
     this.selectedPeriod = Period.One;
   }
 
+  ngOnInit() {
+    // Wait for allCourses to be initialized
+    if (this.courseService.allCourses) {
+      this.createCourseMap();
+    }
+  }
+
   public getCourse() {
     return this.courseService.allCourses[377];
   }
@@ -70,6 +79,12 @@ export class SamplePlanService {
     this.getEssentialCourses();
     this.complexCourses();
     
+  }
+
+  private createCourseMap() {
+    for (const course of this.courseService.allCourses) {
+      this.courseMap.set(course.name, course);
+    }
   }
 
   public async loadPlanFromDb() {
@@ -619,24 +634,17 @@ public getComplexReqs() {
   this.complexPreReqs = this.courseService.complexReqsForSamplePlan[0]
 }
 
+private addedCourseNames: Set<string> = new Set();
 
 public async getPreReqCourse() {
-  // Map to hold the course references
-  this.courseMap = new Map();
-
-
-  for (let course of this.courseService.allCourses) {
-    this.courseMap.set(course.name, course);
-  }
-  for (let e = 0; e < this.courseService.errors.length; e++) {
-    const error = this.courseService.errors[e];
+  for (const error of this.courseService.errors) {
     const requirement = error.requirement;
 
     if (requirement.type === 1 && requirement.required === 1 && !requirement.complex) {
       const courseName = requirement.papers[0];
       const course = this.courseMap.get(courseName);
-
-      if (!this.isCourseAlreadyAdded(course)) {
+    if (!this.isCourseAlreadyAdded(course)) {
+      if (course && !this.addedCourseNames.has(courseName)) {
         const { correctYear, correctPeriod } = this.findAvailableSemesterForPreReq(course, error);
 
         await this.courseService.setCourseDb(
@@ -646,12 +654,13 @@ public async getPreReqCourse() {
           correctYear
         );
         this.addedCourses++;
+        this.addedCourseNames.add(courseName);
       } else {
         console.error(`Course not found or already added: ${courseName}`);
       }
     }
+    }
   }
-  // await this.loadPlanFromDb();
 }
 
 private isCourseAlreadyAdded(courseName: ICourse): boolean {
@@ -659,39 +668,21 @@ private isCourseAlreadyAdded(courseName: ICourse): boolean {
     course.name === courseName.name);
 }
 
+private findAvailableSemesterForPreReq(course: ICourse, error: Message) {
+  const targetCourseName = error.name;
+  const targetCourse = this.courseMap.get(targetCourseName);
+  const targetCourseYear = this.selectedYear + (targetCourse?.stage || 0) - 1;
 
-private findAvailableSemesterForPreReq(course: { stage: any; }, error: Message) {
-    const targetCourseName = error.name; // Stage of prerequisite course
-    const targetCourse = this.courseMap.get(targetCourseName);
-    const requiredCourseName = error.requirement.papers[0];
-    const requiredCourse = this.courseMap.get(requiredCourseName);
-    if (!requiredCourse) {
-      console.error(`Required course not found: ${requiredCourseName}`);
-      return { correctYear: this.selectedYear, correctPeriod: Period.One }; // Default value or handle error
-    }
-  
-    const targetCourseStage = targetCourse.stage; // Stage of the course that requires the prerequisite
-    const prereqTargetYear = this.selectedYear + targetCourseStage - 1; // Assuming prerequisite should be taken one year before
-    const semestersInTargetYear = this.semesters.filter((s: { year: number; }) => s.year === prereqTargetYear);
-  
-    let availableSemester = null;
-
-  // Find a semester before the required course with space
-  for (const semester of semestersInTargetYear) {
-    if (semester.period < targetCourseStage && this.countCoursesInSemester(semester) < 4) {
-      availableSemester = semester;
-      break;
+  for (let year = targetCourseYear - 1; year >= this.selectedYear; year--) {
+    for (const period of [Period.One, Period.Two]) {
+      if (this.countCoursesInSemester({ year, period }) < 4) {
+        return { correctYear: year, correctPeriod: period };
+      }
     }
   }
-
-  // If no semester found in the target year, use the first available semester in the previous year
-  if (!availableSemester) {
-    availableSemester = this.findFirstAvailableSemester(prereqTargetYear - 1, course);
-  }
-
-  return { correctYear: availableSemester.year, correctPeriod: availableSemester.period };
+  // If no available semester found, return a default value or handle the error
+  return { correctYear: this.selectedYear, correctPeriod: Period.One };
 }
-
 
 private countCoursesInSemester(semester: { year: any; period: any; }) {
   return this.storeHelper.current("courses").filter((course: { year: any; period: any; }) => course.year === semester.year && course.period === semester.period).length;
