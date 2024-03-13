@@ -7,9 +7,10 @@ import { FirebaseDbService } from "../core/firebase.db.service";
 import { Message, Period } from "../models";
 import { ProgressPanelService } from "./progress-panel.service";
 import { ICourse } from "../interfaces";
-import { updateDoc } from "@angular/fire/firestore";
+import { arrayUnion, docSnapshots, updateDoc } from "@angular/fire/firestore";
 import { RequirementService } from "./requirement.service";
 import { NotificationListComponent } from "../common";
+import { push } from "@angular/fire/database";
 
 @Injectable()
 export class SamplePlanService {
@@ -17,7 +18,7 @@ export class SamplePlanService {
   public selectedYear;
   public selectedPeriod;
   public addingSemester = false;
-  public email: string = "";
+  public email: string = '';
   public period = 1;
   public year = 2024;
 
@@ -35,19 +36,22 @@ export class SamplePlanService {
 
   // private courseMap: any;
 
-  public coursePreReqAutoFillFac: any
-  public coursePreReqAutoFillDep: any
-  public courseSelectFromLevelDataFaculty = {
-    faculty: "",
+  public coursePreReqAutoFillFac: any;
+  public coursePreReqAutoFillDep: any;
+  public pointsCardFaculty = {
+    faculty: '',
     level: 0,
     points: 0,
-  }
+    value: 15,
+    id: 0
+  };
 
   public courseSelectFromLevelDataDepartment = {
-    department: "",
+    department: '',
     level: 0,
     points: 0,
-  }
+    value: 15,
+  };
 
   private courseMap: Map<string, ICourse> = new Map();
 
@@ -56,8 +60,7 @@ export class SamplePlanService {
     public storeHelper: StoreHelper,
     public courseService: CourseService,
     public dbCourseService: FirebaseDbService,
-    public progressPanelService: ProgressPanelService,
-
+    public progressPanelService: ProgressPanelService
   ) {
     this.selectedYear = 2024;
     this.selectedPeriod = Period.One;
@@ -78,7 +81,6 @@ export class SamplePlanService {
     this.autoButtonClicked = true;
     this.getEssentialCourses();
     this.complexCourses();
-    
   }
 
   private createCourseMap() {
@@ -88,13 +90,16 @@ export class SamplePlanService {
   }
 
   public async loadPlanFromDb() {
-    const userRef = doc(this.dbCourseService.db, `users/${this.authService.auth.currentUser!.email}`);
+    const userRef = doc(
+      this.dbCourseService.db,
+      `users/${this.authService.auth.currentUser!.email}`
+    );
     const docSnap = await getDoc(userRef);
-    
+
     if (docSnap.exists()) {
-      const coursesCollectionRef = collection(userRef, "courses");
+      const coursesCollectionRef = collection(userRef, 'courses');
       const coursesSnap = await getDocs(coursesCollectionRef);
-      
+
       if (!coursesSnap.empty) {
         // Check to see if documents exist in the courses collection
         coursesSnap.forEach((doc) => {
@@ -112,26 +117,24 @@ export class SamplePlanService {
     this.getCourseFromDb(courseDbId)
       .then((copy) => {
         if (copy) {
-        this.courseDocIds.set(copy.generatedId, courseDbId);
-        return Object.assign({
-          department: copy.department,
-          desc: copy.desc,
-          faculties: copy.faculties,
-          id: copy.id,
-          generatedId: copy.generatedId, 
-          name: copy.name,
-          period: copy.period,
-          points: copy.points,
-          requirements: copy.requirements,
-          stage: copy.stage,
-          status: copy.status,
-          title: copy.title,
-          year: copy.year,
-          canDelete: true,
-        
-        });
-      }
-
+          this.courseDocIds.set(copy.generatedId, courseDbId);
+          return Object.assign({
+            department: copy.department,
+            desc: copy.desc,
+            faculties: copy.faculties,
+            id: copy.id,
+            generatedId: copy.generatedId,
+            name: copy.name,
+            period: copy.period,
+            points: copy.points,
+            requirements: copy.requirements,
+            stage: copy.stage,
+            status: copy.status,
+            title: copy.title,
+            year: copy.year,
+            canDelete: true,
+          });
+        }
       })
       .then(() => {
         // Notice we return the next promise here
@@ -140,20 +143,19 @@ export class SamplePlanService {
       .then((res) => {
         // this.storeHelper.findAndDelete("courses", res);
         // this.storeHelper.add("courses", res);
-        this.storeHelper.findAndUpdate("courses", res);
+        this.storeHelper.findAndUpdate('courses', res);
         this.courseService.updateErrors();
       })
       .catch((error) => {
         console.error(error);
       });
   }
-  
 
   private getCourseFromDb(courseDbId: string) {
     return new Promise<any>((resolve) => {
       const semesterFromDb = {
         course: this.dbCourseService
-          .getCollection("users", "courses", courseDbId)
+          .getCollection('users', 'courses', courseDbId)
           .then((res) => {
             resolve(res);
           }),
@@ -166,6 +168,7 @@ export class SamplePlanService {
       year: Number(),
       period: Number(),
       both: String(),
+      tempCards: [] as any[],
     };
 
     // The following code is super gumby, because of the promised value not being returned before executing the next lines
@@ -180,7 +183,8 @@ export class SamplePlanService {
           (newSemesterFromDb = {
             year: this.selectedYear,
             period: 0,
-            both: "",
+            both: '',
+            tempCards: [] as any[],
           })
       ); // Updates the year value withing the newSemesterFromDb variable
     this.getPeriodFromDb(courseDbId)
@@ -193,7 +197,8 @@ export class SamplePlanService {
           (newSemesterFromDb = {
             year: this.selectedYear,
             period: this.selectedPeriod,
-            both: this.selectedYear + " " + this.selectedPeriod,
+            both: this.selectedYear + ' ' + this.selectedPeriod,
+            tempCards: [] as any[],
           })
       )
       .then(async () => {
@@ -201,12 +206,16 @@ export class SamplePlanService {
         if (this.canAddSemester(newSemesterFromDb)) {
           // Here is the rest of the code to execute within the chained then statements. So that it can occur within the promise
           this.semesters.push(newSemesterFromDb);
-          this.semesters.sort((s1: { year: number; period: number; }, s2: { year: number; period: number; }) =>
-            s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year
+          this.semesters.sort(
+            (
+              s1: { year: number; period: number },
+              s2: { year: number; period: number }
+            ) =>
+              s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year
           );
           // console.log(this.semesters)
           // this.dbCourses.addSelection(this.email, "semester", newSemesterFromDb, "semesters")
-          this.storeHelper.update("semesters", this.semesters);
+          this.storeHelper.update('semesters', this.semesters);
           this.addingSemester = false; // Reverts the semester panel back to neutral
           this.selectedPeriod = Period.One; // Revert to the default value
           this.selectedYear++; // Increment the selected year so that it defaults to the next one, this avoids confusion if accidentally trying to add the same period and year, probably worth putting in a catch on the error at some point
@@ -219,12 +228,12 @@ export class SamplePlanService {
     for (let i = 0; i < retryCount; i++) {
       try {
         const res = await this.dbCourseService.getCollection(
-          "users",
-          "courses",
+          'users',
+          'courses',
           courseDbId
         );
-        if (res && res["year"]) {
-          return res["year"];
+        if (res && res['year']) {
+          return res['year'];
         } else {
           console.warn(`Year not found for ${courseDbId}, retrying...`);
           await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second before retrying
@@ -246,21 +255,27 @@ export class SamplePlanService {
       const periodFromDb = {
         period: Number(
           this.dbCourseService
-            .getCollection("users", "courses", courseDbId)
+            .getCollection('users', 'courses', courseDbId)
             .then((res) => {
               if (res) {
-              resolve(res["period"]);
-            }
+                resolve(res['period']);
+              }
             })
         ),
       };
     });
   }
 
-  private canAddSemester(semester: { year: any; period: any; both?: string; }): boolean {
+  private canAddSemester(semester: {
+    year: any;
+    period: any;
+    both?: string;
+    tempCards?: any[];
+  }): boolean {
     return (
       this.semesters.filter(
-        (s: { year: any; period: any; }) => s.year === semester.year && s.period === semester.period
+        (s: { year: any; period: any }) =>
+          s.year === semester.year && s.period === semester.period
       ).length === 0
     );
   }
@@ -308,13 +323,13 @@ export class SamplePlanService {
       if (allReqs[z]) {
         for (let x = 0; x < allReqs[z].length; x++) {
           if (allReqs[z][x] && allReqs[z][x].papers) {
-            if (!allReqs[z][x].papers[0].includes("-")) {
+            if (!allReqs[z][x].papers[0].includes('-')) {
               for (let paper of allReqs[z][x].papers) {
                 // Use the map for constant time lookup
                 if (this.courseMap.has(paper)) {
                   const existingCourse = this.storeHelper
-                    .current("courses")
-                    .find((course: { name: any; }) => course.name === paper);
+                    .current('courses')
+                    .find((course: { name: any }) => course.name === paper);
                   if (
                     !existingCourse ||
                     (existingCourse && existingCourse.status === 3)
@@ -371,11 +386,11 @@ export class SamplePlanService {
         if (!(allReqsComplex[z][i] && allReqsComplex[z][i].papers)) continue;
 
         let shown = this.courseService.allCourses;
-        if (allReqsComplex[z][i].papers[0].includes("-")) {
-          const terms = allReqsComplex[z][i].papers[0].split(" ");
+        if (allReqsComplex[z][i].papers[0].includes('-')) {
+          const terms = allReqsComplex[z][i].papers[0].split(' ');
           shown = shown.filter((course: any) =>
             terms.some((term: string) => {
-              const index = term.indexOf("-");
+              const index = term.indexOf('-');
               if (index > 3) {
                 const lower = Number(term.substring(index - 3, index));
                 const num = Number(course.name.substring(index - 3, index));
@@ -399,8 +414,11 @@ export class SamplePlanService {
             if (!this.duplicateChecker(courseToAdd)) {
               if (
                 !this.storeHelper
-                  .current("courses")
-                  .some((course: { name: string; }) => course.name === courseToAdd.name)
+                  .current('courses')
+                  .some(
+                    (course: { name: string }) =>
+                      course.name === courseToAdd.name
+                  )
               ) {
                 this.courseService.setCourseDb(
                   courseToAdd,
@@ -433,7 +451,6 @@ export class SamplePlanService {
   }
 
   public yearPeriodChecker(addedCourses: number) {
-
     if (addedCourses > 0) {
       if (addedCourses % 8 == 0) {
         this.addNewSemester(this.year, this.period);
@@ -442,15 +459,15 @@ export class SamplePlanService {
 
       if (addedCourses % 4 == 0 || addedCourses == 0) {
         if (addedCourses % 8 != 0) {
-        this.addNewSemester(this.year, this.period);
-      }
+          this.addNewSemester(this.year, this.period);
+        }
         this.periodSwitcheroo();
       }
     }
   }
 
   public duplicateChecker(course: ICourse) {
-    if (this.storeHelper.current("courses").includes(course)) {
+    if (this.storeHelper.current('courses').includes(course)) {
       return true;
     } else {
       return false;
@@ -461,245 +478,348 @@ export class SamplePlanService {
     let newSemester = {
       year: year,
       period: period,
-      both: year + " " + period,
-    }
+      both: year + ' ' + period,
+      tempCards: [] as any[],
+    };
     try {
-      this.dbCourseService.addSelection(this.authService.auth.currentUser.email, "semester", newSemester, "semesters");
-      this.storeHelper.add("semesters", newSemester);
-      this.semesters = this.storeHelper.current("semesters");
+      this.dbCourseService.addSelection(
+        this.authService.auth.currentUser.email,
+        'semester',
+        newSemester,
+        'semesters'
+      );
+      this.storeHelper.add('semesters', newSemester);
+      this.semesters = this.storeHelper.current('semesters');
     } catch (error) {
-        console.error("Error adding new semester:", error);
-    }
-}
-
-// Code for sorting courses into levels after they have been automatically added to the plan
-
-private async sortCoursesIntoYears() {
-  const sortedCourses: ICourse[][] = [[], [], []]; // Adjust for more years if needed
-
-  for (const course of this.storeHelper.current("courses")) {
-    const yearIndex = course.stage - 1; // As stage gives 1, 2, or 3
-    if (yearIndex >= 0 && yearIndex < sortedCourses.length) {
-      sortedCourses[yearIndex].push(course);
+      console.error('Error adding new semester:', error);
     }
   }
 
-  this.distributeCoursesAcrossSemesters(sortedCourses);
-  await this.updateCoursesInFirebase();
-}
+  // Code for sorting courses into levels after they have been automatically added to the plan
 
-private distributeCoursesAcrossSemesters(sortedCourses: ICourse[][]) {
-  this.year = 2024
-  sortedCourses.forEach((yearCourses, yearIndex) => {
-    let semesterIndex = 0; // Reset for each year
+  private async sortCoursesIntoYears() {
+    const sortedCourses: ICourse[][] = [[], [], []]; // Adjust for more years if needed
 
-    yearCourses.forEach(course => {
-      const actualYear = this.year + yearIndex;
-      const period = (semesterIndex % 2 === 0) ? Period.One : Period.Two;
-
-      if (!this.semesterExists(actualYear, period)) {
-        this.addNewSemester(actualYear, period);
-      }
-
-      course.year = actualYear;
-      course.period = period;
-      semesterIndex++; // Increment for each course
-    });
-
-    // Check if there's a need to add an empty second semester
-    if (semesterIndex % 2 !== 0) {
-      const actualYear = this.year + yearIndex;
-      if (!this.semesterExists(actualYear, Period.Two)) {
-        this.addNewSemester(actualYear, Period.Two);
+    for (const course of this.storeHelper.current('courses')) {
+      const yearIndex = course.stage - 1; // As stage gives 1, 2, or 3
+      if (yearIndex >= 0 && yearIndex < sortedCourses.length) {
+        sortedCourses[yearIndex].push(course);
       }
     }
-  });
 
-  this.storeHelper.update("courses", this.flattenCourses(sortedCourses));
-  this.storeHelper.update("semesters", this.semesters);
-}
-
-
-private semesterExists(year: number, period: Period): boolean {
-  return this.semesters.some((semester: { year: number; period: Period; }) => semester.year === year && semester.period === period);
-}
-
-
-private flattenCourses(sortedCourses: ICourse[][]): ICourse[] {
-  return sortedCourses.reduce((acc, val) => acc.concat(val), []);
-}
-
-private async updateCoursesInFirebase() {
-  const userEmail = this.authService.auth.currentUser.email;
-  for (const course of this.storeHelper.current("courses")) {
-    // console.log(course)
-  setTimeout( async () => {
-    if (course.generatedId) {
-      const firebaseDocId = this.courseDocIds.get(course.generatedId);
-
-      // console.log(firebaseDocId)
-
-    if (firebaseDocId != undefined) {
-    const courseRef = doc(this.dbCourseService.db, `users/${userEmail}/courses`, firebaseDocId);
-    await updateDoc(courseRef, {
-      year: course.year,
-      period: course.period
-    });
+    this.distributeCoursesAcrossSemesters(sortedCourses);
+    await this.updateCoursesInFirebase();
   }
-  }
-  // I have to run this function in a timeout because it was running before the courses were loaded from the database
-  // and therefore the courseDocIds map was empty, and the firebaseDocId was undefined
-  // this is not the best way and will have to be fixed, but it works for now.
-  // Additionally, I hafe to run loadPlanFromDb() again to update the courses in the store and the UI
-  this.getPrereqs();
-  this.getComplexReqs();
-  this.loadPlanFromDb();
-}, 2500)
-  }
-}
 
-public getSemesters() {
-  this.autoButtonClicked = false;
-  return this.semesters;
-}
+  private distributeCoursesAcrossSemesters(sortedCourses: ICourse[][]) {
+    this.year = 2024;
+    sortedCourses.forEach((yearCourses, yearIndex) => {
+      let semesterIndex = 0; // Reset for each year
 
-public getPrereqs() {
-  // console.log(this.courseService.errors);
-  // console.log(this.courseService.planned);
-  this.getPreReqPointsFac();
-  this.getPreReqPointsDept();
-  this.getPreReqCourse();
-}
+      yearCourses.forEach((course) => {
+        const actualYear = this.year + yearIndex;
+        const period = semesterIndex % 2 === 0 ? Period.One : Period.Two;
 
-public getPreReqPointsFac() {
+        if (!this.semesterExists(actualYear, period)) {
+          this.addNewSemester(actualYear, period);
+        }
 
-  for (let e = 0; e < this.courseService.errors.length; e++) {
-    if (this.courseService.errors[e].requirement.type === 0 && this.courseService.errors[e].requirement.faculties) {
-       this.courseSelectFromLevelDataFaculty = {
-        faculty: this.courseService.errors[e].requirement.faculties[0],
-        level: this.courseService.errors[e].requirement.stage,
-        points: this.courseService.errors[e].requirement.required,
-      };
+        course.year = actualYear;
+        course.period = period;
+        semesterIndex++; // Increment for each course
+      });
 
-      let courseSelectFromLevel = 0;
-
-      for (let i = 0; i < this.courseService.planned.length; i++) {
-        if (this.courseService.planned[i].faculties[0] == this.courseSelectFromLevelDataFaculty.faculty && this.courseService.planned[i].stage == this.courseSelectFromLevelDataFaculty.level) {
-          if (courseSelectFromLevel + this.courseService.planned[i].points <= this.courseSelectFromLevelDataFaculty.points) {
-            courseSelectFromLevel += 15;
-          } 
+      // Check if there's a need to add an empty second semester
+      if (semesterIndex % 2 !== 0) {
+        const actualYear = this.year + yearIndex;
+        if (!this.semesterExists(actualYear, Period.Two)) {
+          this.addNewSemester(actualYear, Period.Two);
         }
       }
+    });
 
-      // Process the data for the current error
-      this.coursePreReqAutoFillFac = this.courseSelectFromLevelDataFaculty.points / 15;
-      this.coursePreReqAutoFillFac = Array.from({ length: this.coursePreReqAutoFillFac }, (_, i) => i + 1);
-      // Now, coursePreReqAutoFill is specific to the current error
-      // You might want to collect these results in an array or handle them as needed
-    }
+    this.storeHelper.update('courses', this.flattenCourses(sortedCourses));
+    this.storeHelper.update('semesters', this.semesters);
   }
-}
 
-public getPreReqPointsDept() {
+  private semesterExists(year: number, period: Period): boolean {
+    return this.semesters.some(
+      (semester: { year: number; period: Period }) =>
+        semester.year === year && semester.period === period
+    );
+  }
 
-  for (let e = 0; e < this.courseService.errors.length; e++) {
-    if (this.courseService.errors[e].requirement.type === 0 && this.courseService.errors[e].requirement.departments) {
-       this.courseSelectFromLevelDataDepartment = {
-        department: this.courseService.errors[e].requirement.departments[0],
-        level: this.courseService.errors[e].requirement.stage,
-        points: this.courseService.errors[e].requirement.required,
-      };
+  private flattenCourses(sortedCourses: ICourse[][]): ICourse[] {
+    return sortedCourses.reduce((acc, val) => acc.concat(val), []);
+  }
 
-      let courseSelectFromLevel = 0;
+  private async updateCoursesInFirebase() {
+    const userEmail = this.authService.auth.currentUser.email;
+    for (const course of this.storeHelper.current('courses')) {
+      // console.log(course)
+      setTimeout(async () => {
+        if (course.generatedId) {
+          const firebaseDocId = this.courseDocIds.get(course.generatedId);
 
-      for (let i = 0; i < this.courseService.planned.length; i++) {
-        if (this.courseService.planned[i].faculties[0] == this.courseSelectFromLevelDataDepartment.department && this.courseService.planned[i].stage == this.courseSelectFromLevelDataDepartment.level) {
-          if (courseSelectFromLevel + this.courseService.planned[i].points <= this.courseSelectFromLevelDataDepartment.points) {
-            courseSelectFromLevel += 15;
-          } 
+          // console.log(firebaseDocId)
+
+          if (firebaseDocId != undefined) {
+            const courseRef = doc(
+              this.dbCourseService.db,
+              `users/${userEmail}/courses`,
+              firebaseDocId
+            );
+            await updateDoc(courseRef, {
+              year: course.year,
+              period: course.period,
+            });
+          }
         }
-      }
-
-      // Process the data for the current error
-      this.coursePreReqAutoFillDep = (this.courseSelectFromLevelDataDepartment.points - courseSelectFromLevel) / 15;
-      this.coursePreReqAutoFillDep = Array.from({ length: this.coursePreReqAutoFillDep }, (_, i) => i + 1);
-      // Now, coursePreReqAutoFill is specific to the current error
-      // You might want to collect these results in an array or handle them as needed
+        // I have to run this function in a timeout because it was running before the courses were loaded from the database
+        // and therefore the courseDocIds map was empty, and the firebaseDocId was undefined
+        // this is not the best way and will have to be fixed, but it works for now.
+        // Additionally, I hafe to run loadPlanFromDb() again to update the courses in the store and the UI
+        this.getPrereqs();
+        this.getComplexReqs();
+        this.loadPlanFromDb();
+      }, 2500);
     }
   }
 
-}
+  public getSemesters() {
+    this.autoButtonClicked = false;
+    return this.semesters;
+  }
 
-public getComplexReqs() {
-  this.complexPreReqs = this.courseService.complexReqsForSamplePlan[0]
-}
+  public getPrereqs() {
+    // console.log(this.courseService.errors);
+    // console.log(this.courseService.planned);
+    this.getPreReqPointsFac();
+    this.getPreReqPointsDept();
+    this.getPreReqCourse();
+  }
 
-private addedCourseNames: Set<string> = new Set();
+  public getPreReqPointsFac() {
+    for (let e = 0; e < this.courseService.errors.length; e++) {
+      if (
+        this.courseService.errors[e].requirement.type === 0 &&
+        this.courseService.errors[e].requirement.faculties
+      ) {
+        this.pointsCardFaculty = {
+          faculty: this.courseService.errors[e].requirement.faculties[0],
+          level: this.courseService.errors[e].requirement.stage,
+          points: this.courseService.errors[e].requirement.required,
+          value: 15,
+          id: Math.random() * 100000
+        };
 
-public async getPreReqCourse() {
-  for (const error of this.courseService.errors) {
-    const requirement = error.requirement;
+        let courseSelectFromLevel = 0;
 
-    if (requirement.type === 1 && requirement.required === 1 && !requirement.complex) {
-      const courseName = requirement.papers[0];
-      const course = this.courseMap.get(courseName);
-    if (!this.isCourseAlreadyAdded(course)) {
-      if (course && !this.addedCourseNames.has(courseName)) {
-        const { correctYear, correctPeriod } = this.findAvailableSemesterForPreReq(course, error);
+        for (let i = 0; i < this.courseService.planned.length; i++) {
+          if (
+            this.courseService.planned[i].faculties[0] ==
+              this.pointsCardFaculty.faculty &&
+            this.courseService.planned[i].stage == this.pointsCardFaculty.level
+          ) {
+            if (
+              courseSelectFromLevel + this.courseService.planned[i].points <=
+              this.pointsCardFaculty.points
+            ) {
+              courseSelectFromLevel += 15;
+            }
+          }
 
-        await this.courseService.setCourseDb(
-          course,
-          Math.floor(Math.random() * 100000),
-          correctPeriod,
-          correctYear
+        }
+              
+        // if the current semester has less than a total 4 courses including tempCards, add a tempCard to the current semester
+        // if the current level i.e 1 (100) matches the first year add to the current semester, else if current level is 2 (200) then add to second year
+        // if total courses + temp cards is > 4, then add to the next semester and recursively do so
+        // if the requirement is a duplicate requirement in some way then do not add this to the tempCard i.e 60 points for level 100 Arts appears more than once. Or another course has a requirement that is the same but less points, if it is more points then that should be the requirement.
+
+        // Once all of these conditions have been matched proceed with addTempCardToSemester
+        this.getSemesterId();
+        // Process the data for the current error
+        this.coursePreReqAutoFillFac = this.pointsCardFaculty.points / 15;
+        this.coursePreReqAutoFillFac = Array.from(
+          { length: this.coursePreReqAutoFillFac },
+          (_, i) => i + 1
         );
-        this.addedCourses++;
-        this.addedCourseNames.add(courseName);
-      } else {
-        console.error(`Course not found or already added: ${courseName}`);
-      }
-    }
-    }
-  }
-}
-
-private isCourseAlreadyAdded(courseName: ICourse): boolean {
-  return this.storeHelper.current("courses").some((course: { name: string }) => 
-    course.name === courseName.name);
-}
-
-private findAvailableSemesterForPreReq(course: ICourse, error: Message) {
-  const targetCourseName = error.name;
-  const targetCourse = this.courseMap.get(targetCourseName);
-  const targetCourseYear = this.selectedYear + (targetCourse?.stage || 0) - 1;
-
-  for (let year = targetCourseYear - 1; year >= this.selectedYear; year--) {
-    for (const period of [Period.One, Period.Two]) {
-      if (this.countCoursesInSemester({ year, period }) < 4) {
-        return { correctYear: year, correctPeriod: period };
+        // Now, coursePreReqAutoFill is specific to the current error
+        // You might want to collect these results in an array or handle them as needed
       }
     }
   }
-  // If no available semester found, return a default value or handle the error
-  return { correctYear: this.selectedYear, correctPeriod: Period.One };
-}
 
-private countCoursesInSemester(semester: { year: any; period: any; }) {
-  return this.storeHelper.current("courses").filter((course: { year: any; period: any; }) => course.year === semester.year && course.period === semester.period).length;
-}
+  public async getSemesterId() {
+    const colRef = collection(
+      this.dbCourseService.db,
+      `users/${this.authService.auth.currentUser!.email}/semester/`
+    );
+    const docSnap = await getDocs(colRef);
 
-private findFirstAvailableSemester(startYear: number, course: ICourse) {
-  let year = startYear;
-  while (year >= this.selectedYear - course.stage) {
-    for (const period of [Period.One, Period.Two]) {
-      if (this.countCoursesInSemester({ year, period }) <= 4) {
-        return { year, period };
+    docSnap.forEach((doc) => {
+      if (doc.data()["year"] === this.selectedYear && doc.data()["period"] === this.selectedPeriod) {
+        this.addTempCardToSemester(doc.id, this.pointsCardFaculty);
+      }
+    });
+  }
+
+  public getPreReqPointsDept() {
+    for (let e = 0; e < this.courseService.errors.length; e++) {
+      if (
+        this.courseService.errors[e].requirement.type === 0 &&
+        this.courseService.errors[e].requirement.departments
+      ) {
+        this.courseSelectFromLevelDataDepartment = {
+          department: this.courseService.errors[e].requirement.departments[0],
+          level: this.courseService.errors[e].requirement.stage,
+          points: this.courseService.errors[e].requirement.required,
+          value: 15,
+        };
+
+        let courseSelectFromLevel = 0;
+
+        for (let i = 0; i < this.courseService.planned.length; i++) {
+          if (
+            this.courseService.planned[i].faculties[0] ==
+              this.courseSelectFromLevelDataDepartment.department &&
+            this.courseService.planned[i].stage ==
+              this.courseSelectFromLevelDataDepartment.level
+          ) {
+            if (
+              courseSelectFromLevel + this.courseService.planned[i].points <=
+              this.courseSelectFromLevelDataDepartment.points
+            ) {
+              courseSelectFromLevel += 15;
+            }
+          }
+        }
+
+        // Process the data for the current error
+        this.coursePreReqAutoFillDep =
+          (this.courseSelectFromLevelDataDepartment.points -
+            courseSelectFromLevel) /
+          15;
+        this.coursePreReqAutoFillDep = Array.from(
+          { length: this.coursePreReqAutoFillDep },
+          (_, i) => i + 1
+        );
+        // Now, coursePreReqAutoFill is specific to the current error
+        // You might want to collect these results in an array or handle them as needed
       }
     }
-    year--;
   }
-  // If no semester found, return a default value or handle the error
-  return { year: this.selectedYear, period: Period.One };
-}
 
+  public getComplexReqs() {
+    this.complexPreReqs = this.courseService.complexReqsForSamplePlan[0];
+  }
+
+  private addedCourseNames: Set<string> = new Set();
+
+  public async getPreReqCourse() {
+    for (const error of this.courseService.errors) {
+      const requirement = error.requirement;
+
+      if (
+        requirement.type === 1 &&
+        requirement.required === 1 &&
+        !requirement.complex
+      ) {
+        const courseName = requirement.papers[0];
+        const course = this.courseMap.get(courseName);
+        if (!this.isCourseAlreadyAdded(course)) {
+          if (course && !this.addedCourseNames.has(courseName)) {
+            const { correctYear, correctPeriod } =
+              this.findAvailableSemesterForPreReq(course, error);
+
+            await this.courseService.setCourseDb(
+              course,
+              Math.floor(Math.random() * 100000),
+              correctPeriod,
+              correctYear
+            );
+            this.addedCourses++;
+            this.addedCourseNames.add(courseName);
+          } else {
+            console.error(`Course not found or already added: ${courseName}`);
+          }
+        }
+      }
+    }
+  }
+
+  private isCourseAlreadyAdded(courseName: ICourse): boolean {
+    return this.storeHelper
+      .current('courses')
+      .some((course: { name: string }) => course.name === courseName.name);
+  }
+
+  private findAvailableSemesterForPreReq(course: ICourse, error: Message) {
+    const targetCourseName = error.name;
+    const targetCourse = this.courseMap.get(targetCourseName);
+    const targetCourseYear = this.selectedYear + (targetCourse?.stage || 0) - 1;
+
+    for (let year = targetCourseYear - 1; year >= this.selectedYear; year--) {
+      for (const period of [Period.One, Period.Two]) {
+        if (this.countCoursesInSemester({ year, period }) < 4) {
+          return { correctYear: year, correctPeriod: period };
+        }
+      }
+    }
+    // If no available semester found, return a default value or handle the error
+    return { correctYear: this.selectedYear, correctPeriod: Period.One };
+  }
+
+  private countCoursesInSemester(semester: { year: any; period: any }) {
+    return this.storeHelper
+      .current('courses')
+      .filter(
+        (course: { year: any; period: any }) =>
+          course.year === semester.year && course.period === semester.period
+      ).length;
+  }
+
+  private findFirstAvailableSemester(startYear: number, course: ICourse) {
+    let year = startYear;
+    while (year >= this.selectedYear - course.stage) {
+      for (const period of [Period.One, Period.Two]) {
+        if (this.countCoursesInSemester({ year, period }) <= 4) {
+          return { year, period };
+        }
+      }
+      year--;
+    }
+    // If no semester found, return a default value or handle the error
+    return { year: this.selectedYear, period: Period.One };
+  }
+
+  public async addTempCardToSemester(semesterId: string, tempCard: any) {
+    try {
+      const semesterRef = doc(
+        this.dbCourseService.db,
+        `users/${this.authService.auth.currentUser.email}/semester/${semesterId}`
+      );
+      await updateDoc(semesterRef, {
+        tempCards: arrayUnion(tempCard),
+      });
+  
+      // Retrieve the document data
+      const docSnap = await getDoc(semesterRef);
+      if (docSnap.exists()) {
+        const semesterData = docSnap.data();
+  
+        // Update the local store
+        const semester = this.storeHelper
+          .current('semesters')
+          .find((sem: any) => sem.both === semesterData["both"]);
+        if (semester) {
+          semester.tempCards.push(tempCard);
+          this.storeHelper.update('semesters', this.semesters);
+          console.log(this.storeHelper.current('semesters'));
+        }
+      }
+    } catch (error) {
+      console.error('Error adding temp card to semester:', error);
+    }
+  }
 }

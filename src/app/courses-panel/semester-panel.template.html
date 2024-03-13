@@ -52,12 +52,24 @@
           (courseClicked)="courseClicked(course)" (longClick)="longCourseClicked(course)" [course]="course" [attr.data-id]="course.id"
           [attr.data-period]="semester.period" [attr.data-year]="semester.year"></course-draggable>
         
-          <div *ngFor="let element of sampleService.coursePreReqAutoFillFac">
-          <div fake *ngIf="semester.year == 2024 && semester.period == 1" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, faculties: sampleService.courseSelectFromLevelDataFaculty.faculty, stage: sampleService.courseSelectFromLevelDataFaculty.level }">
-          <div *ngIf="sampleService.courseSelectFromLevelDataFaculty.level > 0; else noLevelFac" class="position-text">Select {{sampleService.courseSelectFromLevelDataFaculty.level}}00-level {{sampleService.courseSelectFromLevelDataFaculty.faculty}}</div>
-          <ng-template #noLevelFac class="position-text">Select {{sampleService.courseSelectFromLevelDataFaculty.faculty}} Course</ng-template>
-        </div>
-        </div>
+          
+
+          <div *ngFor="let element of storeHelper.current('semesters')">
+            <ng-container *ngIf="element.year === semester.year && element.period === semester.period">
+              <!-- Add a container div with a class for flex styling -->
+              <div class="cards-container">
+                <div *ngFor="let tempCard of element.tempCards" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, faculties: tempCard.faculty, stage: tempCard.level }">
+                  <div *ngIf="tempCard.level > 0; else noLevelFac" class="position-text">
+                    Select {{ tempCard.level }}00-level {{ tempCard.faculty }}
+                  </div>
+                  <ng-template #noLevelFac>
+                    <div class="position-text">Select {{ tempCard.faculty }} Course</div>
+                  </ng-template>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+          
 
         <div *ngFor="let element of sampleService.coursePreReqAutoFillDep">
           <div fake *ngIf="semester.year == 2024 && semester.period == 1" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, department: sampleService.courseSelectFromLevelDataDepartment.department, stage: sampleService.courseSelectFromLevelDataDepartment.level }">

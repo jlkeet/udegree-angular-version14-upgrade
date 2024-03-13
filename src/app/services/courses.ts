@@ -176,8 +176,6 @@ export class CourseService {
     }));
   }
 
-
-
   public deselectCourse(course: number) { // Is this redundant now?
     this.storeHelper.findAndDelete('courses', course);
     this.updateErrors();
@@ -498,6 +496,11 @@ export class CourseService {
     return res.period; // Assuming 'period' is a number
   }
 
+  private async getTempCardsFromDb(tempCardsDbId: string): Promise<any[]> {
+    const res = await this.dbCourses.getCollection("users", "semester", tempCardsDbId);
+    return res.tempCards; // Assuming 'period' is a number
+  }
+
 
   public async addSemesterFromDb() {
     try {
@@ -507,12 +510,13 @@ export class CourseService {
   
       if (!semestersSnapshot.empty) {
         const semesterPromises = semestersSnapshot.docs.map(async (doc) => {
-          const [year, period] = await Promise.all([
+          const [year, period, tempCards] = await Promise.all([
             this.getSemesterFromDb(doc.id), 
-            this.getPeriodFromDb(doc.id)
+            this.getPeriodFromDb(doc.id),
+            this.getTempCardsFromDb(doc.id)
           ]);
   
-          const newSemester = { year, period, both: year + " " + period };
+          const newSemester: { year: number, period: number, both: string, tempCards: any[] } = { year, period, both: year + " " + period, tempCards};
           return this.canAddSemester(newSemester) ? newSemester : null;
         });
   
@@ -546,7 +550,8 @@ export class CourseService {
       const newSemester = {
         year: Number(this.selectedYear),
         period: Number(this.selectedPeriod),
-        both: this.selectedYear + " " + this.selectedPeriod
+        both: this.selectedYear + " " + this.selectedPeriod,
+        tempCards: [] as any[]
       };
       if (this.canAddSemester(newSemester)) {
         this.semesters.push(newSemester);
@@ -562,6 +567,7 @@ export class CourseService {
           year: Number(this.selectedYear),
           period: Number(this.selectedPeriod),
           both: this.selectedYear + " " + this.selectedPeriod,
+          tempCards: [] as any[]
         };
         this.semesters.push(newSemester);
         this.semesters.sort((s1, s2) =>
