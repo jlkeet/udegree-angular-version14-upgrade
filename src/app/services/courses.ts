@@ -537,8 +537,6 @@ export class CourseService {
   
 
     public newSemester(): void {
-      // console.log("firing")
-
       this.semesters = this.storeHelper.current("semesters");
 
       if (this.selectedYear === 0) {
@@ -656,9 +654,6 @@ public async deleteTempCard(tempCard: any) {
     const updatedTempCards = tempCards.filter(card => card.generatedId !== tempCard.generatedId);
 
     updateDoc(docRef, { tempCards: updatedTempCards })
-      .then(() => {
-        console.log('TempCard successfully removed from the document!');
-      })
       .catch((error) => {
         console.error('Error removing tempCard from the document: ', error);
       });

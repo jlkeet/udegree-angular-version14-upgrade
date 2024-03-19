@@ -42,7 +42,6 @@ export class ExplorerComponent {
         }
       );
     }
-    // console.log(this.lists);
     this.sortLists();
   }
 
@@ -68,9 +67,6 @@ export class ExplorerComponent {
   }
 
   private getPos(el: any, front: boolean): Point {
-
-    // console.log(el);
-
     const rect = el.getBoundingClientRect();
 
     return {
@@ -88,7 +84,6 @@ export class ExplorerComponent {
     } else if (!a.selected && b.selected) {
       return 1;
     } else {
-        // console.log(a, b)
       return ret === 0 ? a.title.localeCompare(b.title) : ret;
     }
   }
@@ -127,7 +122,6 @@ export class ExplorerComponent {
   private addLines(item: Item, listNum: number): void {
     if (item.forward) {
       item.forward.forEach((nextItem) => {
-        // console.log(item.front.x);
         if (nextItem) {
           this.lines.push({x1: item.front!.x, x2: nextItem.back!.x, y1: item.front!.y, y2: nextItem.back!.y});
         }
@@ -143,7 +137,6 @@ export class ExplorerComponent {
 
   private changeScores(items: Item[], delta: number): void {
     if (items !== null) {
-    //   console.log(items);
       items.forEach((item: Item) => item.score! += delta);
     }
   }

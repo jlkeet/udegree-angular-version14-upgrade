@@ -281,7 +281,6 @@ export class DegreeSelection {
       this.currentMajors[which] = null;
     }
     this.storeHelper.update("faculty", event.value);
-    console.log(event)
     this.dbCourses.setSelection(
       this.authService.auth.currentUser.email,
       "faculty",

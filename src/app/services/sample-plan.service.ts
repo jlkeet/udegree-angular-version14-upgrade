@@ -210,7 +210,6 @@ export class SamplePlanService {
             ) =>
               s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year
           );
-          // console.log(this.semesters)
           // this.dbCourses.addSelection(this.email, "semester", newSemesterFromDb, "semesters")
           this.storeHelper.update('semesters', this.semesters);
           this.addingSemester = false; // Reverts the semester panel back to neutral
@@ -553,12 +552,9 @@ export class SamplePlanService {
   private async updateCoursesInFirebase() {
     const userEmail = this.authService.auth.currentUser.email;
     for (const course of this.storeHelper.current('courses')) {
-      // console.log(course)
       setTimeout(async () => {
         if (course.generatedId) {
           const firebaseDocId = this.courseDocIds.get(course.generatedId);
-
-          // console.log(firebaseDocId)
 
           if (firebaseDocId != undefined) {
             const courseRef = doc(

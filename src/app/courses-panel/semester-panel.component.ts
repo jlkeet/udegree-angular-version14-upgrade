@@ -467,7 +467,6 @@ export class SemesterPanel {
   }
 
   public complexSelection(event: any) {
-    console.log(event);
     if (event.papers) {
       this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, searchTerm: event.papers[0] } });
     } else if (event.departments) {
@@ -478,7 +477,6 @@ export class SemesterPanel {
   }
 
   public selectTempCard(tempCard: any) {
-    console.log(tempCard)
     return this.courseService.tempCard = tempCard;
   }
 
