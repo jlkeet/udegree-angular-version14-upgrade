@@ -477,6 +477,11 @@ export class SemesterPanel {
     }
   }
 
+  public selectTempCard(tempCard: any) {
+    console.log(tempCard)
+    return this.courseService.tempCard = tempCard;
+  }
+
   newCourseEvent(){ 
     this
     .googleAnalyticsService

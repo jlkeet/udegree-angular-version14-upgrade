@@ -11,7 +11,7 @@ import { IRequirement, RequirementService } from './requirement.service';
 import { StoreHelper } from './store-helper';
 import { ErrorsChangedEvent } from './course.event';
 // import { Database } from '@angular/fire/database';
-import { Firestore, addDoc, collection, doc, getDoc, getDocs, getFirestore, setDoc, updateDoc, query, orderBy, onSnapshot, where, deleteDoc } from '@angular/fire/firestore';
+import { Firestore, addDoc, collection, doc, getDoc, getDocs, getFirestore, setDoc, updateDoc, query, orderBy, onSnapshot, where, deleteDoc, arrayRemove } from '@angular/fire/firestore';
 import { AuthService } from '../core/auth.service';
 import { async } from '@angular/core/testing';
 import {Observable} from "rxjs";
@@ -44,6 +44,8 @@ export class CourseService {
   public auth;
   public semesters: any[] = [];
   public newCourses: ICourse[] = [];
+
+  public tempCard: any;
 
   private planLoaded: boolean = false;
 
@@ -638,6 +640,31 @@ public updateSemesterCheck() {
         break
     }
     }
+}
+
+public async deleteTempCard(tempCard: any) {
+  const userRef = doc(this.user_db, `users/${this.authService.auth.currentUser.email}`);
+  const semesterRef = collection(userRef, "semester");
+  const q = query(semesterRef);
+
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach(docSnap => {
+    const docRef = doc(semesterRef, docSnap.id);
+    const tempCards: any[] = docSnap.data()['tempCards'];
+
+    const updatedTempCards = tempCards.filter(card => card.generatedId !== tempCard.generatedId);
+
+    updateDoc(docRef, { tempCards: updatedTempCards })
+      .then(() => {
+        console.log('TempCard successfully removed from the document!');
+      })
+      .catch((error) => {
+        console.error('Error removing tempCard from the document: ', error);
+      });
+  });
+
+  this.storeHelper.deleteTempCard(tempCard);  
 }
 
 newSemEvent(){ 

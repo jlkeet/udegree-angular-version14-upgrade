@@ -59,11 +59,11 @@
               <!-- Add a container div with a class for flex styling -->
               <div class="cards-container">
                 <div *ngFor="let tempCard of element.tempCards" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, faculties: tempCard.faculty, stage: tempCard.level }">
-                  <div *ngIf="tempCard.level > 0; else noLevelFac" class="position-text">
+                  <div *ngIf="tempCard.level > 0; else noLevelFac" class="position-text" (click)="selectTempCard(tempCard)">
                     Select {{ tempCard.level }}00-level {{ tempCard.faculty }}
                   </div>
                   <ng-template #noLevelFac>
-                    <div class="position-text">Select {{ tempCard.faculty }} Course</div>
+                    <div class="position-text" (click)="selectTempCard(tempCard)">Select {{ tempCard.faculty }} Course</div>
                   </ng-template>
                 </div>
               </div>

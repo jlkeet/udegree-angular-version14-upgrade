@@ -159,12 +159,18 @@ export class CourseDetails {
       if (this.courseStatus === CourseStatus.None) {
        // this.courseStatus = CourseStatus.Planned;
       }
+
+      if (this.courseService.tempCard) {
+        this.courseService.deleteTempCard(this.courseService.tempCard);
+        this.courseService.tempCard = null;
+      }
+
       this.addClicked.emit({
         course: this.course,
         status: this.courseStatus,
       });
       this.closeDetails();
-      this.samplePlanService.getPrereqs();
+      // this.samplePlanService.getPrereqs();
     }
 
   }

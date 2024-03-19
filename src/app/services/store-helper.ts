@@ -88,4 +88,17 @@ export class StoreHelper {
     this.store.purge()
   }
 
+  public deleteTempCard(tempCard: any) {
+    const currentState = this.store.getState();
+    const semester = currentState.semesters;
+
+    const updatedSemester = semester.filter((item: any) => item.generatedId !== tempCard.generatedId);
+
+    this.store.setState(
+      Object.assign({}, currentState, {
+        semester: updatedSemester
+      })
+    );
+  }
+
 }

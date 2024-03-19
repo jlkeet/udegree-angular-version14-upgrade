@@ -7,7 +7,7 @@ import { FirebaseDbService } from "../core/firebase.db.service";
 import { Message, Period } from "../models";
 import { ProgressPanelService } from "./progress-panel.service";
 import { ICourse } from "../interfaces";
-import { arrayUnion, docSnapshots, updateDoc } from "@angular/fire/firestore";
+import { addDoc, arrayUnion, docSnapshots, updateDoc } from "@angular/fire/firestore";
 import { RequirementService } from "./requirement.service";
 import { NotificationListComponent } from "../common";
 import { push } from "@angular/fire/database";
@@ -21,6 +21,8 @@ export class SamplePlanService {
   public email: string = '';
   public period = 1;
   public year = 2024;
+
+  public counter = 0;
 
   public autoButtonClicked: boolean = false;
   public addedCourses = 0;
@@ -43,7 +45,7 @@ export class SamplePlanService {
     level: 0,
     points: 0,
     value: 15,
-    id: 0
+    generatedId: 0
   };
 
   public courseSelectFromLevelDataDepartment = {
@@ -51,6 +53,7 @@ export class SamplePlanService {
     level: 0,
     points: 0,
     value: 15,
+    generatedId: 0
   };
 
   private courseMap: Map<string, ICourse> = new Map();
@@ -73,9 +76,9 @@ export class SamplePlanService {
     }
   }
 
-  public getCourse() {
-    return this.courseService.allCourses[377];
-  }
+  // public getCourse() {
+  //   return this.courseService.allCourses[377];
+  // }
 
   public setCourse() {
     this.autoButtonClicked = true;
@@ -592,77 +595,127 @@ export class SamplePlanService {
   }
 
   public getPrereqs() {
-    // console.log(this.courseService.errors);
-    // console.log(this.courseService.planned);
-    this.getPreReqPointsFac();
-    this.getPreReqPointsDept();
-    this.getPreReqCourse();
+
+    setTimeout(() => {
+      this.getPreReqPointsFac();
+      // this.getPreReqPointsDept();
+    }, 3000);
   }
 
-  public getPreReqPointsFac() {
+  public async getPreReqPointsFac() {
+    const facultyLevelPoints: { [key: string]: number } = {};
+  
     for (let e = 0; e < this.courseService.errors.length; e++) {
       if (
         this.courseService.errors[e].requirement.type === 0 &&
         this.courseService.errors[e].requirement.faculties
       ) {
-        this.pointsCardFaculty = {
-          faculty: this.courseService.errors[e].requirement.faculties[0],
-          level: this.courseService.errors[e].requirement.stage,
-          points: this.courseService.errors[e].requirement.required,
-          value: 15,
-          id: Math.random() * 100000
-        };
-
-        let courseSelectFromLevel = 0;
-
-        for (let i = 0; i < this.courseService.planned.length; i++) {
-          if (
-            this.courseService.planned[i].faculties[0] ==
-              this.pointsCardFaculty.faculty &&
-            this.courseService.planned[i].stage == this.pointsCardFaculty.level
-          ) {
-            if (
-              courseSelectFromLevel + this.courseService.planned[i].points <=
-              this.pointsCardFaculty.points
-            ) {
-              courseSelectFromLevel += 15;
+        const faculty = this.courseService.errors[e].requirement.faculties[0];
+        const level = this.courseService.errors[e].requirement.stage;
+        const points = this.courseService.errors[e].requirement.required;
+        const key = `${faculty}-${level}`;
+        facultyLevelPoints[key] = Math.max(facultyLevelPoints[key] || 0, points);
+      }
+    }
+  
+    for (const key in facultyLevelPoints) {
+      const [faculty, level] = key.split('-');
+      const points = facultyLevelPoints[key];
+      this.pointsCardFaculty = {
+        faculty,
+        level: parseInt(level),
+        points,
+        value: 15,
+        generatedId: Math.floor(Math.random() * 100000),
+      };
+  
+      let courseSelectFromLevel = 0;
+      for (let i = 0; i < this.courseService.planned.length; i++) {
+        if (
+          this.courseService.planned[i].faculties[0] === faculty &&
+          this.courseService.planned[i].stage === parseInt(level)
+        ) {
+          if (courseSelectFromLevel + this.courseService.planned[i].points <= points) {
+            courseSelectFromLevel += 15;
+          }
+        }
+      }
+  
+      // Determine the number of temp cards needed
+      const numTempCards = Math.ceil((points - courseSelectFromLevel) / 15);
+  
+      // Initialize variables for tracking the current year and period
+      let currentYear = Math.min(
+        ...this.storeHelper.current('semesters').map((semester: any) => semester.year)
+      );
+      let currentPeriod = Math.min(
+        ...this.storeHelper
+          .current('semesters')
+          .filter((semester: any) => semester.year === currentYear)
+          .map((semester: any) => semester.period)
+      );
+  
+      // Adjust the current year based on the level
+      if (parseInt(level) === 2) {
+        currentYear++;
+      }
+  
+      // Iterate over the number of temp cards needed
+      for (let i = 0; i < numTempCards; i++) {
+        // Get the semester ID for the current year and period
+        const semesterId = await this.getSemesterId(currentYear, currentPeriod);
+        if (semesterId) {
+          // Get the semester data for the current year and period
+          const semesterData = this.getSemesterByYearAndPeriod(currentYear, currentPeriod);
+          if (semesterData) {
+            // Check if the semester has capacity for another course
+            if (this.countCoursesInSemester(semesterData) < 4) {
+              // Add the temp card to the semester
+              await this.addTempCardToSemester(semesterId, this.pointsCardFaculty);
+            } else {
+              // Move to the next semester
+              if (currentPeriod === Period.Two) {
+                currentYear++;
+                currentPeriod = Period.One;
+              } else {
+                currentPeriod = Period.Two;
+              }
+              i--; // Retry adding the temp card in the next semester
             }
           }
-
         }
-              
-        // if the current semester has less than a total 4 courses including tempCards, add a tempCard to the current semester
-        // if the current level i.e 1 (100) matches the first year add to the current semester, else if current level is 2 (200) then add to second year
-        // if total courses + temp cards is > 4, then add to the next semester and recursively do so
-        // if the requirement is a duplicate requirement in some way then do not add this to the tempCard i.e 60 points for level 100 Arts appears more than once. Or another course has a requirement that is the same but less points, if it is more points then that should be the requirement.
-
-        // Once all of these conditions have been matched proceed with addTempCardToSemester
-        this.getSemesterId();
-        // Process the data for the current error
-        this.coursePreReqAutoFillFac = this.pointsCardFaculty.points / 15;
-        this.coursePreReqAutoFillFac = Array.from(
-          { length: this.coursePreReqAutoFillFac },
-          (_, i) => i + 1
-        );
-        // Now, coursePreReqAutoFill is specific to the current error
-        // You might want to collect these results in an array or handle them as needed
       }
+  
+      // Process the data for the current faculty and level combination
+      this.coursePreReqAutoFillFac = points / 15;
+      this.coursePreReqAutoFillFac = Array.from(
+        { length: this.coursePreReqAutoFillFac },
+        (_, i) => i + 1
+      );
     }
   }
 
-  public async getSemesterId() {
-    const colRef = collection(
-      this.dbCourseService.db,
-      `users/${this.authService.auth.currentUser!.email}/semester/`
-    );
-    const docSnap = await getDocs(colRef);
+public async getSemesterId(year: number, period: Period) {
+  const colRef = collection(
+    this.dbCourseService.db,
+    `users/${this.authService.auth.currentUser!.email}/semester/`
+  );
+  const docSnap = await getDocs(colRef);
 
-    docSnap.forEach((doc) => {
-      if (doc.data()["year"] === this.selectedYear && doc.data()["period"] === this.selectedPeriod) {
-        this.addTempCardToSemester(doc.id, this.pointsCardFaculty);
-      }
-    });
+  for (const doc of docSnap.docs) {
+    if (doc.data()["year"] === year && doc.data()["period"] === period) {
+      return doc.id;
+    }
   }
+
+  return null;
+}
+
+private getSemesterByYearAndPeriod(year: number, period: Period) {
+  return this.storeHelper.current('semesters').find(
+    (semester: any) => semester.year === year && semester.period === period
+  );
+}
 
   public getPreReqPointsDept() {
     for (let e = 0; e < this.courseService.errors.length; e++) {
@@ -675,6 +728,7 @@ export class SamplePlanService {
           level: this.courseService.errors[e].requirement.stage,
           points: this.courseService.errors[e].requirement.required,
           value: 15,
+          generatedId: Math.floor(Math.random() * 100000)
         };
 
         let courseSelectFromLevel = 0;
@@ -770,27 +824,18 @@ export class SamplePlanService {
     return { correctYear: this.selectedYear, correctPeriod: Period.One };
   }
 
-  private countCoursesInSemester(semester: { year: any; period: any }) {
-    return this.storeHelper
+  private countCoursesInSemester(semester: any) {
+    const realCoursesCount = this.storeHelper
       .current('courses')
       .filter(
         (course: { year: any; period: any }) =>
           course.year === semester.year && course.period === semester.period
       ).length;
-  }
-
-  private findFirstAvailableSemester(startYear: number, course: ICourse) {
-    let year = startYear;
-    while (year >= this.selectedYear - course.stage) {
-      for (const period of [Period.One, Period.Two]) {
-        if (this.countCoursesInSemester({ year, period }) <= 4) {
-          return { year, period };
-        }
-      }
-      year--;
-    }
-    // If no semester found, return a default value or handle the error
-    return { year: this.selectedYear, period: Period.One };
+  
+    const tempCardsCount = semester.tempCards ? semester.tempCards.length : 0;
+   // console.log("Total Count =", tempCardsCount + realCoursesCount, "in semester ", semester)
+  
+    return realCoursesCount + tempCardsCount;
   }
 
   public async addTempCardToSemester(semesterId: string, tempCard: any) {
@@ -812,10 +857,17 @@ export class SamplePlanService {
         const semester = this.storeHelper
           .current('semesters')
           .find((sem: any) => sem.both === semesterData["both"]);
+  
         if (semester) {
-          semester.tempCards.push(tempCard);
-          this.storeHelper.update('semesters', this.semesters);
-          console.log(this.storeHelper.current('semesters'));
+          const tempCardExists = semester.tempCards.some(
+            (card: any) => card.generatedId === tempCard.generatedId
+          );
+  
+          if (!tempCardExists) {
+            semester.tempCards.push(tempCard);
+            this.storeHelper.update('semesters', this.semesters);
+          //  console.log(this.storeHelper.current('semesters'));
+          }
         }
       }
     } catch (error) {
