@@ -56,29 +56,19 @@
 
           <div *ngFor="let element of storeHelper.current('semesters')">
             <ng-container *ngIf="element.year === semester.year && element.period === semester.period">
-              <!-- Add a container div with a class for flex styling -->
               <div class="cards-container">
-                <div *ngFor="let tempCard of element.tempCards" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, faculties: tempCard.faculty, stage: tempCard.level }">
-                  <div *ngIf="tempCard.level > 0; else noLevelFac" class="position-text" (click)="selectTempCard(tempCard)">
-                    Select {{ tempCard.level }}00-level {{ tempCard.faculty }}
+                <div *ngFor="let tempCard of element.tempCards" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, faculties: tempCard.faculty, departments: tempCard.department, stage: tempCard.level }">
+                  <div *ngIf="tempCard.level > 0; else noLevel" class="position-text" (click)="selectTempCard(tempCard)">
+                    Select {{ tempCard.level }}00-level {{ tempCard.faculty || tempCard.department }}
                   </div>
-                  <ng-template #noLevelFac>
-                    <div class="position-text" (click)="selectTempCard(tempCard)">Select {{ tempCard.faculty }} Course</div>
+                  <ng-template #noLevel>
+                    <div class="position-text" (click)="selectTempCard(tempCard)">Select {{ tempCard.faculty || tempCard.department }} Course</div>
                   </ng-template>
                 </div>
               </div>
             </ng-container>
           </div>
           
-
-        <div *ngFor="let element of sampleService.coursePreReqAutoFillDep">
-          <div fake *ngIf="semester.year == 2024 && semester.period == 1" class="course-select-fake" [routerLink]="['/add']" [queryParams]="{ period: semester.period, year: semester.year, department: sampleService.courseSelectFromLevelDataDepartment.department, stage: sampleService.courseSelectFromLevelDataDepartment.level }">
-          <div *ngIf="sampleService.courseSelectFromLevelDataDepartment.level > 0; else noLevelDep" class="position-text">Select {{sampleService.courseSelectFromLevelDataDepartment.level}}00-level {{sampleService.courseSelectFromLevelDataDepartment.department}}</div>
-          <ng-template #noLevelDep>
-            <div class="position-text">Select {{sampleService.courseSelectFromLevelDataDepartment.department}} Course</div>
-          </ng-template>
-        </div>
-        </div>
 
         <div fake class="course-select-fake" *ngIf="sampleService.complexPreReqs?.complex && semester.year == 2024 && semester.period == 1 && complexClickedBool == false;">
           <div class="position-text" (click)="complexClicked()">Click to see Options</div>

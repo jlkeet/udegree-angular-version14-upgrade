@@ -36,10 +36,8 @@ export class SamplePlanService {
 
   public complexPreReqs: any = [];
 
-  // private courseMap: any;
-
   public coursePreReqAutoFillFac: any;
-  public coursePreReqAutoFillDep: any;
+  public coursePreReqAutoFillDept: any;
   public pointsCardFaculty = {
     faculty: '',
     level: 0,
@@ -48,7 +46,7 @@ export class SamplePlanService {
     generatedId: 0
   };
 
-  public courseSelectFromLevelDataDepartment = {
+  public pointsCardDepartment = {
     department: '',
     level: 0,
     points: 0,
@@ -75,10 +73,6 @@ export class SamplePlanService {
       this.createCourseMap();
     }
   }
-
-  // public getCourse() {
-  //   return this.courseService.allCourses[377];
-  // }
 
   public setCourse() {
     this.autoButtonClicked = true;
@@ -596,9 +590,9 @@ export class SamplePlanService {
 
   public getPrereqs() {
 
-    setTimeout(() => {
-      this.getPreReqPointsFac();
-      // this.getPreReqPointsDept();
+    setTimeout(async () => {
+      await this.getPreReqPointsFac();
+      await this.getPreReqPointsDept();
     }, 3000);
   }
 
@@ -717,52 +711,98 @@ private getSemesterByYearAndPeriod(year: number, period: Period) {
   );
 }
 
-  public getPreReqPointsDept() {
-    for (let e = 0; e < this.courseService.errors.length; e++) {
-      if (
-        this.courseService.errors[e].requirement.type === 0 &&
-        this.courseService.errors[e].requirement.departments
-      ) {
-        this.courseSelectFromLevelDataDepartment = {
-          department: this.courseService.errors[e].requirement.departments[0],
-          level: this.courseService.errors[e].requirement.stage,
-          points: this.courseService.errors[e].requirement.required,
-          value: 15,
-          generatedId: Math.floor(Math.random() * 100000)
-        };
+public async getPreReqPointsDept() {
+  const departmentLevelPoints: { [key: string]: number } = {};
 
-        let courseSelectFromLevel = 0;
-
-        for (let i = 0; i < this.courseService.planned.length; i++) {
-          if (
-            this.courseService.planned[i].faculties[0] ==
-              this.courseSelectFromLevelDataDepartment.department &&
-            this.courseService.planned[i].stage ==
-              this.courseSelectFromLevelDataDepartment.level
-          ) {
-            if (
-              courseSelectFromLevel + this.courseService.planned[i].points <=
-              this.courseSelectFromLevelDataDepartment.points
-            ) {
-              courseSelectFromLevel += 15;
-            }
-          }
-        }
-
-        // Process the data for the current error
-        this.coursePreReqAutoFillDep =
-          (this.courseSelectFromLevelDataDepartment.points -
-            courseSelectFromLevel) /
-          15;
-        this.coursePreReqAutoFillDep = Array.from(
-          { length: this.coursePreReqAutoFillDep },
-          (_, i) => i + 1
-        );
-        // Now, coursePreReqAutoFill is specific to the current error
-        // You might want to collect these results in an array or handle them as needed
-      }
+  for (let e = 0; e < this.courseService.errors.length; e++) {
+    if (
+      this.courseService.errors[e].requirement.type === 0 &&
+      this.courseService.errors[e].requirement.departments
+    ) {
+      const department = this.courseService.errors[e].requirement.departments[0];
+      const level = this.courseService.errors[e].requirement.stage;
+      const points = this.courseService.errors[e].requirement.required;
+      const key = `${department}-${level}`;
+      departmentLevelPoints[key] = Math.max(departmentLevelPoints[key] || 0, points);
     }
   }
+
+  for (const key in departmentLevelPoints) {
+    const [department, level] = key.split('-');
+    const points = departmentLevelPoints[key];
+    this.pointsCardDepartment = {
+      department,
+      level: parseInt(level),
+      points,
+      value: 15,
+      generatedId: Math.floor(Math.random() * 100000),
+    };
+
+    let courseSelectFromLevel = 0;
+    for (let i = 0; i < this.courseService.planned.length; i++) {
+      if (
+        this.courseService.planned[i].department[0] === department &&
+        this.courseService.planned[i].stage === parseInt(level)
+      ) {
+        if (courseSelectFromLevel + this.courseService.planned[i].points <= points) {
+          courseSelectFromLevel += 15;
+        }
+      }
+    }
+
+    // Determine the number of temp cards needed
+    const numTempCards = Math.ceil((points - courseSelectFromLevel) / 15);
+
+    // Initialize variables for tracking the current year and period
+    let currentYear = Math.min(
+      ...this.storeHelper.current('semesters').map((semester: any) => semester.year)
+    );
+    let currentPeriod = Math.min(
+      ...this.storeHelper
+        .current('semesters')
+        .filter((semester: any) => semester.year === currentYear)
+        .map((semester: any) => semester.period)
+    );
+
+    // Adjust the current year based on the level
+    if (parseInt(level) === 200) {
+      currentYear++;
+    }
+
+    // Iterate over the number of temp cards needed
+    for (let i = 0; i < numTempCards; i++) {
+      // Get the semester ID for the current year and period
+      const semesterId = await this.getSemesterId(currentYear, currentPeriod);
+      if (semesterId) {
+        // Get the semester data for the current year and period
+        const semesterData = this.getSemesterByYearAndPeriod(currentYear, currentPeriod);
+        if (semesterData) {
+          // Check if the semester has capacity for another course
+          if (this.countCoursesInSemester(semesterData) < 4) {
+            // Add the temp card to the semester
+            await this.addTempCardToSemester(semesterId, this.pointsCardDepartment);
+          } else {
+            // Move to the next semester
+            if (currentPeriod === Period.Two) {
+              currentYear++;
+              currentPeriod = Period.One;
+            } else {
+              currentPeriod = Period.Two;
+            }
+            i--; // Retry adding the temp card in the next semester
+          }
+        }
+      }
+    }
+
+    // Process the data for the current department and level combination
+    this.coursePreReqAutoFillDept = points / 15;
+    this.coursePreReqAutoFillDept = Array.from(
+      { length: this.coursePreReqAutoFillDept },
+      (_, i) => i + 1
+    );
+  }
+}
 
   public getComplexReqs() {
     this.complexPreReqs = this.courseService.complexReqsForSamplePlan[0];
