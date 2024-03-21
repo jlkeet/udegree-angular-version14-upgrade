@@ -256,6 +256,10 @@ export class SemesterPanel {
         semester.period !== this.semester.period
     );
     this.storeHelper.update("semesters", semesters);
+    if (this.storeHelper.current("semesters").length === 0) {
+      this.semester.year = 2024;
+      this.semester.period = 1;
+    }
     setTimeout(() => {
       this.semesterSort();
     }, 1000);

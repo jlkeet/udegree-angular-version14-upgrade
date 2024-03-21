@@ -39,7 +39,7 @@ export class CourseModel implements ICourse {
     this.faculties = faculties;
     this.department = department;
     this.period = period = Period.One;
-    this.year = year = 2023;
+    this.year = year = 2024;
     this.status = status !== null ? status : CourseStatus.Enrolled;
     this.generatedId = generatedId;
   }

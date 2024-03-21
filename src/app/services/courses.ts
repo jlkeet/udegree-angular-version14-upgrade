@@ -190,16 +190,6 @@ export class CourseService {
     let course: any;
     course = courseObject; // gets rid of generatedId error issue, might have to fix later
   
-    // if (courseObject.status !== 3) {
-    //   course = this.findPlanned(courseObject.name);
-    // } else {
-    //   course = this.findFailed(courseObject.name);
-    // }  
-
-    // console.log("Course Object:", courseObject);
-    // console.log("Course:", course);
-
-    // this.dbCourses.setAuditLogDeleteCourse(courseName)
     this.storeHelper.findAndDelete('courses', course);
     
     this.updateErrors();
@@ -356,7 +346,6 @@ export class CourseService {
   }
 
   public isGeneral(courseName: string): boolean {
-    // console.log(courseName)
     return courseName.lastIndexOf("G") === courseName.length - 1;
   }
 
@@ -513,19 +502,27 @@ export class CourseService {
       if (!semestersSnapshot.empty) {
         const semesterPromises = semestersSnapshot.docs.map(async (doc) => {
           const [year, period, tempCards] = await Promise.all([
-            this.getSemesterFromDb(doc.id), 
+            this.getSemesterFromDb(doc.id),
             this.getPeriodFromDb(doc.id),
             this.getTempCardsFromDb(doc.id)
           ]);
-  
-          const newSemester: { year: number, period: number, both: string, tempCards: any[] } = { year, period, both: year + " " + period, tempCards};
-          return this.canAddSemester(newSemester) ? newSemester : null;
+          const newSemester: { year: number, period: number, both: string, tempCards: any[] } = {
+            year,
+            period,
+            both: year + " " + period,
+            tempCards
+          };
+          return newSemester;
         });
   
-        const semesters = (await Promise.all(semesterPromises)).filter(semester => semester !== null);
+        const newSemesters = await Promise.all(semesterPromises);
+        const uniqueSemesters = newSemesters.filter((semester) =>
+          this.canAddSemester(semester)
+        );
+        uniqueSemesters.sort((s1, s2) => s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year);
         
-        semesters.sort((s1, s2) => s1.year === s2.year ? s1.period - s2.period : s1.year - s2.year);
-        this.storeHelper.update("semesters", semesters);
+        this.semesters = [...this.semesters, ...uniqueSemesters];
+        this.storeHelper.update("semesters", this.semesters);
       }
     } catch (error) {
       console.error('Error adding semester from DB:', error);
@@ -538,9 +535,13 @@ export class CourseService {
 
     public newSemester(): void {
       this.semesters = this.storeHelper.current("semesters");
+      if (this.semesters.length === 0) {
+        this.selectedYear = 2024;
+        this.selectedPeriod = 1;
+      }
 
       if (this.selectedYear === 0) {
-        this.selectedYear = 2023;
+        this.selectedYear = 2024;
       }
 
       this.nextSemesterCheck();
@@ -579,11 +580,11 @@ export class CourseService {
         this.addingSemester = false;
       }
      this.dbCourses.addSelection(this.authService.auth.currentUser.email, "semester", newSemester, "semesters")
-    //  console.log(semId)
     }
   
 
     public canAddSemester(semester: any): boolean {
+      
       return (
         this.semesters.filter(
           (s) => s.year === semester.year && s.period === semester.period

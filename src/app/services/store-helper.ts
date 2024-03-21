@@ -61,7 +61,7 @@ export class StoreHelper {
           if (item.id !== state.id) {
             return item;
           }
-          if (item.generatedId !== state.generatedId) {
+          if (item?.generatedId !== state?.generatedId) {
             return item;
           }
           // if it is, update it

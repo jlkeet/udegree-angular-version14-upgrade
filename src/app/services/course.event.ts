@@ -59,13 +59,13 @@ export class ClickedEvent {
 export class MovedEvent {
   public courseId: number = 0;
   public period: Period = Period.One;
-  public year: number = 2023;
+  public year: number = 2024;
 }
 export class RemovedEvent {
   public course: ICourse = null as any;
   public courseId: number = 0;
   public period: Period = Period.One;
-  public year: number = 2023;
+  public year: number = 2024;
 }
 export class StatusEvent {
   public courseId: number = 0;
