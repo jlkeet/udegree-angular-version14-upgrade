@@ -352,7 +352,13 @@ export class SamplePlanService {
                 }
               }
             }
+          } else {
+            const requirement = allReqs[z][x];
+            if (requirement && requirement.required && requirement.departments[0] && requirement.aboveStage) {
+              this.getMajorRequirementPoints(requirement.departments[0], requirement.aboveStage + 1, requirement.required);
+            }
           }
+          
         }
       }
     }
@@ -691,7 +697,6 @@ public async getSemesterId(year: number, period: Period) {
     `users/${this.authService.auth.currentUser!.email}/semester/`
   );
   const docSnap = await getDocs(colRef);
-
   for (const doc of docSnap.docs) {
     if (doc.data()["year"] === year && doc.data()["period"] === period) {
       return doc.id;
@@ -875,6 +880,7 @@ public async getPreReqPointsDept() {
   }
 
   public async addTempCardToSemester(semesterId: string, tempCard: any) {
+    console.log("firing addTempCardToSemester: ", tempCard)
     try {
       const semesterRef = doc(
         this.dbCourseService.db,
@@ -908,6 +914,86 @@ public async getPreReqPointsDept() {
       }
     } catch (error) {
       console.error('Error adding temp card to semester:', error);
+    }
+  }
+
+  public async getMajorRequirementPoints(department: string, level: number, requiredPoints: number): Promise<void> {
+    const departmentLevelPoints: { [key: string]: number } = {};
+    const key = `${department}-${level}`;
+    departmentLevelPoints[key] = requiredPoints;
+  
+    for (const key in departmentLevelPoints) {
+      const [department, levelStr] = key.split('-');
+      const level = parseInt(levelStr);
+      const points = departmentLevelPoints[key];
+  
+      const courses = this.courseService.allCourses.filter((course: { department?: string[]; stage: number; }) =>
+        course.department && course.department[0] === department && course.stage >= level
+      );
+  
+      let courseSelectFromLevel = 0;
+      for (const course of courses) {
+        if (this.courseService.planned.includes(course)) {
+          if (courseSelectFromLevel + course.points <= points) {
+            courseSelectFromLevel += course.points;
+          }
+        }
+      }
+  
+      const numTempCards = Math.ceil((points - courseSelectFromLevel) / 15);
+  
+      // Wait for the semesters data to be available
+      await new Promise<void>((resolve) => {
+        const checkSemesters = () => {
+          const semesters = this.storeHelper.current('semesters');
+          if (semesters.length > 0) {
+            resolve();
+          } else {
+            setTimeout(checkSemesters, 100); // Check again after a short delay
+          }
+        };
+        checkSemesters();
+      });
+  
+      let currentYear = Math.min(
+        ...this.storeHelper.current('semesters').map((semester: any) => semester.year)
+      );
+      let currentPeriod = Math.min(
+        ...this.storeHelper
+          .current('semesters')
+          .filter((semester: any) => semester.year === currentYear)
+          .map((semester: any) => semester.period)
+      );
+  
+      if (level >= 200) {
+        currentYear += Math.floor((level - 100) / 100);
+      }
+  
+      for (let i = 0; i < numTempCards; i++) {
+        const semesterId = await this.getSemesterId(currentYear, currentPeriod);
+        if (semesterId) {
+          const semesterData = this.getSemesterByYearAndPeriod(currentYear, currentPeriod);
+          if (semesterData) {
+            if (this.countCoursesInSemester(semesterData) < 4) {
+              await this.addTempCardToSemester(semesterId, {
+                department,
+                level,
+                points: 15,
+                value: 15,
+                generatedId: Math.floor(Math.random() * 100000),
+              });
+            } else {
+              if (currentPeriod === Period.Two) {
+                currentYear++;
+                currentPeriod = Period.One;
+              } else {
+                currentPeriod = Period.Two;
+              }
+              i--;
+            }
+          }
+        }
+      }
     }
   }
 }
