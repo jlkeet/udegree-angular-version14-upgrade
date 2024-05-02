@@ -493,7 +493,21 @@ export class SamplePlanService {
         newSemester,
         'semesters'
       );
-      this.storeHelper.add('semesters', newSemester);
+  
+      // Find the correct index to insert the new semester
+      const insertIndex = this.semesters.findIndex(
+        (semester: any) => semester.year > year || (semester.year === year && semester.period > period)
+      );
+  
+      if (insertIndex === -1) {
+        // If no semester is found after the new semester, add it to the end
+        this.storeHelper.add('semesters', newSemester);
+      } else {
+        // Insert the new semester at the appropriate index
+        this.semesters.splice(insertIndex, 0, newSemester);
+        this.storeHelper.update('semesters', this.semesters);
+      }
+  
       this.semesters = this.storeHelper.current('semesters');
     } catch (error) {
       console.error('Error adding new semester:', error);
