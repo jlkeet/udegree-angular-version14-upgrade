@@ -12,6 +12,16 @@ import { FirebaseDbService } from "../core/firebase.db.service";
 import { AuthService } from "../core/auth.service";
 import { SamplePlanService } from "../services/sample-plan.service";
 
+interface TempCard {
+  paper: string | null;
+  points: number;
+  value: number;
+  generatedId: number;
+  department: string | null;
+  faculty: string | null;
+  level: number | null;
+}
+
 @Component({
   selector: "semester-panel",
   styleUrls: ["./semester-panel.component.scss"],
@@ -47,6 +57,10 @@ export class SemesterPanel {
 
   public course: ICourse = null as any;
 
+  public selectedPath: any;
+  public selectedPathCards: TempCard[] = [];
+  
+
   constructor(
     public courseService: CourseService,
     public courseEventService: CourseEventService,
@@ -60,8 +74,9 @@ export class SemesterPanel {
     public authService: AuthService,
     public sampleService: SamplePlanService
   ) {
-    
   }
+
+  
 
   public ngOnInit() {
 
@@ -471,12 +486,80 @@ export class SemesterPanel {
   }
 
   public complexSelection(event: any) {
-    if (event.papers) {
-      this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, searchTerm: event.papers[0] } });
-    } else if (event.departments) {
-      this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, departments: event.departments[0] } });
-    } else if (event.faculties) {
-      this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, faculties: event.faculties[0] } });
+
+    // if (event.papers) {
+    //   this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, searchTerm: event.papers[0] } });
+    // } else if (event.departments) {
+    //   this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, departments: event.departments[0] } });
+    // } else if (event.faculties) {
+    //   this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, faculties: event.faculties[0] } });
+    // }
+
+  }
+
+  public selectPath(path: any) {
+    this.selectedPath = path;
+    this.selectedPathCards = [];
+  
+    if (path.papers) {
+      // Generate individual cards for papers
+      for (const paper of path.papers) {
+        const card: TempCard = {
+          paper: paper,
+          points: 15,
+          value: 15,
+          generatedId: Math.floor(Math.random() * 100000),
+          department: null,
+          faculty: null,
+          level: null,
+        };
+        this.selectedPathCards.push(card);
+        this.saveCardToDatabase(card);
+      }
+    } else if (path.departments || path.faculties) {
+      const { departments, faculties, level, required } = path;
+      const numCards = Math.ceil(required / 15);
+  
+      // Generate individual cards for departments or faculties
+      for (let i = 0; i < numCards; i++) {
+        const card: TempCard = {
+          department: departments ? departments[0] : null,
+          faculty: faculties ? faculties[0] : null,
+          level: level || null,
+          points: 15,
+          value: 15,
+          generatedId: Math.floor(Math.random() * 100000),
+          paper: null,
+        };
+        this.selectedPathCards.push(card);
+        this.saveCardToDatabase(card);
+      }
+    }
+  
+    // Remove the path options from the complex prerequisites
+    this.sampleService.complexPreReqs.complex = this.sampleService.complexPreReqs.complex.filter(
+      (element: any) => element !== path
+    );
+  }
+  
+  public onIndividualCardClick(card: any) {
+    if (card.paper) {
+      this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, searchTerm: card.paper } });
+    } else if (card.department) {
+      this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, departments: card.department } });
+    } else if (card.faculty) {
+      this.router.navigate(['/add'], { queryParams: { period: this.semester.period, year: this.semester.year, faculties: card.faculty } });
+    }
+  }
+  
+  private async saveCardToDatabase(card: any) {
+    try {
+      const semesterId = await this.sampleService.getSemesterId(this.semester.year, this.semester.period);
+      if (semesterId) {
+        await this.sampleService.addTempCardToSemester(semesterId, card);
+      }
+    } catch (error) {
+      console.error('Error saving card to database:', error);
     }
   }
 

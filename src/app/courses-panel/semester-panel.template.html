@@ -70,19 +70,46 @@
           </div>
           
 
-        <div fake class="course-select-fake" *ngIf="sampleService.complexPreReqs?.complex && semester.year == 2024 && semester.period == 1 && complexClickedBool == false;">
+        <div fake class="course-select-fake path-selection" *ngIf="sampleService.complexPreReqs?.complex && semester.year == 2024 && semester.period == 1 && complexClickedBool == false;">
           <div class="position-text" (click)="complexClicked()">Click to see Options</div>
         </div>
 
 
-        <ng-container *ngIf="complexClickedBool">
+        <ng-container *ngIf="complexClickedBool && !selectedPath">
           <ng-template ngFor let-element [ngForOf]="sampleService.complexPreReqs.complex">
-            <div *ngIf="semester.year == 2024 && semester.period == 1" fake class="course-select-fake">
-              <div (click)="complexSelection(element)" class="position-text">Select {{element.required}} from {{element.papers || element.departments || element.faculties}}</div>
+            <div *ngIf="semester.year == 2024 && semester.period == 1" fake class="course-select-fake path-selection">
+              <div (click)="selectPath(element)" class="position-text">
+                Select {{element.required}} from {{element.papers || element.departments || element.faculties}}
+              </div>
             </div>
           </ng-template>
         </ng-container>
         
+        <!-- Display individual cards -->
+        <!-- <ng-container *ngIf="selectedPath">
+          <div *ngFor="let card of selectedPathCards" fake class="course-select-fake" (click)="onIndividualCardClick(card)">
+            <div class="position-text" *ngIf="card.paper">
+              Select {{card.paper}}
+            </div>
+            <div class="position-text" *ngIf="card.department">
+              <span *ngIf="card.level">
+                Select Level {{card.level}} {{card.department}}
+              </span>
+              <span *ngIf="!card.level">
+                Select Any Level {{card.department}}
+              </span>
+            </div>
+            <div class="position-text" *ngIf="card.faculty">
+              <span *ngIf="card.level">
+                Select Level {{card.level}} {{card.faculty}}
+              </span>
+              <span *ngIf="!card.level">
+                Select Any Level {{card.faculty}}
+              </span>
+            </div>
+          </div>
+        </ng-container> -->
+
 
 
         <div fake *ngIf="!atMaxPoints && boolCheck" class="fakecourse" [routerLink]="['/add']"
