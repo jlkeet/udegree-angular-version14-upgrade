@@ -11,6 +11,7 @@ import{ GoogleAnalyticsService } from '../services/google-analytics.service';
 import { FirebaseDbService } from "../core/firebase.db.service";
 import { AuthService } from "../core/auth.service";
 import { SamplePlanService } from "../services/sample-plan.service";
+import { set } from "@angular/fire/database";
 
 interface TempCard {
   paper: string | null;
@@ -497,7 +498,7 @@ export class SemesterPanel {
 
   }
 
-  public selectPath(path: any) {
+  public async selectPath(path: any) {
     this.selectedPath = path;
     this.selectedPathCards = [];
   
@@ -534,12 +535,51 @@ export class SemesterPanel {
         this.selectedPathCards.push(card);
         this.saveCardToDatabase(card);
       }
+    } else if (!path.deprtments && !path.faculties && !path.papers) {
+      const { level, required } = path;
+      const numCards = Math.ceil(required / 15);
+
+            // Generate individual cards for no departments or faculties
+            for (let i = 0; i < numCards; i++) {
+              const card: TempCard = {
+                department: null,
+                faculty: null,
+                level: level || null,
+                points: 15,
+                value: 15,
+                generatedId: Math.floor(Math.random() * 100000),
+                paper: null,
+              };
+              this.selectedPathCards.push(card);
+              this.saveCardToDatabase(card);
     }
-  
+  }
     // Remove the path options from the complex prerequisites
     this.sampleService.complexPreReqs.complex = this.sampleService.complexPreReqs.complex.filter(
       (element: any) => element !== path
     );
+
+    setTimeout(async () => {
+      await this.sampleService.sortTempCardsIntoYears();
+      
+      // Remove the tempCards from their original location after sorting
+      for (const card of this.selectedPathCards) {
+        await this.removeTempCardFromOriginalLocation(card);
+      }
+    }, 2000);
+  }
+
+  private async removeTempCardFromOriginalLocation(tempCard: TempCard) {
+    const semester = this.sampleService.semesters.find(
+      (sem: any) => sem.year === this.semester.year && sem.period === this.semester.period
+    );
+  
+    if (semester) {
+      const semesterId = await this.sampleService.getSemesterId(semester.year, semester.period);
+      if (semesterId) {
+        await this.sampleService.removeTempCardFromSemester(semesterId, tempCard);
+      }
+    }
   }
   
   public onIndividualCardClick(card: any) {

@@ -79,7 +79,7 @@
           <ng-template ngFor let-element [ngForOf]="sampleService.complexPreReqs.complex">
             <div *ngIf="semester.year == 2024 && semester.period == 1" fake class="course-select-fake path-selection">
               <div (click)="selectPath(element)" class="position-text">
-                Select {{element.required}} from {{element.papers || element.departments || element.faculties}}
+                Select {{element.required}} from {{element.papers || element.departments || element.faculties || "points any department"}}
               </div>
             </div>
           </ng-template>

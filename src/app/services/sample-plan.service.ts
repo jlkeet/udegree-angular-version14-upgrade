@@ -1013,8 +1013,9 @@ public async getPreReqPointsDept() {
     await this.sortTempCardsIntoYears();
   }
 
-  private async sortTempCardsIntoYears() {
+  public async sortTempCardsIntoYears() {
     const sortedTempCards: any[][] = [[], [], []]; // Adjust for more years if needed
+    const unsortedTempCards: any[] = [];
   
     for (const semester of this.semesters) {
       for (const tempCard of semester.tempCards) {
@@ -1023,12 +1024,37 @@ public async getPreReqPointsDept() {
           if (yearIndex >= 0 && yearIndex < sortedTempCards.length) {
             sortedTempCards[yearIndex].push({ ...tempCard, originalSemester: semester });
           }
+        } else {
+          unsortedTempCards.push({ ...tempCard, originalSemester: semester });
         }
       }
     }
+  
     await this.distributeTempCardsAcrossSemesters(sortedTempCards);
+  
+    // Sort unsorted tempCards into semesters with less than four courses
+    for (const tempCard of unsortedTempCards) {
+      const semester = this.findSemesterWithSpace();
+      if (semester) {
+        const semesterId = await this.getSemesterId(semester.year, semester.period);
+        if (semesterId) {
+          await this.addTempCardToSemester(semesterId, tempCard);
+        }
+      }
+    }
+  
     // Update the semesters in the database asynchronously
     this.updateSemestersInDatabase(this.semesters);
+  }
+  
+  private findSemesterWithSpace(): any {
+    for (const semester of this.semesters) {
+      const totalCourses = semester.tempCards.length + this.countCoursesInSemester(semester);
+      if (totalCourses < 4) {
+        return semester;
+      }
+    }
+    return null;
   }
 
   private async distributeTempCardsAcrossSemesters(sortedTempCards: any[][]): Promise<void> {
@@ -1094,5 +1120,35 @@ public async getPreReqPointsDept() {
     }
   }
 
+  public async removeTempCardFromSemester(semesterId: string, tempCard: any) {
+    try {
+      const semesterRef = doc(
+        this.dbCourseService.db,
+        `users/${this.authService.auth.currentUser.email}/semester/${semesterId}`
+      );
+  
+      const snapshot = await getDoc(semesterRef);
+      if (snapshot.exists()) {
+        const semesterData = snapshot.data();
+        const updatedTempCards = semesterData["tempCards"].filter(
+          (card: any) => card.generatedId !== tempCard.generatedId
+        );
+  
+        await updateDoc(semesterRef, { tempCards: updatedTempCards });
+  
+        // Update the local store
+        const semester = this.storeHelper
+          .current('semesters')
+          .find((sem: any) => sem.both === semesterData["both"]);
+  
+        if (semester) {
+          semester.tempCards = updatedTempCards;
+          this.storeHelper.update('semesters', this.semesters);
+        }
+      }
+    } catch (error) {
+      console.error('Error removing temp card from semester:', error);
+    }
+  }
   
 }
