@@ -289,7 +289,7 @@ export class SamplePlanService {
     this.year += 1;
   }
 
-  public getEssentialCourses() {
+  public async getEssentialCourses() {
     this.majReqs.push(this.progressPanelService.getMajReqs());
     this.secondMajReqs.push(this.progressPanelService.getSecondMajReqs());
     this.thirdMajReqs.push(this.progressPanelService.getThirdMajReqs());
@@ -352,7 +352,7 @@ export class SamplePlanService {
           } else {
             const requirement = allReqs[z][x];
             if (requirement && requirement.required && requirement.departments[0] && requirement.aboveStage) {
-              this.getMajorRequirementPoints(requirement.departments[0], requirement.aboveStage + 1, requirement.required);
+              setTimeout(() => this.getMajorRequirementPoints(requirement.departments[0], requirement.aboveStage + 1, requirement.required), 3000);
             }
           }
           
@@ -608,10 +608,10 @@ export class SamplePlanService {
   }
 
   public getPrereqs() {
-
+    this.getPreReqCourse();
     setTimeout(async () => {
       await this.getPreReqPointsFac();
-      await this.getPreReqPointsDept();
+      await this.getPreReqPointsDept(); 
     }, 3000);
   }
 
@@ -731,7 +731,6 @@ private getSemesterByYearAndPeriod(year: number, period: Period) {
 
 public async getPreReqPointsDept() {
   const departmentLevelPoints: { [key: string]: number } = {};
-
   for (let e = 0; e < this.courseService.errors.length; e++) {
     if (
       this.courseService.errors[e].requirement.type === 0 &&
@@ -932,7 +931,21 @@ public async getPreReqPointsDept() {
 
   }
 
-  public async getMajorRequirementPoints(department: string, level: number, requiredPoints: number): Promise<void> {
+  public async getMajorRequirementPoints(department: string, level: number, requiredPoints: number) {
+  // Get all courses that match the department and level
+  const matchingCourses = this.storeHelper.current('courses').filter(
+    (course: { department?: string[]; stage: number; points: number; }) => 
+      course.department && course.department[0] === department && course.stage === level
+  );
+  // Reduce the required points by 15 for each matching course
+  for (const course of matchingCourses) {
+    requiredPoints = Math.max(0, requiredPoints - 15); // Reduce by 15 but don't go negative
+    console.log(requiredPoints)
+    if (requiredPoints === 0) {
+      return; // If no more points are required, exit early
+    }
+  }
+
     const departmentLevelPoints: { [key: string]: number } = {};
     const key = `${department}-${level}`;
     departmentLevelPoints[key] = requiredPoints;
@@ -1009,8 +1022,8 @@ public async getPreReqPointsDept() {
           }
         }
       }
-    }
     await this.sortTempCardsIntoYears();
+    }
   }
 
   public async sortTempCardsIntoYears() {
