@@ -8,6 +8,7 @@ import { Message, Period } from "../models";
 import { ProgressPanelService } from "./progress-panel.service";
 import { ICourse } from "../interfaces";
 import { arrayUnion, updateDoc, writeBatch } from "@angular/fire/firestore";
+import { RequirementService } from "./requirement.service";
 
 @Injectable()
 export class SamplePlanService {
@@ -58,7 +59,8 @@ export class SamplePlanService {
     public storeHelper: StoreHelper,
     public courseService: CourseService,
     public dbCourseService: FirebaseDbService,
-    public progressPanelService: ProgressPanelService
+    public progressPanelService: ProgressPanelService,
+    public requirementService: RequirementService
   ) {
     this.selectedYear = 2024;
     this.selectedPeriod = Period.One;
@@ -472,7 +474,7 @@ export class SamplePlanService {
   }
 
   public duplicateChecker(course: ICourse) {
-    if (this.storeHelper.current('courses').includes(course)) {
+    if (this.storeHelper.current('courses').includes(course) || course.general === true) {
       return true;
     } else {
       return false;
@@ -594,11 +596,10 @@ export class SamplePlanService {
         // I have to run this function in a timeout because it was running before the courses were loaded from the database
         // and therefore the courseDocIds map was empty, and the firebaseDocId was undefined
         // this is not the best way and will have to be fixed, but it works for now.
-        // Additionally, I hafe to run loadPlanFromDb() again to update the courses in the store and the UI
+        // Additionally, I have to run loadPlanFromDb() again to update the courses in the store and the UI
         this.getPrereqs();
-        this.getComplexReqs();
         this.loadPlanFromDb();
-      }, 2500);
+      }, 3000);
     }
   }
 
@@ -612,6 +613,7 @@ export class SamplePlanService {
     setTimeout(async () => {
       await this.getPreReqPointsFac();
       await this.getPreReqPointsDept(); 
+      await this.getComplexReqs();
     }, 3000);
   }
 
@@ -763,10 +765,10 @@ public async getPreReqPointsDept() {
       ) {
         if (courseSelectFromLevel + this.courseService.planned[i].points <= points) {
           courseSelectFromLevel += 15;
+
         }
       }
     }
-
     // Determine the number of temp cards needed
     const numTempCards = Math.ceil((points - courseSelectFromLevel) / 15);
 
@@ -822,7 +824,9 @@ public async getPreReqPointsDept() {
 }
 
   public getComplexReqs() {
+   if (!this.requirementService.requirementFilled(this.courseService.complexReqsForSamplePlan[0], this.storeHelper.current("courses"))) {
     this.complexPreReqs = this.courseService.complexReqsForSamplePlan[0];
+   }
   }
 
   private addedCourseNames: Set<string> = new Set();
@@ -830,7 +834,7 @@ public async getPreReqPointsDept() {
   public async getPreReqCourse() {
     for (const error of this.courseService.errors) {
       const requirement = error.requirement;
-
+      // console.log(error)
       if (
         requirement.type === 1 &&
         requirement.required === 1 &&
@@ -842,6 +846,7 @@ public async getPreReqPointsDept() {
           if (course && !this.addedCourseNames.has(courseName)) {
             const { correctYear, correctPeriod } =
               this.findAvailableSemesterForPreReq(course, error);
+              // console.log(course)
 
             await this.courseService.setCourseDb(
               course,
@@ -855,7 +860,12 @@ public async getPreReqPointsDept() {
             console.error(`Course not found or already added: ${courseName}`);
           }
         }
-      }
+      } else if ( 
+        requirement.type === 1 &&
+        requirement.required === 1 &&
+        requirement.complex ) {
+          console.log(requirement)
+        }
     }
   }
 
@@ -928,7 +938,7 @@ public async getPreReqPointsDept() {
     } catch (error) {
       console.error('Error adding temp card to semester:', error);
     }
-
+    await this.sortTempCardsIntoYears();
   }
 
   public async getMajorRequirementPoints(department: string, level: number, requiredPoints: number) {
@@ -1022,11 +1032,11 @@ public async getPreReqPointsDept() {
           }
         }
       }
-    await this.sortTempCardsIntoYears();
     }
   }
 
   public async sortTempCardsIntoYears() {
+    console.log("Firing")
     const sortedTempCards: any[][] = [[], [], []]; // Adjust for more years if needed
     const unsortedTempCards: any[] = [];
   

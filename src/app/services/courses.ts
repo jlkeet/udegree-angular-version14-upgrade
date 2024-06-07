@@ -271,7 +271,7 @@ export class CourseService {
   
             // Only push complex errors if all requirements are not filled
             if (complexErrors.length === requirement.complex.length) {
-              courseErrors = courseErrors.concat(complexErrors);
+              // courseErrors = courseErrors.concat(complexErrors);
               this.complexReqsForSamplePlan.push(complexReqSample)
             }
           } else {
@@ -282,6 +282,7 @@ export class CourseService {
         });
 
         if (courseErrors.length > 0) {
+          // console.log(courseErrors)
           courseErrors.forEach((unfilled: IRequirement) => {
             const errorMessage = this.requirementService.toString(unfilled, false);
             const message = new Message(course.name, course.name + ": " + errorMessage, MessageStatus.Error, unfilled);
