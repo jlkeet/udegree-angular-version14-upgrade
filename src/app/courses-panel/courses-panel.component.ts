@@ -101,8 +101,8 @@ export class CoursesPanel {
     this.store.changes
       .pipe(pluck("courses"))
       .subscribe(
-        (dbCoursesSavedArrayById: any[]) =>
-          (this.dbCoursesSavedArrayById = dbCoursesSavedArrayById)
+        (dbCoursesSavedArrayById: any[]) => {
+          (this.dbCoursesSavedArrayById = dbCoursesSavedArrayById)}
       );
 
     this.courseCounter = this.courseService.courseCounter;

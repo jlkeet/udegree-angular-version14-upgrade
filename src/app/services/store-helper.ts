@@ -74,12 +74,21 @@ export class StoreHelper {
   }
 
   public findAndDelete(prop: keyof State, course: any) {
-  
     const currentState = this.store.getState();
     const collection = currentState[prop];
     this.store.setState(
       Object.assign({}, currentState, {
         [prop]: collection.filter((item: { generatedId: any; }) => item.generatedId !== course.generatedId)
+      })
+    );
+  }
+
+  public findAndDeleteSemester(prop: keyof State, semester: any) {
+    const currentState = this.store.getState();
+    const collection = currentState[prop];
+    this.store.setState(
+      Object.assign({}, currentState, {
+        [prop]: collection.filter((item: { both: any; }) => item.both !== semester.both)
       })
     );
   }

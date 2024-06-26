@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, ViewEncapsulation } from "@angular/core";
+import { Component, Input, EventEmitter, ViewEncapsulation, SimpleChanges } from "@angular/core";
 import { collection, doc, getDocs, query, updateDoc, where, deleteDoc } from "firebase/firestore";
 import { DragulaService } from "ng2-dragula";
 import { DragulaModule } from "ng2-dragula";
@@ -60,7 +60,7 @@ export class SemesterPanel {
 
   public selectedPath: any;
   public selectedPathCards: TempCard[] = [];
-  
+  public filteredCourses: any[] = [];
 
   constructor(
     public courseService: CourseService,
@@ -76,11 +76,7 @@ export class SemesterPanel {
     public sampleService: SamplePlanService
   ) {
   }
-
-  
-
   public ngOnInit() {
-
     this.bagName = "courses";
     const bag = this.dragulaService.find(this.bagName);
 
@@ -120,6 +116,7 @@ export class SemesterPanel {
       newPeriod: Number(args.target.attributes.period.value),
       newYear: Number(args.target.attributes.year.value),
     };
+    console.log(droppedCourse)
     // this logic is essentially saying only handle this for the semester that is not the same
     // as the semester the course started in.
     if (!this.sameTime(droppedCourse)) {
@@ -145,7 +142,22 @@ export class SemesterPanel {
     }
   }
 
-  public ngOnChanges() {
+
+  public updateFilteredCourses() {
+    const allCourses = this.storeHelper.current('courses');
+    this.filteredCourses = allCourses.filter((course: { year: any; period: any; }) => 
+      course.year === this.semester.year && course.period === this.semester.period
+    );
+    this.courses = this.filteredCourses;
+    console.log('Filtered courses:', this.filteredCourses);
+  }
+  
+
+  public ngOnChanges(changes: SimpleChanges) {
+    if (changes) {
+      this.updateFilteredCourses();
+    }
+
     const courseGrades = this.courses
       .filter(
         (course: ICourse) =>
@@ -206,6 +218,7 @@ export class SemesterPanel {
   }
 
   public courseClicked(course: ICourse) {
+    console.log("Course: ",course, "this.courses: " , this.courses)
     this.courseEventService.raiseCourseClicked({ course });
   }
 
@@ -252,36 +265,39 @@ export class SemesterPanel {
   }
 
   public async deleteSemester(semester: any) {
-
-    const userSemQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semester`), where("both", "==", semester.both));
-    const snapshot = await getDocs(userSemQuery);
-  
-    snapshot.forEach((ref) => {
-      const semRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semester/${ref.id}`);
-      deleteDoc(semRef);
-    });
-
     this.courseService.updateSemesterCheck();
-    this.courses.forEach((course: ICourse) =>
-      this.courseService.deselectCourseByName(course)
-    );
+    console.log(this.courses)
+    this.courses.forEach((course: ICourse) => {
+      console.log(course),
+      this.courseService.deselectCourseByName(course)});
     let semesters = this.storeHelper.current("semesters");
     semesters = semesters.filter(
       (semester: { year: string | number; period: string | number; }) =>
         semester.year !== this.semester.year ||
         semester.period !== this.semester.period
     );
-    this.storeHelper.update("semesters", semesters);
+    // this.storeHelper.findAndDeleteSemester("semesters", semester);
     if (this.storeHelper.current("semesters").length === 0) {
       this.semester.year = 2024;
       this.semester.period = 1;
     }
+
+    this.storeHelper.update("semesters", semesters);
+
+    const userSemQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semester`), where("both", "==", semester.both));
+    const snapshot = await getDocs(userSemQuery);
+    snapshot.forEach((ref) => {
+      const semRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/semester/${ref.id}`);
+      deleteDoc(semRef);
+    });
+
     setTimeout(() => {
       this.semesterSort();
     }, 1000);
 
     // this.dbCourses.setAuditLogDeleteSemester(semesters);
   }
+
 
   public smallCourseStatusBar(courseStatus: number) {
     switch (courseStatus) {
@@ -318,7 +334,7 @@ export class SemesterPanel {
   public yearList() {
     this.yearListArray = [];
    // let i = new Date().getFullYear();
-    let i = 2010
+    let i = 2024
     while (i < 2030) {
       this.yearListArray.push(i);
       i++;
@@ -470,6 +486,7 @@ export class SemesterPanel {
             course.period = currentSemester.period;
         }
     }
+
     // Update the courses in the store with their new semester assignments
     // this.storeHelper.update("courses", courses);
 }

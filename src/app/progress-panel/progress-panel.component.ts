@@ -392,8 +392,6 @@ export class ProgressPanel {
     this.email = this.authService.auth.currentUser.email;
 
     let collectionList = [
-      "degree",
-      "conjoint",
       "major",
       "pathway",
       "secondMajor",
@@ -401,8 +399,6 @@ export class ProgressPanel {
 
     ];
     let storeList = [
-      "faculty",
-      "conjoint",
       "majors",
       "pathways",
       "secondMajors",

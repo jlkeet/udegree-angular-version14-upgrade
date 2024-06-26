@@ -72,8 +72,6 @@ export class CourseService {
       const app = initializeApp(environment.firebaseConfig);
 
       this.auth = getAuth(app);
-      // this.auth = this.authService.auth.currentUser!.email
-      // this.auth = "jackson.keet1989@gmail.com"
       this.db = getDatabase(app);
       this.user_db = getFirestore(app);
 
@@ -244,8 +242,7 @@ export class CourseService {
   }
 
   public updateErrors() {
-    this.errors = [];
-    
+    this.errors = [];    
     this.planned.forEach((course: ICourse) => {
       if (course.requirements !== undefined && course.requirements !== null) {
         let courseErrors: IRequirement[] = [];

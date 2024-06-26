@@ -355,6 +355,10 @@ export class SamplePlanService {
             const requirement = allReqs[z][x];
             if (requirement && requirement.required && requirement.departments[0] && requirement.aboveStage) {
               setTimeout(() => this.getMajorRequirementPoints(requirement.departments[0], requirement.aboveStage + 1, requirement.required), 3000);
+            } else {
+              if (requirement && requirement.required && requirement.departments[0] && !requirement.aboveStage) {
+                setTimeout(() => this.getMajorRequirementPoints(requirement.departments[0], null, requirement.required), 3000);
+              }
             }
           }
           
@@ -905,6 +909,7 @@ public async getPreReqPointsDept() {
   }
 
   public async addTempCardToSemester(semesterId: string, tempCard: any) {
+
     try {
       const semesterRef = doc(
         this.dbCourseService.db,
@@ -941,102 +946,120 @@ public async getPreReqPointsDept() {
     await this.sortTempCardsIntoYears();
   }
 
-  public async getMajorRequirementPoints(department: string, level: number, requiredPoints: number) {
+public async getMajorRequirementPoints(department?: string, level?: number, requiredPoints?: number) {
   // Get all courses that match the department and level
+
+  if (level) {
   const matchingCourses = this.storeHelper.current('courses').filter(
     (course: { department?: string[]; stage: number; points: number; }) => 
-      course.department && course.department[0] === department && course.stage === level
+      course.department && course.department[0] === department && (course.stage === level || !course.stage)
   );
+
   // Reduce the required points by 15 for each matching course
   for (const course of matchingCourses) {
     requiredPoints = Math.max(0, requiredPoints - 15); // Reduce by 15 but don't go negative
-    console.log(requiredPoints)
     if (requiredPoints === 0) {
       return; // If no more points are required, exit early
     }
   }
+  } else {
+    const matchingCourses = this.storeHelper.current('courses').filter(
+      (course: { department?: string[]; points: number; }) => 
+        course.department && course.department[0] === department
+    );
+  
+    // Reduce the required points by 15 for each matching course
+    for (const course of matchingCourses) {
+      requiredPoints = Math.max(0, requiredPoints - 15); // Reduce by 15 but don't go negative
+      if (requiredPoints === 0) {
+        return; // If no more points are required, exit early
+      }
+    }
+    console.log(requiredPoints)
+  }
+  const departmentLevelPoints: { [key: string]: number } = {};
+  const key = `${department}-${level}`;
+  departmentLevelPoints[key] = requiredPoints;
 
-    const departmentLevelPoints: { [key: string]: number } = {};
-    const key = `${department}-${level}`;
-    departmentLevelPoints[key] = requiredPoints;
-  
-    for (const key in departmentLevelPoints) {
-      const [department, levelStr] = key.split('-');
-      const level = parseInt(levelStr);
-      const points = departmentLevelPoints[key];
-  
-      const courses = this.courseService.allCourses.filter((course: { department?: string[]; stage: number; }) =>
-        course.department && course.department[0] === department && course.stage >= level
-      );
-  
-      let courseSelectFromLevel = 0;
-      for (const course of courses) {
-        if (this.courseService.planned.includes(course)) {
-          if (courseSelectFromLevel + course.points <= points) {
-            courseSelectFromLevel += course.points;
-          }
+  for (const key in departmentLevelPoints) {
+    const [department, levelStr] = key.split('-');
+    let level = parseInt(levelStr);
+    const points = departmentLevelPoints[key];
+
+    const courses = this.courseService.allCourses.filter((course: { department?: string[]; stage: number; }) =>
+      course.department && course.department[0] === department && (course.stage >= level || !course.stage)
+    );
+
+    let courseSelectFromLevel = 0;
+    for (const course of courses) {
+      if (this.courseService.planned.includes(course)) {
+        if (courseSelectFromLevel + course.points <= points) {
+          courseSelectFromLevel += course.points;
         }
       }
-  
-      const numTempCards = Math.ceil((points - courseSelectFromLevel) / 15);
-  
-      // Wait for the semesters data to be available
-      await new Promise<void>((resolve) => {
-        const checkSemesters = () => {
-          const semesters = this.storeHelper.current('semesters');
-          if (semesters.length > 0) {
-            resolve();
+    }
+
+    const numTempCards = Math.ceil((points - courseSelectFromLevel) / 15);
+
+    // Wait for the semesters data to be available
+    await new Promise<void>((resolve) => {
+      const checkSemesters = () => {
+        const semesters = this.storeHelper.current('semesters');
+        if (semesters.length > 0) {
+          resolve();
+        } else {
+          setTimeout(checkSemesters, 100); // Check again after a short delay
+        }
+      };
+      checkSemesters();
+    });
+
+    let currentYear = Math.min(
+      ...this.storeHelper.current('semesters').map((semester: any) => semester.year)
+    );
+    let currentPeriod = Math.min(
+      ...this.storeHelper
+        .current('semesters')
+        .filter((semester: any) => semester.year === currentYear)
+        .map((semester: any) => semester.period)
+    );
+
+    if (level >= 200) {
+      currentYear += Math.floor((level - 100) / 100);
+    }
+
+    if (!level) {
+      level = null;
+    }
+    for (let i = 0; i < numTempCards; i++) {
+      const semesterId = await this.getSemesterId(currentYear, currentPeriod);
+      if (semesterId) {
+        const semesterData = this.getSemesterByYearAndPeriod(currentYear, currentPeriod);
+        if (semesterData) {
+          if (this.countCoursesInSemester(semesterData) < 4) {
+            await this.addTempCardToSemester(semesterId, {
+              department,
+              level,
+              points: 15,
+              value: 15,
+              generatedId: Math.floor(Math.random() * 100000),
+            });
           } else {
-            setTimeout(checkSemesters, 100); // Check again after a short delay
-          }
-        };
-        checkSemesters();
-      });
-  
-      let currentYear = Math.min(
-        ...this.storeHelper.current('semesters').map((semester: any) => semester.year)
-      );
-      let currentPeriod = Math.min(
-        ...this.storeHelper
-          .current('semesters')
-          .filter((semester: any) => semester.year === currentYear)
-          .map((semester: any) => semester.period)
-      );
-  
-      if (level >= 200) {
-        currentYear += Math.floor((level - 100) / 100);
-      }
-  
-      for (let i = 0; i < numTempCards; i++) {
-        const semesterId = await this.getSemesterId(currentYear, currentPeriod);
-        if (semesterId) {
-          const semesterData = this.getSemesterByYearAndPeriod(currentYear, currentPeriod);
-          if (semesterData) {
-            if (this.countCoursesInSemester(semesterData) < 4) {
-              await this.addTempCardToSemester(semesterId, {
-                department,
-                level,
-                points: 15,
-                value: 15,
-                generatedId: Math.floor(Math.random() * 100000),
-              });
+            if (currentPeriod === Period.Two) {
+              currentYear++;
+              currentPeriod = Period.One;
             } else {
-              if (currentPeriod === Period.Two) {
-                currentYear++;
-                currentPeriod = Period.One;
-              } else {
-                currentPeriod = Period.Two;
-              }
-              i--;
+              currentPeriod = Period.Two;
             }
+            i--;
           }
         }
       }
     }
   }
+}
 
   public async sortTempCardsIntoYears() {
-    console.log("Firing")
     const sortedTempCards: any[][] = [[], [], []]; // Adjust for more years if needed
     const unsortedTempCards: any[] = [];
   
@@ -1052,22 +1075,20 @@ public async getPreReqPointsDept() {
         }
       }
     }
-  
     await this.distributeTempCardsAcrossSemesters(sortedTempCards);
-  
+    console.log("Still firing")
     // Sort unsorted tempCards into semesters with less than four courses
     for (const tempCard of unsortedTempCards) {
       const semester = this.findSemesterWithSpace();
       if (semester) {
         const semesterId = await this.getSemesterId(semester.year, semester.period);
         if (semesterId) {
-          await this.addTempCardToSemester(semesterId, tempCard);
+         // await this.addTempCardToSemester(semesterId, tempCard);
         }
       }
     }
-  
     // Update the semesters in the database asynchronously
-    this.updateSemestersInDatabase(this.semesters);
+   await this.updateSemestersInDatabase(this.semesters);
   }
   
   private findSemesterWithSpace(): any {
@@ -1136,7 +1157,6 @@ public async getPreReqPointsDept() {
           });
         }
       }
-  
       await batch.commit();
     } catch (error) {
       console.error('Error updating semesters in database:', error);
