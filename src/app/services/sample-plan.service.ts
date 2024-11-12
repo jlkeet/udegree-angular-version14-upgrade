@@ -458,11 +458,31 @@ export class SamplePlanService {
     this.sortCoursesIntoYears();
   }
 
+  private ensureAllSemestersExist() {
+    // Determine the range of years based on your courses or default plan
+    const startYear = this.year; // Assuming this.year is your starting year (e.g., 2024)
+    console.log(startYear)
+    const totalYears = 3; // Adjust based on your degree length (e.g., 3 years)
+  
+    for (let offset = 0; offset < totalYears; offset++) {
+      const currentYear = startYear + offset;
+      // Check for Period One
+      if (!this.semesterExists(currentYear, Period.One)) {
+        this.addNewSemester(currentYear, Period.One);
+      }
+      // Check for Period Two
+      if (!this.semesterExists(currentYear, Period.Two)) {
+        this.addNewSemester(currentYear, Period.Two);
+      }
+    }
+  }
+
   private finalizeCourseAdding() {
     // Check if there are courses in the last semester that haven't triggered a new semester addition
     if (this.addedCourses % 4 > 0) {
       this.addNewSemester(this.year, this.period);
     }
+    this.ensureAllSemestersExist();
   }
 
   public yearPeriodChecker(addedCourses: number) {
