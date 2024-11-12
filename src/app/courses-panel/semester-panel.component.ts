@@ -149,7 +149,6 @@ export class SemesterPanel {
       course.year === this.semester.year && course.period === this.semester.period
     );
     this.courses = this.filteredCourses;
-    console.log('Filtered courses:', this.filteredCourses);
   }
   
 
@@ -218,7 +217,6 @@ export class SemesterPanel {
   }
 
   public courseClicked(course: ICourse) {
-    console.log("Course: ",course, "this.courses: " , this.courses)
     this.courseEventService.raiseCourseClicked({ course });
   }
 
@@ -266,9 +264,7 @@ export class SemesterPanel {
 
   public async deleteSemester(semester: any) {
     this.courseService.updateSemesterCheck();
-    console.log(this.courses)
     this.courses.forEach((course: ICourse) => {
-      console.log(course),
       this.courseService.deselectCourseByName(course)});
     let semesters = this.storeHelper.current("semesters");
     semesters = semesters.filter(

@@ -213,24 +213,26 @@ export class RequirementService {
   //   }
   // }
 
-  public requirementFilled(requirement: IRequirement, planned: ICourse[], course?: ICourse): boolean {
-    if (this.isComplex(requirement)) {
-        let filled = 0;
-        let subReqCheck;
-        for (let subRequirement of requirement.complex!) {
-            // check if it is a corequisite
-            if (subRequirement.flags && subRequirement.flags.isCorequesite) {
-                filled += this.corequisiteCheck(subRequirement, planned, course) ? 1 : 0;
-            } else {
-                // handle normal requirements
-                filled += this.requirementFilled(subRequirement, planned, course) ? 1 : 0;
-            }
-            subReqCheck = subRequirement.required
-        }
-        return filled >= subReqCheck;
-    } else {
-        return this.requirementCheck(requirement, planned) === requirement.required;
-    }
+public requirementFilled(requirement: IRequirement, planned: ICourse[], course?: ICourse): boolean {
+  if (this.isComplex(requirement)) {
+      for (let subRequirement of requirement.complex!) {
+          // Check if it is a corequisite
+          if (subRequirement.flags && subRequirement.flags.isCorequesite) {
+              if (this.corequisiteCheck(subRequirement, planned, course)) {
+                  return true; // Requirement fulfilled if any corequisite is fulfilled
+              }
+          } else {
+              // Handle normal requirements
+              if (this.requirementFilled(subRequirement, planned, course)) {
+                  return true; // Requirement fulfilled if any sub-requirement is fulfilled
+              }
+          }
+      }
+      // If none of the sub-requirements are fulfilled
+      return false;
+  } else {
+      return this.requirementCheck(requirement, planned) >= (requirement.required || 0);
+  }
 }
 
 

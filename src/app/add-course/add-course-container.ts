@@ -268,9 +268,6 @@ export class AddCourseContainer {
         !this.requirementService.requirementFilled(requirement, this.beforeSemester, course))
           .map((requirement: IRequirement) => this.requirementService.toString(requirement, false));
       // }
-
-
-
     } else {
       return [];
     }

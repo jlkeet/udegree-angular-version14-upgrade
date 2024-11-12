@@ -9,6 +9,7 @@ import { ProgressPanelService } from "./progress-panel.service";
 import { ICourse } from "../interfaces";
 import { arrayUnion, updateDoc, writeBatch } from "@angular/fire/firestore";
 import { RequirementService } from "./requirement.service";
+import { debounce } from 'lodash';
 
 @Injectable()
 export class SamplePlanService {
@@ -52,6 +53,8 @@ export class SamplePlanService {
     generatedId: 0
   };
 
+  private debouncedUpdateSemestersInDatabase = debounce(this.updateSemestersInDatabase.bind(this), 1000);
+
   private courseMap: Map<string, ICourse> = new Map();
 
   constructor(
@@ -61,6 +64,7 @@ export class SamplePlanService {
     public dbCourseService: FirebaseDbService,
     public progressPanelService: ProgressPanelService,
     public requirementService: RequirementService
+    
   ) {
     this.selectedYear = 2024;
     this.selectedPeriod = Period.One;
@@ -773,9 +777,18 @@ public async getPreReqPointsDept() {
         }
       }
     }
+
+    for (let i = 0; i < this.semesters.length; i++) {
+
+      if (this.semesters[i].tempCards.length > 0) {
+        courseSelectFromLevel += ( 15 * this.semesters[i].tempCards.length )
+        console.log(courseSelectFromLevel)
+      }
+    }
+
     // Determine the number of temp cards needed
     const numTempCards = Math.ceil((points - courseSelectFromLevel) / 15);
-
+    console.log(numTempCards)
     // Initialize variables for tracking the current year and period
     let currentYear = Math.min(
       ...this.storeHelper.current('semesters').map((semester: any) => semester.year)
@@ -904,12 +917,11 @@ public async getPreReqPointsDept() {
       ).length;
   
     const tempCardsCount = semester.tempCards ? semester.tempCards.length : 0;
-  
+
     return realCoursesCount + tempCardsCount;
   }
 
   public async addTempCardToSemester(semesterId: string, tempCard: any) {
-
     try {
       const semesterRef = doc(
         this.dbCourseService.db,
@@ -943,7 +955,9 @@ public async getPreReqPointsDept() {
     } catch (error) {
       console.error('Error adding temp card to semester:', error);
     }
-    await this.sortTempCardsIntoYears();
+  
+    // Debounce the update call
+    this.debouncedUpdateSemestersInDatabase(this.semesters);
   }
 
 public async getMajorRequirementPoints(department?: string, level?: number, requiredPoints?: number) {
@@ -975,7 +989,6 @@ public async getMajorRequirementPoints(department?: string, level?: number, requ
         return; // If no more points are required, exit early
       }
     }
-    console.log(requiredPoints)
   }
   const departmentLevelPoints: { [key: string]: number } = {};
   const key = `${department}-${level}`;
@@ -1057,6 +1070,7 @@ public async getMajorRequirementPoints(department?: string, level?: number, requ
       }
     }
   }
+  this.sortTempCardsIntoYears();
 }
 
   public async sortTempCardsIntoYears() {
@@ -1076,14 +1090,13 @@ public async getMajorRequirementPoints(department?: string, level?: number, requ
       }
     }
     await this.distributeTempCardsAcrossSemesters(sortedTempCards);
-    console.log("Still firing")
     // Sort unsorted tempCards into semesters with less than four courses
     for (const tempCard of unsortedTempCards) {
       const semester = this.findSemesterWithSpace();
       if (semester) {
         const semesterId = await this.getSemesterId(semester.year, semester.period);
         if (semesterId) {
-         // await this.addTempCardToSemester(semesterId, tempCard);
+         await this.addTempCardToSemester(semesterId, tempCard);
         }
       }
     }
@@ -1142,26 +1155,39 @@ public async getMajorRequirementPoints(department?: string, level?: number, requ
 
   private async updateSemestersInDatabase(semesters: any[]) {
     try {
-      const batch = writeBatch(this.dbCourseService.db);
-  
-      for (const semester of semesters) {
-        const semesterId = await this.getSemesterId(semester.year, semester.period);
-        if (semesterId) {
-          const semesterRef = doc(
-            this.dbCourseService.db,
-            `users/${this.authService.auth.currentUser.email}/semester/${semesterId}`
-          );
-  
-          batch.update(semesterRef, {
-            tempCards: semester.tempCards,
-          });
+        const batch = writeBatch(this.dbCourseService.db);
+
+        for (const semester of semesters) {
+            const semesterId = await this.getSemesterId(semester.year, semester.period);
+            if (semesterId) {
+                const semesterRef = doc(
+                    this.dbCourseService.db,
+                    `users/${this.authService.auth.currentUser.email}/semester/${semesterId}`
+                );
+
+                // Remove circular references from tempCards
+                const cleanTempCards = semester.tempCards.map((tempCard: any) => {
+                    const { originalSemester, ...rest } = tempCard;
+                    return rest;
+                });
+
+                // Only update if there are changes
+                const currentSemester = await getDoc(semesterRef);
+                if (currentSemester.exists()) {
+                    const currentData = currentSemester.data();
+                    if (JSON.stringify(currentData["tempCards"]) !== JSON.stringify(cleanTempCards)) {
+                        batch.update(semesterRef, {
+                            tempCards: cleanTempCards,
+                        });
+                    }
+                }
+            }
         }
-      }
-      await batch.commit();
+        await batch.commit();
     } catch (error) {
-      console.error('Error updating semesters in database:', error);
+        console.error('Error updating semesters in database:', error);
     }
-  }
+}
 
   public async removeTempCardFromSemester(semesterId: string, tempCard: any) {
     try {
