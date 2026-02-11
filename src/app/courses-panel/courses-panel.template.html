@@ -1,0 +1,32 @@
+<div class="courses-panel">
+  <div class="courses-panel-content" >
+    <div *ngIf="loadingPlan" class="load-plan-notice">
+      Loading your saved plan...
+    </div>
+    <div *ngIf="!loadingPlan && loadPlanError" class="load-plan-notice load-plan-notice--error">
+      <span>{{ loadPlanError }}</span>
+      <button type="button" class="retry-load-button" (click)="retryLoadPlan()">Retry</button>
+    </div>
+    <semester-panel *ngFor="let semester of semesters; let i=index" [semester]="semester" [courses]="filteredCourses[i]? filteredCourses[i]:[]">
+    </semester-panel>
+    <div class="add-semester">
+      <mat-toolbar class="plain">
+        <button
+          type="button"
+          class="new-semester"
+          (click)="addSemester()"
+          *ngIf="addingSemester === false"
+        >
+          Add semester
+        </button>
+      </mat-toolbar>
+      <div
+        *ngIf="semesterNotice"
+        class="semester-notice"
+        [ngClass]="'semester-notice--' + semesterNoticeType"
+      >
+        {{ semesterNotice }}
+      </div>
+    </div>
+  </div>
+</div>

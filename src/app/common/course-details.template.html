@@ -1,0 +1,154 @@
+<div class='contain'>
+
+  <div class='course-details-panel' (click)='doNothing($event)' >
+
+    <div *ngIf="custom">
+      <h3>
+        Add custom course
+      </h3>
+
+      <mat-form-field class="fullwidth">
+        <input matInput [(ngModel)]="customCode" placeholder="Course code (e.g. CUST304)">
+      </mat-form-field>
+
+      <mat-form-field class="fullwidth">
+        <input matInput [(ngModel)]="customTitle" placeholder="Course title">
+      </mat-form-field>
+
+      <mat-form-field class="fullwidth">
+        <input matInput type="number" [(ngModel)]="customPoints" placeholder="Points">
+      </mat-form-field>
+
+      <mat-form-field class="fullwidth">
+        <mat-select [(value)]="customDepartment" placeholder="Department">
+          <mat-option
+                        *ngFor="let department of departmentOptions"
+                        [value]="department.value"
+                        (click)="doNothing($event)"
+                        >
+            {{department.label}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="fullwidth">
+        <mat-select [(value)]="customFaculty" placeholder="Faculty">
+          <mat-option
+                        *ngFor="let faculty of facultyOptions"
+                        [value]="faculty.value"
+                        (click)="doNothing($event)">
+            {{faculty.label}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+    </div>
+
+    <div class='course-details' *ngIf="!custom">
+
+      <div class='course-name'>
+        {{course.name}}
+      </div>
+
+      <div class='course-points'>
+        {{course.points}} points
+      </div>
+
+      <div class='course-title'>
+        <P></P>
+        {{course.title}}
+        <P></P>
+      </div>
+
+      <div *ngFor="let message of messages; let i = index" class="course-error-message"  (click)="this.errorService.selectErrorRequirements(messageRequirements[i] || course.requirements[i])">
+        {{message}}
+      </div>
+
+      <div class="course-description">
+        <p>
+        {{course.desc}}
+        </p>
+        <p *ngIf='showSemesterFullMessage'
+           class='course-limit-message'>Course limit reached for this semester (6 courses)</p>
+        <p *ngIf='prerequisitesRequiredMessage != undefined'
+           class='course-error-message'>{{prerequisitesRequiredMessage}}</p>
+        <p *ngIf='alreadyPlannedMessage' class='course-planned-message'>{{alreadyPlannedMessage}}</p>
+      </div>
+    </div>
+
+
+    <!-- <div *ngIf="alreadyPlanned() !== true">  -->
+      <!-- <mat-form-field>
+        <mat-select [value]="courseStatus" (selectionChange)="newStatus($event)">
+          <mat-option
+           *ngFor="let status of statuses"
+           [value]="status.value"
+           (click)="doNothing($event)">
+            {{status.label}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field> -->
+    <!-- </div> -->
+
+ <div tabindex="1" class="status-card-container" (click)="newStatus(0)" [class.status-selected]="courseStatus === 0">
+  <div class="topline"> 
+    <span class="round-planned">
+      <label for="id"></label>
+    </span>
+    Planned
+  </div>
+</div> 
+
+<div tabindex="2" class="status-card-container" (click)="newStatus(1)" [class.status-selected]="courseStatus === 1">
+  <div class="topline">    
+    <span class="round-enrolled">
+      <label for="id"></label>
+    </span>
+    Enrolled
+  </div>
+</div>
+
+<div tabindex="3" class="status-card-container" (click)="newStatus(2)" [class.status-selected]="courseStatus === 2">
+  <div class="topline">    
+    <span class="round-completed">
+      <label for="id"></label>
+    </span>
+    Completed
+  </div>
+</div>
+
+<div tabindex="4" class="status-card-container" (click)="newStatus(3)" [class.status-selected]="courseStatus === 3">
+  <div class="topline">    
+    <span class="round-failed">
+      <label for="id"></label>
+    </span>
+    Failed
+  </div>
+</div>
+
+
+    <div *ngIf="!custom && !showAddCourse && courseStatus === 2"> 
+      <mat-form-field>
+        <mat-select placeholder="Grade" [value]="courseGrade" (selectionChange)="newGrade($event)">
+          <mat-option [value]="-42">
+          </mat-option>
+          <mat-option
+           *ngFor="let grade of grades"
+           [value]="grade.value"
+           (click)="doNothing($event)">
+            {{grade.label}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="pendo-add-course">
+      <button *ngIf='!alreadyPlanned() && course.status === 3' class='btn add-course-button' routerLink="/planner" (click)='addCourse()'> Add Course</button>    
+      <button *ngIf='custom || showAddCourse && !course.disabled && alreadyPlanned() !== true'
+           class='btn add-course-button' routerLink="/planner" (click)='addCourse()'> Add Course</button>     
+      <a *ngIf='!course?.disabled && alreadyPlanned() === true'
+           class='btn remove-course-button' (click)='deleteCourse()'> Remove Course</a>
+      <a class='close-dialog' (click)='cancel($event)'> &times;</a>
+    </div>
+  </div>
+</div>

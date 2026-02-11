@@ -1,0 +1,45 @@
+.export-advisor-zero,
+.export-advisor-one,
+.export-advisor-two,
+.export-advisor-three {
+    width: 100%;
+    height: 44px;
+    border-radius: 9px;
+    border: 1px solid #8ea9bb;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    transition: all 0.2s ease;
+}
+
+.export-advisor-zero {
+    background: linear-gradient(180deg, #fdfefe 0%, #f1f7fb 100%);
+    color: #5a7588;
+    cursor: not-allowed;
+}
+
+.export-advisor-one {
+    border-color: #1e91d5;
+    color: #fff;
+    background: linear-gradient(145deg, #27a0e6 0%, #1b8bcb 100%);
+    box-shadow: 0 10px 20px rgba(27, 139, 203, 0.25);
+}
+
+.export-advisor-one:hover {
+    border-color: #127ab4;
+    background: linear-gradient(145deg, #2498db 0%, #167cb4 100%);
+}
+
+.export-advisor-two {
+    border-color: #f1c235;
+    color: #7f6718;
+    background: linear-gradient(145deg, #ffe28a 0%, #ffd15f 100%);
+    cursor: not-allowed;
+}
+
+.export-advisor-three {
+    border-color: #5ba33c;
+    color: #f6fff3;
+    background: linear-gradient(145deg, #6fcf5d 0%, #57b43f 100%);
+    cursor: not-allowed;
+}

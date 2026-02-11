@@ -1,0 +1,238 @@
+
+.progress-bar-title {
+  // background: linear-gradient(to right, #98fb98, #98fb98 20%, #ffffe0 20%, #ffffe0 60%, #ddd 60%, #ddd 100%);
+  padding-left: 15px !important;
+  position: relative;
+  font-weight: normal;
+  font-size: 14px;
+  //height:20px;
+  color: #000;
+  &.inactive {
+    color: #ddd;
+  }    
+
+}
+
+.complex-header {
+  padding-left: 15px !important;
+  position: relative;
+  font-weight: normal;
+  font-size: 14px;
+  height: 0px !important;
+  color: #000;
+//  margin-top: 0px;
+//  margin-bottom: 0px;
+ // height: 60px !important;
+
+}
+
+.mat-expansion-panel:not([class*='mat-elevation-z']) {
+  box-shadow: none;
+}
+
+.bar-main-container:hover {
+  border: 1px solid #65cc01;
+}
+
+.bar-main-container .complex-container .mat-expanded{
+//  height: 0px !important;
+padding-bottom: 10px !important;
+}
+
+.mat-content {
+  position: relative;
+}
+
+.bar-main-container {
+  cursor:pointer;
+  font-weight: normal;
+  font-size: 0.8em;
+  background: #fff;
+  margin-bottom: 0.4em;
+ // height:70px;
+  padding-bottom: 37px;
+
+  &.inactive {
+    background: #efefef;
+
+    .bar-percentage { 
+      background: #ddd;
+    }
+  }
+
+  &.isComplex {
+    display: none;
+
+    .bar-percentage { 
+      display: none;
+    }
+  }
+
+  .bar-main-container .complex-container:hover {
+    border: none !important;
+  }
+
+}
+.wrap {
+  padding: 1em;
+  padding-top: 2px;
+  &.isComplex {
+    display: hidden !important;
+  }
+}
+.bar-percentage {
+  float: left;
+  background: #14889d;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  text-align: center;
+  vertical-align: middle;
+  width: 18%;
+  line-height: 2.5em;
+}
+
+.bar-container {
+  float: right;
+  position: relative;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  height: 10px;
+  background: #f9fbfc;
+  width: 100%;
+  margin: 12px 0px;
+  // overflow: hidden;
+  transition: height 0.6s cubic-bezier(.4,2.08,.55,.44);
+}
+
+.bar {
+  position: absolute;
+  height: 100%;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+  filter: alpha(opacity=100);
+  opacity: 1;
+  transition: width 0.6s cubic-bezier(.4,2.08,.55,.44);
+  z-index: 1;
+}
+
+.bar--one {
+  z-index: 3;
+}
+.bar--two {
+  z-index: 2;
+}
+.bar--three {
+  z-index: 1;
+}
+
+.totalBar{
+  .progress-bar-title {
+    font-size: 1.2em;
+    text-transform: uppercase;
+  }
+  .wrap {
+    padding-top: 0px;
+  }
+  .bar-percentage {
+    font-size: 1em;
+  }
+  .bar-container {
+    height: 12px;
+  }
+}
+.bar-main-container.totalBar {
+  background: #2a646f;
+}
+
+.file-icon {
+  width:15px;
+  height:15px;
+}
+
+.planned-fully {
+  background-color: #25a0ed;
+  border-radius: 50%;
+  cursor: pointer;
+  height: 25px;
+  left: 45%;
+  position: absolute;
+  top: 0px;
+  width: 25px;
+  margin-top: -8px;
+  max-width: unset;
+}
+
+.enrolled-fully {
+  background-color: #f2d600;
+  border-radius: 50%;
+  cursor: pointer;
+  height: 25px;
+  left: 45%;
+  position: absolute;
+  top: 0px;
+  width: 25px;
+  margin-top: -8px;
+  max-width: unset;
+}
+
+.completed-fully {
+  background-color: #5bb801;
+  border-radius: 50%;
+  cursor: pointer;
+  height: 25px;
+  left: 45%;
+  position: absolute;
+  top: 0px;
+  width: 25px;
+  margin-top: -8px;
+  max-width: unset;
+}
+
+.planned-fully-check {
+    border: 2px solid #eee;
+    border-top: none;
+    border-right: none;
+    content: "";
+    height: 6px;
+    left: 7px;
+    position: absolute;
+    top: 8px;
+    transform: rotate(-45deg);
+    width: 12px;
+}
+
+.planned-section {
+  box-shadow: 0px 0px 20px 5px #ffcc01 !important;
+  z-index: 9;
+}
+
+
+.planned-mixed {
+  background-color: #25a0ed;
+  border-radius: 50%;
+  cursor: pointer;
+  height: 25px;
+  left: 147px;
+  position: absolute;
+  top: 0px;
+  width: 25px;
+  margin-top: -8px;
+  max-width: unset;
+}
+
+.planned-mixed-check {
+  border: 2px solid #eee;
+  border-top: none;
+  border-right: none;
+  content: "";
+  height: 6px;
+  left: 7px;
+  position: absolute;
+  top: 8px;
+  transform: rotate(-45deg);
+  width: 12px;
+}

@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userEmail) {
+      return isSignedIn() &&
+        request.auth.token.email != null &&
+        request.auth.token.email == userEmail;
+    }
+
+    function hasOnlyAllowedUserKeys() {
+      return request.resource.data.keys().hasOnly([
+        "email",
+        "name",
+        "role",
+        "status",
+        "timestamp"
+      ]);
+    }
+
+    function hasNoPasswordField() {
+      return !("password" in request.resource.data);
+    }
+
+    function hasSafeRoleOnCreate() {
+      return !("role" in request.resource.data) ||
+        request.resource.data.role == "user";
+    }
+
+    function roleUnchanged() {
+      return !("role" in request.resource.data) ||
+        (!("role" in resource.data) && request.resource.data.role == "user") ||
+        (("role" in resource.data) && request.resource.data.role == resource.data.role);
+    }
+
+    function hasValidStatus() {
+      return !("status" in request.resource.data) ||
+        (request.resource.data.status is int &&
+          request.resource.data.status >= 0 &&
+          request.resource.data.status <= 3);
+    }
+
+    match /users/{userEmail} {
+      allow read: if isOwner(userEmail);
+      allow create: if isOwner(userEmail) &&
+        hasOnlyAllowedUserKeys() &&
+        hasNoPasswordField() &&
+        hasSafeRoleOnCreate() &&
+        hasValidStatus() &&
+        request.resource.data.email == userEmail;
+      allow update: if isOwner(userEmail) &&
+        hasOnlyAllowedUserKeys() &&
+        hasNoPasswordField() &&
+        hasValidStatus() &&
+        roleUnchanged() &&
+        ("email" in resource.data) &&
+        request.resource.data.email == resource.data.email;
+      allow delete: if isOwner(userEmail);
+    }
+
+    match /users/{userEmail}/{document=**} {
+      allow read, write: if isOwner(userEmail);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
