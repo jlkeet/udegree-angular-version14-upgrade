@@ -61,6 +61,80 @@ export class RequirementService {
     }
   }
 
+  private normaliseTextValues(rawValues: any): string[] {
+    const flattened: any[] = [];
+    (Array.isArray(rawValues) ? rawValues : [rawValues]).forEach((value: any) => {
+      if (Array.isArray(value)) {
+        flattened.push(...value);
+        return;
+      }
+      flattened.push(value);
+    });
+
+    const normalised = flattened
+      .map((value: any) => {
+        if (typeof value === "string") {
+          return value;
+        }
+
+        if (typeof value === "number") {
+          return String(value);
+        }
+
+        if (value && typeof value === "object") {
+          if (typeof value.department === "string") {
+            return value.department;
+          }
+          if (typeof value.faculty === "string") {
+            return value.faculty;
+          }
+          if (typeof value.code === "string") {
+            return value.code;
+          }
+          if (typeof value.name === "string") {
+            return value.name;
+          }
+          if (typeof value.value === "string") {
+            return value.value;
+          }
+          if (typeof value.label === "string") {
+            return value.label;
+          }
+        }
+
+        return null;
+      })
+      .filter((value: string | null): value is string => !!value)
+      .map((value: string) => value.trim().toUpperCase())
+      .filter((value: string) => value.length > 0);
+
+    return Array.from(new Set(normalised));
+  }
+
+  private hasNormalisedIntersection(left: any, right: any): boolean {
+    const leftValues = this.normaliseTextValues(left);
+    const rightValues = this.normaliseTextValues(right);
+    if (leftValues.length === 0 || rightValues.length === 0) {
+      return false;
+    }
+
+    const rightSet = new Set(rightValues);
+    return leftValues.some((value: string) => rightSet.has(value));
+  }
+
+  private hasActiveTextList(values: any): boolean {
+    return this.normaliseTextValues(values).length > 0;
+  }
+
+  private hasActiveStages(stages: any): boolean {
+    return (
+      Array.isArray(stages) &&
+      stages.some(
+        (stage: any) => typeof stage === "number" && Number.isFinite(stage) && stage > 0
+      )
+    );
+  }
+
   private courseStages(course: ICourse): number[] {
     const explicitStage =
       typeof course?.stage === "number" && course.stage > 0 ? [course.stage] : [];
@@ -71,6 +145,71 @@ export class RequirementService {
       : [];
 
     return Array.from(new Set(explicitStage.concat(tempCardStages)));
+  }
+
+  private tempCardCandidateStages(course: ICourse): number[] {
+    if (!Array.isArray(course?.tempCardStages)) {
+      return [];
+    }
+
+    return Array.from(
+      new Set(
+        course.tempCardStages.filter(
+          (stage: number) => typeof stage === "number" && stage > 0
+        )
+      )
+    );
+  }
+
+  private matchesStageRequirement(course: ICourse, requiredStage: number): boolean {
+    const stages = this.courseStages(course);
+    if (stages.length === 0) {
+      return false;
+    }
+
+    const tempCardStages = this.tempCardCandidateStages(course);
+    if (tempCardStages.length > 0) {
+      // A selection card only counts for strict stage requirements when every allowed
+      // stage on that card satisfies the requirement.
+      return tempCardStages.every((stage: number) => stage === requiredStage);
+    }
+
+    return stages.includes(requiredStage);
+  }
+
+  private matchesStagesRequirement(course: ICourse, requiredStages: number[]): boolean {
+    const stages = this.courseStages(course);
+    if (stages.length === 0) {
+      return false;
+    }
+
+    const allowedStages = new Set(
+      requiredStages.filter((stage: number) => typeof stage === "number" && stage > 0)
+    );
+    if (allowedStages.size === 0) {
+      return false;
+    }
+
+    const tempCardStages = this.tempCardCandidateStages(course);
+    if (tempCardStages.length > 0) {
+      return tempCardStages.every((stage: number) => allowedStages.has(stage));
+    }
+
+    return stages.some((stage: number) => allowedStages.has(stage));
+  }
+
+  private matchesAboveStageRequirement(course: ICourse, aboveStage: number): boolean {
+    const stages = this.courseStages(course);
+    if (stages.length === 0) {
+      return false;
+    }
+
+    const tempCardStages = this.tempCardCandidateStages(course);
+    if (tempCardStages.length > 0) {
+      return tempCardStages.every((stage: number) => stage > aboveStage);
+    }
+
+    return stages.some((stage: number) => stage > aboveStage);
   }
 
   /*
@@ -105,33 +244,36 @@ export class RequirementService {
     /* Could refactor this further to just make an array of includes and excludes */
 
     if (requirement) {
-    const filters = [
-      {check: requirement.papers,
-        filter: (course: ICourse) => this.paperRangeIncludes(requirement.papers!, course.name.toUpperCase())},
-      {check: requirement.papersExcluded,
-        filter: (course: ICourse) => !requirement.papersExcluded!.includes(course.name.toUpperCase())},
-      {check: requirement.faculties,
-        filter: (course: ICourse) => this.intersection(requirement.faculties!, course.faculties).length > 0},
-      {check: requirement.facultiesExcluded,
-        filter: (course: ICourse) => this.intersection(requirement.faculties!, course.faculties).length === 0},
-      {check: requirement.departments,
-        // filter: (course: ICourse) => requirement.departments.includes(course.department)},
-        filter: (course: ICourse) => this.intersection(requirement.departments!, course.department).length > 0},
-      {check: requirement.departmentsExcluded,
-        filter: (course: ICourse) => course.faculties.toString() !== requirement.faculties![0]},
-      {check: this.checkFlag(requirement, 'General'),
-        // filter: (course: ICourse) => course.name.toUpperCase().substring(-1) === 'G'}, // -1 takes the last character
+	    const filters = [
+	      {check: this.hasActiveTextList(requirement.papers),
+	        filter: (course: ICourse) => this.paperRangeIncludes(requirement.papers!, (course.name || "").toUpperCase())},
+	      {check: this.hasActiveTextList(requirement.papersExcluded),
+	        filter: (course: ICourse) => !requirement.papersExcluded!.includes((course.name || "").toUpperCase())},
+	      {check: this.hasActiveTextList(requirement.faculties),
+	        filter: (course: ICourse) => this.hasNormalisedIntersection(requirement.faculties, course.faculties)},
+	      {check: this.hasActiveTextList(requirement.facultiesExcluded),
+	        filter: (course: ICourse) => !this.hasNormalisedIntersection(requirement.facultiesExcluded, course.faculties)},
+	      {check: this.hasActiveTextList(requirement.departments),
+	        // filter: (course: ICourse) => requirement.departments.includes(course.department)},
+	        filter: (course: ICourse) => this.hasNormalisedIntersection(requirement.departments, course.department)},
+	      {check: this.hasActiveTextList(requirement.departmentsExcluded),
+	        filter: (course: ICourse) => !this.hasNormalisedIntersection(requirement.departmentsExcluded, course.department)},
+	      {check: this.checkFlag(requirement, 'General'),
+	        // filter: (course: ICourse) => course.name.toUpperCase().substring(-1) === 'G'}, // -1 takes the last character
 
-      filter: (course: ICourse) => course.name.toUpperCase().lastIndexOf("G") === course.name.length - 1}, // -1 takes the last character
-      {check: requirement.stage,
-        filter: (course: ICourse) => this.courseStages(course).includes(requirement.stage!)},
-      {check: requirement.stages,
-        filter: (course: ICourse) => this.intersection(requirement.stages!, this.courseStages(course)).length > 0},
-      {check: requirement.aboveStage,
-        filter: (course: ICourse) => this.courseStages(course).some((stage: number) => requirement.aboveStage! < stage)},
-    ].filter((filter) =>
-      !(filter.check === undefined || filter.check === false ||
-        filter.check === null));
+	      filter: (course: ICourse) => {
+	        const courseName = (course.name || "").toUpperCase();
+	        return courseName.lastIndexOf("G") === courseName.length - 1;
+	      }}, // -1 takes the last character
+	      {check: typeof requirement.stage === "number" && requirement.stage > 0,
+	        filter: (course: ICourse) => this.matchesStageRequirement(course, requirement.stage!)},
+	      {check: this.hasActiveStages(requirement.stages),
+	        filter: (course: ICourse) => this.matchesStagesRequirement(course, requirement.stages!)},
+	      {check: typeof requirement.aboveStage === "number" && Number.isFinite(requirement.aboveStage),
+	        filter: (course: ICourse) => this.matchesAboveStageRequirement(course, requirement.aboveStage!)},
+	    ].filter((filter) =>
+	      !(filter.check === undefined || filter.check === false ||
+	        filter.check === null));
 
     // apply each of the filters in 'filters'
     
@@ -425,7 +567,33 @@ public corequisiteCheck(subRequirement: IRequirement, planned: ICourse[], course
   }
 
   public checkFlag(requirement: IRequirement | undefined | null, flag: string) {
-    return !!requirement && requirement.flags !== undefined && requirement.flags[0] === flag;
+    if (!requirement || requirement.flags === undefined || requirement.flags === null) {
+      return false;
+    }
+
+    const flagLower = flag.toLowerCase();
+
+    if (Array.isArray(requirement.flags)) {
+      return requirement.flags.some(
+        (entry: any) =>
+          typeof entry === "string" && entry.toLowerCase() === flagLower
+      );
+    }
+
+    if (typeof requirement.flags === "object") {
+      return Object.keys(requirement.flags).some((key: string) => {
+        if (key.toLowerCase() !== flagLower) {
+          return false;
+        }
+        return Boolean(requirement.flags[key]);
+      });
+    }
+
+    if (typeof requirement.flags === "string") {
+      return requirement.flags.toLowerCase() === flagLower;
+    }
+
+    return false;
 
     // .map((str: string) => str.toLowerCase())
     // .includes(flag.toLowerCase());

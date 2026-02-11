@@ -85,4 +85,58 @@ describe("RequirementService", () => {
     expect(typeof rendered).toBe("string");
     expect(rendered).toContain("Requires");
   });
+
+  it("matches department requirements case-insensitively", () => {
+    const requirement: IRequirement = {
+      type: RequirementType.Points,
+      required: 15,
+      departments: ["History"],
+    };
+    const planned = [buildCourse("HISTORY200", 15, "HISTORY", 2)];
+
+    expect(service.requirementCheck(requirement, planned)).toBe(15);
+  });
+
+  it("applies department exclusions against department values", () => {
+    const requirement: IRequirement = {
+      type: RequirementType.Points,
+      required: 30,
+      departmentsExcluded: ["History"],
+    };
+    const planned = [
+      buildCourse("HISTORY200", 15, "History", 2),
+      buildCourse("ANTHRO200", 15, "Anthropology", 2),
+    ];
+
+    expect(service.requirementCheck(requirement, planned)).toBe(15);
+  });
+
+  it("ignores empty list filters so total/conjoint point rules still count", () => {
+    const requirement: IRequirement = {
+      type: RequirementType.Points,
+      required: 45,
+      flags: { total: true },
+      departments: [],
+      faculties: [],
+    };
+    const planned = [
+      buildCourse("HISTORY100", 15, "History", 1),
+      buildCourse("ANTHRO100", 15, "Anthropology", 1),
+      buildCourse("GEOGRAPHY100", 15, "Geography", 1),
+    ];
+
+    expect(service.requirementCheck(requirement, planned)).toBe(45);
+  });
+
+  it("ignores invalid stage 0 in requirements", () => {
+    const requirement: IRequirement = {
+      type: RequirementType.Points,
+      required: 15,
+      stage: 0,
+      departments: ["History"],
+    };
+    const planned = [buildCourse("HISTORY200", 15, "History", 2)];
+
+    expect(service.requirementCheck(requirement, planned)).toBe(15);
+  });
 });

@@ -1,9 +1,19 @@
-import { Component, Input, EventEmitter, ChangeDetectionStrategy } from "@angular/core";
+import {
+  Component,
+  Input,
+  EventEmitter,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  OnDestroy,
+} from "@angular/core";
 import { Store } from "../app.store";
 import { ICourse } from "../interfaces";
 import { CourseStatus } from "../models";
+import { CourseService } from "../services/courses";
 import { RequirementService } from "../services";
 import { IBarState } from "./progress-bar-multi.component";
+import { Subscription } from "rxjs";
+import { pluck } from "rxjs/operators";
 
 @Component({
   selector: "progress-bar-multi-container",
@@ -22,7 +32,7 @@ import { IBarState } from "./progress-bar-multi.component";
 
  TODO: tests
 */
-export class ProgressBarMultiContainer {
+export class ProgressBarMultiContainer implements OnDestroy {
   @Input() public requirement: any;
   @Input() public courses: any;
   @Input() public isComplex: boolean = false;
@@ -38,21 +48,24 @@ export class ProgressBarMultiContainer {
   public barOneState: IBarState = { value: 0, color: "#66cc00" , full: false, index: 0, majIndex: 0, isTotal: false};
   public barTwoState: IBarState = { value: 0, color: "#f2d600" , full: false, index: 0, majIndex: 0, isTotal: false};
   public barThreeState: IBarState = { value: 0, color: "#66bbff" , full: false, index: 0, majIndex: 0, isTotal: false};
+  public barFourState: IBarState = { value: 0, color: "#c7d2dd", full: false, index: 0, majIndex: 0, isTotal: false };
   public onPageChange = new EventEmitter<null>();
   public complexBool: boolean = false;
   public complexRule: any;
   public combinedRule: any= [];
 
 
-  public isDisabled = false;
-
   public barOneStateComplex: any = [];
   public barTwoStateComplex: any = [];
   public barThreeStateComplex: any = [];
+  public barFourStateComplex: any = [];
+  private semesterSubscription: Subscription | null = null;
 
   constructor(
     private store: Store,
     private requirementService: RequirementService,
+    private courseService: CourseService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   public ngOnChanges() {
@@ -60,11 +73,19 @@ export class ProgressBarMultiContainer {
   }
 
   public ngOnInit() {
+    this.semesterSubscription = this.store.changes
+      .pipe(pluck("semesters"))
+      .subscribe(() => {
+        this.updateState(this.courses);
+        this.cdr.markForCheck();
+      });
+
     if (!this.requirement) {
       this.title = "";
       this.hoverText = "";
       this.max = 0;
       this.isComplex = false;
+      this.updateState(this.courses);
       return;
     }
 
@@ -89,6 +110,15 @@ export class ProgressBarMultiContainer {
     this.max = this.requirement.required;
     this.isComplex = false;
   }
+
+    this.updateState(this.courses);
+  }
+
+  public ngOnDestroy() {
+    if (this.semesterSubscription) {
+      this.semesterSubscription.unsubscribe();
+      this.semesterSubscription = null;
+    }
   }
 
   private updateState(courses: ICourse[]) {
@@ -100,6 +130,7 @@ export class ProgressBarMultiContainer {
       this.barOneState = Object.assign({}, this.barOneState, { value: 0 });
       this.barTwoState = Object.assign({}, this.barTwoState, { value: 0 });
       this.barThreeState = Object.assign({}, this.barThreeState, { value: 0 });
+      this.barFourState = Object.assign({}, this.barFourState, { value: 0 });
       return;
     }
 
@@ -144,8 +175,10 @@ export class ProgressBarMultiContainer {
     this.barThreeState = this.getBarValue(
       this.barThreeState,
       courses,
-      CourseStatus.Planned
+      CourseStatus.Planned,
+      false
     );
+    this.barFourState = this.getTempCardBarValue(this.barFourState);
   }
 }
 
@@ -153,8 +186,9 @@ export class ProgressBarMultiContainer {
     currentState: IBarState,
     courses: ICourse[],
     status: CourseStatus,
+    includeTempCards: boolean = false,
   ) {
-    const coursesForStatus = this.getCoursesForStatus(courses, status);
+    const coursesForStatus = this.getCoursesForStatus(courses, status, includeTempCards);
 
     if (coursesForStatus === undefined || coursesForStatus.length === 0) {
       return Object.assign({}, currentState, { value: 0 });
@@ -168,13 +202,30 @@ export class ProgressBarMultiContainer {
     return Object.assign({}, currentState, { value });
   }
 
+  private getTempCardBarValue(currentState: IBarState) {
+    const tempCardCourses = this.getTempCardPlaceholderCourses();
+
+    if (tempCardCourses.length === 0) {
+      return Object.assign({}, currentState, { value: 0 });
+    }
+
+    const value = this.requirementService.fulfilledByStatus(
+      this.requirement,
+      tempCardCourses,
+      CourseStatus.Planned
+    );
+
+    return Object.assign({}, currentState, { value });
+  }
+
   private getComplexBarValue(
     currentState: IBarState,
     courses: ICourse[],
     status: CourseStatus,
-    requirement: any
+    requirement: any,
+    includeTempCards: boolean = false
   ) {
-    const coursesForStatus = this.getCoursesForStatus(courses, status);
+    const coursesForStatus = this.getCoursesForStatus(courses, status, includeTempCards);
     const value = this.requirementService.fulfilledByStatus(
       requirement,
       coursesForStatus,
@@ -184,10 +235,30 @@ export class ProgressBarMultiContainer {
 
   }
 
-  private getCoursesForStatus(courses: ICourse[], status: CourseStatus): ICourse[] {
+  private getTempCardComplexBarValue(currentState: IBarState, requirement: any) {
+    const tempCardCourses = this.getTempCardPlaceholderCourses();
+
+    if (tempCardCourses.length === 0) {
+      return Object.assign({}, currentState, { value: 0 });
+    }
+
+    const value = this.requirementService.fulfilledByStatus(
+      requirement,
+      tempCardCourses,
+      CourseStatus.Planned
+    );
+
+    return Object.assign({}, currentState, { value });
+  }
+
+  private getCoursesForStatus(
+    courses: ICourse[],
+    status: CourseStatus,
+    includeTempCards: boolean = false
+  ): ICourse[] {
     const baseCourses = Array.isArray(courses) ? courses : [];
 
-    if (status !== CourseStatus.Planned) {
+    if (status !== CourseStatus.Planned || !includeTempCards) {
       return baseCourses;
     }
 
@@ -240,7 +311,13 @@ export class ProgressBarMultiContainer {
         ? faculties
         : typeof tempCard?.faculty === "string"
         ? [tempCard.faculty]
-        : [];
+        : this.inferFacultiesFromDepartments(
+            departments.length > 0
+              ? (departments as string[])
+              : typeof tempCard?.department === "string"
+              ? [tempCard.department]
+              : []
+          );
     const resolvedStage =
       typeof tempCard?.level === "number" && tempCard.level > 0
         ? tempCard.level
@@ -291,17 +368,107 @@ export class ProgressBarMultiContainer {
     };
   }
 
+  private inferFacultiesFromDepartments(departments: any[]): string[] {
+    if (!Array.isArray(departments) || departments.length === 0) {
+      return [];
+    }
+
+    const normalisedDepartments = this.normaliseDepartmentValues(departments);
+    if (normalisedDepartments.length === 0) {
+      return [];
+    }
+
+    const faculties = new Set<string>();
+    (this.courseService.allCourses || []).forEach((course: ICourse) => {
+      const courseDepartments = this.normaliseDepartmentValues(
+        Array.isArray(course.department) ? course.department : []
+      );
+      const matchesDepartment = courseDepartments.some((department: string) =>
+        normalisedDepartments.includes(department)
+      );
+      if (!matchesDepartment) {
+        return;
+      }
+
+      (Array.isArray(course.faculties) ? course.faculties : []).forEach(
+        (faculty: string) => {
+          if (typeof faculty === "string" && faculty.trim().length > 0) {
+            faculties.add(faculty);
+          }
+        }
+      );
+    });
+
+    return Array.from(faculties);
+  }
+
+  private normaliseDepartmentValues(rawDepartments: any[]): string[] {
+    const flattened: any[] = [];
+    (Array.isArray(rawDepartments) ? rawDepartments : []).forEach(
+      (department: any) => {
+        if (Array.isArray(department)) {
+          flattened.push(...department);
+          return;
+        }
+        flattened.push(department);
+      }
+    );
+
+    const normalised = flattened
+      .map((department: any) => this.departmentValueToString(department))
+      .filter((department: string | null): department is string => !!department)
+      .map((department: string) => department.trim())
+      .filter((department: string) => department.length > 0);
+
+    const seen = new Set<string>();
+    const unique: string[] = [];
+    normalised.forEach((department: string) => {
+      const key = department.toUpperCase();
+      if (seen.has(key)) {
+        return;
+      }
+      seen.add(key);
+      unique.push(department);
+    });
+
+    return unique;
+  }
+
+  private departmentValueToString(department: any): string | null {
+    if (typeof department === "string") {
+      return department;
+    }
+    if (typeof department === "number") {
+      return String(department);
+    }
+    if (department && typeof department === "object") {
+      if (typeof department.department === "string") {
+        return department.department;
+      }
+      if (typeof department.code === "string") {
+        return department.code;
+      }
+      if (typeof department.name === "string") {
+        return department.name;
+      }
+    }
+
+    return null;
+  }
+
   public updateComplexBars(courses: ICourse[]) {
     if (!this.requirement || !Array.isArray(this.requirement.complex)) {
       this.barOneStateComplex = [];
       this.barTwoStateComplex = [];
       this.barThreeStateComplex = [];
+      this.barFourStateComplex = [];
       return;
     }
 
     this.barOneStateComplex = [],
     this.barTwoStateComplex = [],
-    this.barThreeStateComplex = []
+    this.barThreeStateComplex = [],
+    this.barFourStateComplex = []
 
     for (let i = 0; i < this.requirement.complex.length; i++) {
       this.barOneStateComplex.push(this.getComplexBarValue(
@@ -323,20 +490,13 @@ export class ProgressBarMultiContainer {
         courses,
         CourseStatus.Planned,
         this.requirement.complex[i],
+        false
       ));
+
+      this.barFourStateComplex.push(
+        this.getTempCardComplexBarValue(this.barFourState, this.requirement.complex[i])
+      );
       }
-  }
-
-
-  public expansionOnClick() {
-    this.isDisabled = false;
-    this.updateComplexBars(this.courses)
-    return this.isDisabled;
-  }
-
-  public noExpansionOnClick() {
-    this.isDisabled = true;
-    return this.isDisabled;
   }
 
 }
