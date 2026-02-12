@@ -55,6 +55,9 @@ export interface ISamplePlanResult {
 export class SamplePlanService {
   private readonly maxCoursesPerSemester = 4;
   private readonly planningWindowSemesters = 120;
+  private semesterIdCache = new Map<string, string>();
+  private semesterCacheUserEmail: string | null = null;
+  private semesterCacheHydration: Promise<void> | null = null;
 
   public autoButtonClicked = false;
   public semesters: any[] = [];
@@ -113,17 +116,34 @@ export class SamplePlanService {
       }
 
       // Iterate multiple times because solving one rule can unlock another.
-      for (let pass = 0; pass < 3; pass++) {
-        const before = this.planningSnapshot.length;
+      const maxPlanningPasses = 8;
+      for (let pass = 0; pass < maxPlanningPasses; pass++) {
+        const beforeCourseCount = this.planningSnapshot.length;
+        const beforeTempCardCount = this.countTotalTempCards();
+        const beforeUnmetRequirements = this.countUnmetRequirements(requirements);
 
         for (const requirement of requirements) {
           await this.fulfilRequirement(requirement);
         }
 
-        if (this.planningSnapshot.length === before) {
+        const afterCourseCount = this.planningSnapshot.length;
+        const afterTempCardCount = this.countTotalTempCards();
+        const afterUnmetRequirements = this.countUnmetRequirements(requirements);
+
+        if (afterUnmetRequirements === 0) {
+          break;
+        }
+
+        const progressMade =
+          afterCourseCount > beforeCourseCount ||
+          afterTempCardCount > beforeTempCardCount ||
+          afterUnmetRequirements < beforeUnmetRequirements;
+
+        if (!progressMade) {
           break;
         }
       }
+      this.logUnmetRequirements(requirements);
 
       this.courseService.updateErrors();
       const complexRequirements = Array.isArray(
@@ -222,10 +242,11 @@ export class SamplePlanService {
       { sourcePriority: 0, requirements: this.progressPanelService.getMajReqs() },
       { sourcePriority: 1, requirements: this.progressPanelService.getSecondMajReqs() },
       { sourcePriority: 2, requirements: this.progressPanelService.getThirdMajReqs() },
-      { sourcePriority: 3, requirements: this.progressPanelService.getPathwayReqs() },
-      { sourcePriority: 4, requirements: this.progressPanelService.getModuleReqs() },
-      { sourcePriority: 5, requirements: this.progressPanelService.getSecondModuleReqs() },
-      { sourcePriority: 6, requirements: this.progressPanelService.getReqs() },
+      { sourcePriority: 3, requirements: this.progressPanelService.getConjointReqs() },
+      { sourcePriority: 4, requirements: this.progressPanelService.getPathwayReqs() },
+      { sourcePriority: 5, requirements: this.progressPanelService.getModuleReqs() },
+      { sourcePriority: 6, requirements: this.progressPanelService.getSecondModuleReqs() },
+      { sourcePriority: 7, requirements: this.progressPanelService.getReqs() },
     ];
 
     let index = 0;
@@ -251,7 +272,7 @@ export class SamplePlanService {
       });
     });
 
-    return entries
+    const sortedEntries = entries
       .sort((entryA: IRequirementEntry, entryB: IRequirementEntry) => {
         if (entryA.sourcePriority !== entryB.sourcePriority) {
           return entryA.sourcePriority - entryB.sourcePriority;
@@ -266,8 +287,175 @@ export class SamplePlanService {
         }
 
         return entryA.index - entryB.index;
-      })
-      .map((entry: IRequirementEntry) => entry.requirement);
+      });
+
+    const deduped: IRequirement[] = [];
+    const seenSignatures = new Set<string>();
+    sortedEntries.forEach((entry: IRequirementEntry) => {
+      const signature = this.requirementSignature(entry.requirement);
+      if (seenSignatures.has(signature)) {
+        return;
+      }
+      seenSignatures.add(signature);
+      deduped.push(entry.requirement);
+    });
+
+    return deduped;
+  }
+
+  private countUnmetRequirements(requirements: IRequirement[]): number {
+    return requirements.filter(
+      (requirement: IRequirement) => !this.isRequirementFilled(requirement)
+    ).length;
+  }
+
+  private requirementSignature(requirement: IRequirement): string {
+    if (!requirement) {
+      return "null";
+    }
+
+    const normaliseStringList = (values: any): string[] => {
+      const flattened: any[] = [];
+      (Array.isArray(values) ? values : [values]).forEach((value: any) => {
+        if (Array.isArray(value)) {
+          flattened.push(...value);
+          return;
+        }
+        flattened.push(value);
+      });
+
+      return flattened
+        .map((value: any) => {
+          if (typeof value === "string") {
+            return value;
+          }
+          if (typeof value === "number") {
+            return String(value);
+          }
+          if (value && typeof value === "object") {
+            if (typeof value.department === "string") {
+              return value.department;
+            }
+            if (typeof value.faculty === "string") {
+              return value.faculty;
+            }
+            if (typeof value.code === "string") {
+              return value.code;
+            }
+            if (typeof value.name === "string") {
+              return value.name;
+            }
+          }
+          return null;
+        })
+        .filter((value: string | null): value is string => !!value)
+        .map((value: string) => value.trim().toUpperCase())
+        .filter((value: string) => value.length > 0)
+        .sort();
+    };
+
+    const normaliseNumberList = (values: any): number[] =>
+      Array.from(
+        new Set(
+          (Array.isArray(values) ? values : [])
+            .map((value: any) => Number(value))
+            .filter((value: number) => Number.isFinite(value))
+        )
+      ).sort((valueA: number, valueB: number) => valueA - valueB);
+
+    const normaliseFlags = (flags: any): string[] => {
+      if (flags === undefined || flags === null) {
+        return [];
+      }
+
+      if (Array.isArray(flags)) {
+        return flags
+          .filter((value: any) => typeof value === "string")
+          .map((value: string) => value.trim().toLowerCase())
+          .filter((value: string) => value.length > 0)
+          .sort();
+      }
+
+      if (typeof flags === "string") {
+        const value = flags.trim().toLowerCase();
+        return value.length > 0 ? [value] : [];
+      }
+
+      if (typeof flags === "object") {
+        return Object.keys(flags)
+          .filter((key: string) => Boolean(flags[key]))
+          .map((key: string) => key.trim().toLowerCase())
+          .filter((key: string) => key.length > 0)
+          .sort();
+      }
+
+      return [];
+    };
+
+    if (this.requirementService.isComplex(requirement)) {
+      const subRequirementSignatures = (Array.isArray(requirement.complex)
+        ? requirement.complex
+        : []
+      )
+        .map((subRequirement: IRequirement) =>
+          this.requirementSignature(subRequirement)
+        )
+        .sort();
+
+      return JSON.stringify({
+        complex: true,
+        type: requirement.type,
+        required: requirement.required,
+        flags: normaliseFlags(requirement.flags),
+        general: this.isGeneralRequirement(requirement),
+        subRequirements: subRequirementSignatures,
+      });
+    }
+
+    return JSON.stringify({
+      complex: false,
+      type: requirement.type,
+      required: requirement.required,
+      papers: normaliseStringList(requirement.papers),
+      papersExcluded: normaliseStringList(requirement.papersExcluded),
+      departments: normaliseStringList(requirement.departments),
+      departmentsExcluded: normaliseStringList(requirement.departmentsExcluded),
+      faculties: normaliseStringList(requirement.faculties),
+      facultiesExcluded: normaliseStringList(requirement.facultiesExcluded),
+      pathways: normaliseStringList(requirement.pathways),
+      modules: normaliseStringList(requirement.modules),
+      secondModules: normaliseStringList(requirement.secondModules),
+      conjoints: normaliseStringList(requirement.conjoints),
+      stage:
+        typeof requirement.stage === "number" ? requirement.stage : null,
+      aboveStage:
+        typeof requirement.aboveStage === "number"
+          ? requirement.aboveStage
+          : null,
+      stages: normaliseNumberList(requirement.stages),
+      flags: normaliseFlags(requirement.flags),
+      general: this.isGeneralRequirement(requirement),
+    });
+  }
+
+  private logUnmetRequirements(requirements: IRequirement[]) {
+    const unmet = requirements.filter(
+      (requirement: IRequirement) => !this.isRequirementFilled(requirement)
+    );
+    if (unmet.length === 0) {
+      return;
+    }
+
+    const titles = unmet
+      .map((requirement: IRequirement) =>
+        this.requirementService.shortTitle(requirement)
+      )
+      .filter((title: string) => title.length > 0);
+
+    console.warn("[autoplan] Unmet requirements after planning:", {
+      count: unmet.length,
+      requirements: titles,
+    });
   }
 
   private requirementSpecificity(requirement: IRequirement): number {
@@ -366,7 +554,12 @@ export class SamplePlanService {
         required &&
       safetyCounter < subRequirements.length * 3
     ) {
-      const before = this.planningSnapshot.length;
+      const beforeCourseCount = this.planningSnapshot.length;
+      const beforeTempCardCount = this.countTotalTempCards();
+      const beforeSatisfiedCount = this.countSatisfiedSubRequirements(
+        subRequirements,
+        courseNeedingRequirement
+      );
 
       for (const subRequirement of subRequirements) {
         if (
@@ -387,7 +580,18 @@ export class SamplePlanService {
         }
       }
 
-      if (this.planningSnapshot.length === before) {
+      const afterCourseCount = this.planningSnapshot.length;
+      const afterTempCardCount = this.countTotalTempCards();
+      const afterSatisfiedCount = this.countSatisfiedSubRequirements(
+        subRequirements,
+        courseNeedingRequirement
+      );
+
+      const progressMade =
+        afterCourseCount > beforeCourseCount ||
+        afterTempCardCount > beforeTempCardCount ||
+        afterSatisfiedCount > beforeSatisfiedCount;
+      if (!progressMade) {
         break;
       }
 
@@ -485,12 +689,12 @@ export class SamplePlanService {
     requirement: IRequirement,
     stages: number[]
   ): Omit<ITempCard, "generatedId"> {
-    const departments = Array.isArray(requirement.departments)
-      ? requirement.departments.slice()
-      : [];
-    const faculties = Array.isArray(requirement.faculties)
-      ? requirement.faculties.slice()
-      : [];
+    const departments = this.normaliseDepartmentValues(requirement.departments || []);
+    const directFaculties = this.normaliseFacultyValues(requirement.faculties || []);
+    const faculties =
+      directFaculties.length > 0
+        ? directFaculties
+        : this.inferFacultiesFromDepartments(departments);
 
     return {
       paper: null,
@@ -512,13 +716,15 @@ export class SamplePlanService {
 
     if (Array.isArray(requirement.stages) && requirement.stages.length > 0) {
       const stageSet = new Set(
-        requirement.stages.filter((stage: number) => availableStages.includes(stage))
+        this.normaliseBachelorStages(requirement.stages).filter((stage: number) =>
+          availableStages.includes(stage)
+        )
       );
       return Array.from(stageSet).sort((stageA: number, stageB: number) => stageA - stageB);
     }
 
     if (typeof requirement.stage === "number" && requirement.stage > 0) {
-      return [requirement.stage];
+      return this.normaliseBachelorStages([requirement.stage]);
     }
 
     if (typeof requirement.aboveStage === "number") {
@@ -526,10 +732,12 @@ export class SamplePlanService {
         (stage: number) => stage > (requirement.aboveStage as number)
       );
       if (stages.length > 0) {
-        return stages;
+        return this.normaliseBachelorStages(stages);
       }
 
-      return [Math.max((requirement.aboveStage as number) + 1, 1)];
+      return this.normaliseBachelorStages([
+        Math.max((requirement.aboveStage as number) + 1, 1),
+      ]);
     }
 
     return [];
@@ -539,7 +747,7 @@ export class SamplePlanService {
     const stageSet = new Set<number>();
 
     (this.courseService.allCourses || []).forEach((course: ICourse) => {
-      if (typeof course.stage === "number" && course.stage > 0) {
+      if (typeof course.stage === "number" && course.stage > 0 && course.stage <= 3) {
         stageSet.add(course.stage);
       }
     });
@@ -553,13 +761,23 @@ export class SamplePlanService {
     );
   }
 
+  private normaliseBachelorStages(stages: number[]): number[] {
+    return Array.from(
+      new Set(
+        (Array.isArray(stages) ? stages : [])
+          .filter((stage: number) => typeof stage === "number" && stage > 0)
+          .map((stage: number) => Math.min(stage, 3))
+      )
+    ).sort((stageA: number, stageB: number) => stageA - stageB);
+  }
+
   private requirementToTempCardKey(requirement: IRequirement): string {
-    const departments = Array.isArray(requirement.departments)
-      ? requirement.departments.slice().sort().join(",")
-      : "";
-    const faculties = Array.isArray(requirement.faculties)
-      ? requirement.faculties.slice().sort().join(",")
-      : "";
+    const departments = this.normaliseDepartmentValues(requirement.departments || [])
+      .sort()
+      .join(",");
+    const faculties = this.normaliseFacultyValues(requirement.faculties || [])
+      .sort()
+      .join(",");
     const stages = this.resolveRequirementStages(requirement).join(",");
 
     return [
@@ -628,9 +846,7 @@ export class SamplePlanService {
     let candidatePeriod = startPeriod;
 
     for (let guard = 0; guard < this.planningWindowSemesters; guard++) {
-      const load =
-        this.countCoursesInSemester(candidateYear, candidatePeriod) +
-        this.countTempCardsInSemester(candidateYear, candidatePeriod);
+      const load = this.countSemesterLoad(candidateYear, candidatePeriod);
 
       if (load < this.maxCoursesPerSemester) {
         return { year: candidateYear, period: candidatePeriod };
@@ -655,6 +871,13 @@ export class SamplePlanService {
     }
 
     return Array.isArray(semester.tempCards) ? semester.tempCards.length : 0;
+  }
+
+  private countSemesterLoad(year: number, period: Period): number {
+    return (
+      this.countCoursesInSemester(year, period) +
+      this.countTempCardsInSemester(year, period)
+    );
   }
 
   private tempCardIdsMatch(leftCard: { generatedId?: any }, rightCard: { generatedId?: any }): boolean {
@@ -920,7 +1143,13 @@ export class SamplePlanService {
         ? faculties
         : tempCard?.faculty
         ? [tempCard.faculty]
-        : [];
+        : this.inferFacultiesFromDepartments(
+            departments.length > 0
+              ? (departments as string[])
+              : tempCard?.department
+              ? [tempCard.department]
+              : []
+          );
     const resolvedStage =
       typeof tempCard?.level === "number" && tempCard.level > 0
         ? tempCard.level
@@ -1112,7 +1341,7 @@ export class SamplePlanService {
     let candidatePeriod = startPeriod;
 
     for (let guard = 0; guard < this.planningWindowSemesters; guard++) {
-      const load = this.countCoursesInSemester(candidateYear, candidatePeriod);
+      const load = this.countSemesterLoad(candidateYear, candidatePeriod);
       if (
         load < this.maxCoursesPerSemester &&
         this.canScheduleCourseInSemester(course, candidateYear, candidatePeriod)
@@ -1147,6 +1376,126 @@ export class SamplePlanService {
     period: Period
   ): boolean {
     return !this.hasCourseErrorsAtSemester(course, year, period);
+  }
+
+  private inferFacultiesFromDepartments(departments: any[]): string[] {
+    if (!Array.isArray(departments) || departments.length === 0) {
+      return [];
+    }
+
+    const normalisedDepartments = this.normaliseDepartmentValues(departments);
+    if (normalisedDepartments.length === 0) {
+      return [];
+    }
+
+    const faculties = new Set<string>();
+    (this.courseService.allCourses || []).forEach((course: ICourse) => {
+      const courseDepartments = this.normaliseDepartmentValues(
+        Array.isArray(course.department) ? course.department : []
+      );
+      const matchesDepartment = courseDepartments.some((department: string) =>
+        normalisedDepartments.includes(department)
+      );
+      if (!matchesDepartment) {
+        return;
+      }
+
+      (Array.isArray(course.faculties) ? course.faculties : []).forEach(
+        (faculty: string) => {
+          if (typeof faculty === "string" && faculty.trim().length > 0) {
+            faculties.add(faculty);
+          }
+        }
+      );
+    });
+
+    return Array.from(faculties);
+  }
+
+  private normaliseDepartmentValues(rawDepartments: any[]): string[] {
+    const flattened: any[] = [];
+    (Array.isArray(rawDepartments) ? rawDepartments : []).forEach(
+      (department: any) => {
+        if (Array.isArray(department)) {
+          flattened.push(...department);
+          return;
+        }
+        flattened.push(department);
+      }
+    );
+
+    const normalised = flattened
+      .map((department: any) => this.departmentValueToString(department))
+      .filter((department: string | null): department is string => !!department)
+      .map((department: string) => department.trim())
+      .filter((department: string) => department.length > 0);
+
+    const seen = new Set<string>();
+    const unique: string[] = [];
+    normalised.forEach((department: string) => {
+      const key = department.toUpperCase();
+      if (seen.has(key)) {
+        return;
+      }
+      seen.add(key);
+      unique.push(department);
+    });
+
+    return unique;
+  }
+
+  private normaliseFacultyValues(rawFaculties: any[]): string[] {
+    const flattened: any[] = [];
+    (Array.isArray(rawFaculties) ? rawFaculties : []).forEach((faculty: any) => {
+      if (Array.isArray(faculty)) {
+        flattened.push(...faculty);
+        return;
+      }
+      flattened.push(faculty);
+    });
+
+    const normalised = flattened
+      .map((faculty: any) => {
+        if (typeof faculty === "string") {
+          return faculty;
+        }
+        if (faculty && typeof faculty === "object") {
+          if (typeof faculty.faculty === "string") {
+            return faculty.faculty;
+          }
+          if (typeof faculty.name === "string") {
+            return faculty.name;
+          }
+        }
+        return null;
+      })
+      .filter((faculty: string | null): faculty is string => !!faculty)
+      .map((faculty: string) => faculty.trim())
+      .filter((faculty: string) => faculty.length > 0);
+
+    return Array.from(new Set(normalised));
+  }
+
+  private departmentValueToString(department: any): string | null {
+    if (typeof department === "string") {
+      return department;
+    }
+    if (typeof department === "number") {
+      return String(department);
+    }
+    if (department && typeof department === "object") {
+      if (typeof department.department === "string") {
+        return department.department;
+      }
+      if (typeof department.code === "string") {
+        return department.code;
+      }
+      if (typeof department.name === "string") {
+        return department.name;
+      }
+    }
+
+    return null;
   }
 
   private hasCourseErrorsAtSemester(
@@ -1251,6 +1600,7 @@ export class SamplePlanService {
     this.planningSnapshot = courses.map((course: ICourse) =>
       Object.assign({}, course)
     );
+    this.primeSemesterIdCacheFromStore();
 
     const scheduledCourses = this.planningSnapshot
       .filter(
@@ -1425,15 +1775,19 @@ export class SamplePlanService {
       return null;
     }
 
-    const colRef = collection(
-      this.dbCourseService.db,
-      `users/${email}/semester/`
-    );
-    const docSnap = await getDocs(colRef);
-    for (const semesterDoc of docSnap.docs) {
-      if (semesterDoc.data()["year"] === year && semesterDoc.data()["period"] === period) {
-        return semesterDoc.id;
-      }
+    this.resetSemesterCacheIfUserChanged(email);
+    this.primeSemesterIdCacheFromStore();
+
+    const cacheKey = this.getSemesterCacheKey(year, period);
+    const cachedId = this.semesterIdCache.get(cacheKey);
+    if (cachedId) {
+      return cachedId;
+    }
+
+    await this.hydrateSemesterIdCache(email);
+    const hydratedId = this.semesterIdCache.get(cacheKey);
+    if (hydratedId) {
+      return hydratedId;
     }
 
     if (createIfMissing) {
@@ -1468,11 +1822,120 @@ export class SamplePlanService {
         both: `${year} ${period}`,
         tempCards: [],
       });
+      this.semesterIdCache.set(
+        this.getSemesterCacheKey(year, period),
+        createdDoc.id
+      );
+      this.setSemesterFirestoreIdInStore(year, period, createdDoc.id);
       return createdDoc.id;
     } catch (error) {
       console.warn("Unable to create semester document", error);
       return null;
     }
+  }
+
+  private resetSemesterCacheIfUserChanged(email: string) {
+    if (this.semesterCacheUserEmail === email) {
+      return;
+    }
+
+    this.semesterCacheUserEmail = email;
+    this.semesterIdCache.clear();
+    this.semesterCacheHydration = null;
+  }
+
+  private getSemesterCacheKey(year: number, period: Period): string {
+    return `${Number(year)}-${Number(period)}`;
+  }
+
+  private primeSemesterIdCacheFromStore() {
+    const email = this.getCurrentUserEmail();
+    if (!email) {
+      return;
+    }
+
+    this.resetSemesterCacheIfUserChanged(email);
+    const semesters = Array.isArray(this.storeHelper.current("semesters"))
+      ? this.storeHelper.current("semesters")
+      : [];
+
+    semesters.forEach((semester: any) => {
+      const firestoreId = semester?.firestoreId;
+      if (typeof firestoreId !== "string" || firestoreId.length === 0) {
+        return;
+      }
+
+      const year = Number(semester?.year);
+      const period = this.normalisePeriod(Number(semester?.period));
+      if (!Number.isFinite(year)) {
+        return;
+      }
+
+      this.semesterIdCache.set(
+        this.getSemesterCacheKey(year, period),
+        firestoreId
+      );
+    });
+  }
+
+  private async hydrateSemesterIdCache(email: string): Promise<void> {
+    if (!this.semesterCacheHydration) {
+      this.semesterCacheHydration = (async () => {
+        const colRef = collection(this.dbCourseService.db, `users/${email}/semester/`);
+        const docSnap = await getDocs(colRef);
+
+        docSnap.docs.forEach((semesterDoc: any) => {
+          const year = Number(semesterDoc.data()["year"]);
+          const period = this.normalisePeriod(Number(semesterDoc.data()["period"]));
+          if (!Number.isFinite(year)) {
+            return;
+          }
+
+          const firestoreId = semesterDoc.id;
+          this.semesterIdCache.set(
+            this.getSemesterCacheKey(year, period),
+            firestoreId
+          );
+          this.setSemesterFirestoreIdInStore(year, period, firestoreId);
+        });
+      })().finally(() => {
+        this.semesterCacheHydration = null;
+      });
+    }
+
+    await this.semesterCacheHydration;
+  }
+
+  private setSemesterFirestoreIdInStore(
+    year: number,
+    period: Period,
+    firestoreId: string
+  ) {
+    if (typeof firestoreId !== "string" || firestoreId.length === 0) {
+      return;
+    }
+
+    const semesters = (this.storeHelper.current("semesters") || []).map(
+      (semester: any) => Object.assign({}, semester)
+    );
+    const semester = semesters.find(
+      (entry: any) =>
+        Number(entry?.year) === Number(year) &&
+        this.normalisePeriod(Number(entry?.period)) ===
+          this.normalisePeriod(Number(period))
+    );
+
+    if (!semester) {
+      return;
+    }
+
+    if (semester.firestoreId === firestoreId) {
+      return;
+    }
+
+    semester.firestoreId = firestoreId;
+    this.storeHelper.update("semesters", semesters);
+    this.semesters = semesters;
   }
 
   public async addTempCardToSemester(semesterId: string, tempCard: any) {
@@ -1488,6 +1951,23 @@ export class SamplePlanService {
     await updateDoc(semesterRef, {
       tempCards: arrayUnion(tempCard),
     });
+    const semesters = (this.storeHelper.current("semesters") || []).map((semester: any) =>
+      Object.assign({}, semester)
+    );
+    const semester = semesters.find(
+      (entry: any) => entry?.firestoreId === semesterId
+    );
+    if (semester) {
+      const tempCards = Array.isArray(semester.tempCards) ? semester.tempCards : [];
+      if (tempCards.some((card: any) => this.tempCardIdsMatch(card, tempCard))) {
+        return;
+      }
+
+      semester.tempCards = tempCards.concat([tempCard]);
+      this.storeHelper.update("semesters", semesters);
+      this.semesters = semesters;
+      return;
+    }
 
     const semesterDoc = await getDoc(semesterRef);
     if (!semesterDoc.exists()) {
@@ -1495,22 +1975,32 @@ export class SamplePlanService {
     }
 
     const semesterData = semesterDoc.data();
-    const semesters = (this.storeHelper.current("semesters") || []).map((semester: any) =>
-      Object.assign({}, semester)
+    const fallbackSemester = semesters.find(
+      (entry: any) =>
+        Number(entry?.year) === Number(semesterData["year"]) &&
+        Number(entry?.period) === Number(semesterData["period"])
     );
-    const semester = semesters.find(
-      (entry: any) => entry.both === semesterData["both"]
-    );
-    if (!semester) {
+    if (!fallbackSemester) {
       return;
     }
 
-    const tempCards = Array.isArray(semester.tempCards) ? semester.tempCards : [];
+    fallbackSemester.firestoreId = semesterId;
+    this.semesterIdCache.set(
+      this.getSemesterCacheKey(
+        Number(semesterData["year"]),
+        this.normalisePeriod(Number(semesterData["period"]))
+      ),
+      semesterId
+    );
+
+    const tempCards = Array.isArray(fallbackSemester.tempCards)
+      ? fallbackSemester.tempCards
+      : [];
     if (tempCards.some((card: any) => this.tempCardIdsMatch(card, tempCard))) {
       return;
     }
 
-    semester.tempCards = tempCards.concat([tempCard]);
+    fallbackSemester.tempCards = tempCards.concat([tempCard]);
     this.storeHelper.update("semesters", semesters);
     this.semesters = semesters;
   }
@@ -1525,6 +2015,27 @@ export class SamplePlanService {
       this.dbCourseService.db,
       `users/${email}/semester/${semesterId}`
     );
+    const semesters = (this.storeHelper.current("semesters") || []).map((semester: any) =>
+      Object.assign({}, semester)
+    );
+    const semester = semesters.find(
+      (entry: any) => entry?.firestoreId === semesterId
+    );
+    if (semester) {
+      const localTempCards = Array.isArray(semester.tempCards)
+        ? semester.tempCards
+        : [];
+      const updatedTempCards = localTempCards.filter(
+        (card: any) => !this.tempCardIdsMatch(card, tempCard)
+      );
+      await updateDoc(semesterRef, { tempCards: updatedTempCards });
+
+      semester.tempCards = updatedTempCards;
+      this.storeHelper.update("semesters", semesters);
+      this.semesters = semesters;
+      return;
+    }
+
     const snapshot = await getDoc(semesterRef);
     if (!snapshot.exists()) {
       return;
@@ -1537,22 +2048,30 @@ export class SamplePlanService {
 
     await updateDoc(semesterRef, { tempCards: updatedTempCards });
 
-    const semesters = (this.storeHelper.current("semesters") || []).map((semester: any) =>
-      Object.assign({}, semester)
+    const fallbackSemester = semesters.find(
+      (entry: any) =>
+        Number(entry?.year) === Number(semesterData["year"]) &&
+        Number(entry?.period) === Number(semesterData["period"])
     );
-    const semester = semesters.find(
-      (entry: any) => entry.both === semesterData["both"]
-    );
-    if (!semester) {
+    if (!fallbackSemester) {
       return;
     }
 
-    semester.tempCards = updatedTempCards;
+    fallbackSemester.firestoreId = semesterId;
+    this.semesterIdCache.set(
+      this.getSemesterCacheKey(
+        Number(semesterData["year"]),
+        this.normalisePeriod(Number(semesterData["period"]))
+      ),
+      semesterId
+    );
+    fallbackSemester.tempCards = updatedTempCards;
     this.storeHelper.update("semesters", semesters);
     this.semesters = semesters;
   }
 
   public async sortTempCardsIntoYears() {
     this.semesters = this.storeHelper.current("semesters") || [];
+    this.primeSemesterIdCacheFromStore();
   }
 }

@@ -41,9 +41,11 @@ export class SemesterPanel {
 
   public addingSemester = false;
   public MAX_POINTS = 80;
+  private readonly MAX_ITEMS_PER_SEMESTER = 4;
   public toggled = true;
   public bagName: string = "courses";
   public atMaxPoints: boolean = false;
+  public atMaxCapacity: boolean = false;
   public gpa: number = 0;
   public courseCounter: number = 0;
   public email: string;
@@ -154,6 +156,18 @@ export class SemesterPanel {
     );
     this.courses = this.filteredCourses;
   }
+
+  public hasSemesterCapacity(): boolean {
+    const matchingSemester = (this.storeHelper.current("semesters") || []).find(
+      (semester: any) =>
+        Number(semester?.year) === Number(this.semester?.year) &&
+        Number(semester?.period) === Number(this.semester?.period)
+    );
+    const tempCardCount = Array.isArray(matchingSemester?.tempCards)
+      ? matchingSemester.tempCards.length
+      : 0;
+    return this.courses.length + tempCardCount < this.MAX_ITEMS_PER_SEMESTER;
+  }
   
 
   public ngOnChanges(changes: SimpleChanges) {
@@ -183,6 +197,7 @@ export class SemesterPanel {
         0
       );
     this.atMaxPoints = totalPoints >= this.MAX_POINTS;
+    this.atMaxCapacity = !this.hasSemesterCapacity();
   
     this.courseCounter = this.courseService.courseCounter;
   }
@@ -230,16 +245,40 @@ export class SemesterPanel {
   }
 
   public async droppedCourseSaveDB(course: { id: any; period?: number; year?: number; newPeriod: any; newYear: any; }) {
-    const userCoursesQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses`), where("id", "==", course.id));
-    const snapshot = await getDocs(userCoursesQuery);
-  
-    snapshot.forEach((ref) => {
-      const courseRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses/${ref.id}`);
-      updateDoc(courseRef, {
+    const userEmail = this.authService?.auth?.currentUser?.email;
+    if (!userEmail) {
+      return;
+    }
+
+    const firestoreId = (course as any).firestoreId;
+    if (typeof firestoreId === "string" && firestoreId.length > 0) {
+      await updateDoc(doc(this.dbCourses.db, `users/${userEmail}/courses/${firestoreId}`), {
         year: course.newYear,
         period: course.newPeriod,
       });
-    });
+      return;
+    }
+
+    const generatedId = (course as any).generatedId;
+    const userCoursesQuery = generatedId
+      ? query(
+          collection(this.dbCourses.db, `users/${userEmail}/courses`),
+          where("generatedId", "==", generatedId)
+        )
+      : query(
+          collection(this.dbCourses.db, `users/${userEmail}/courses`),
+          where("id", "==", course.id)
+        );
+    const snapshot = await getDocs(userCoursesQuery);
+
+    await Promise.all(
+      snapshot.docs.map((ref: any) =>
+        updateDoc(doc(this.dbCourses.db, `users/${userEmail}/courses/${ref.id}`), {
+          year: course.newYear,
+          period: course.newPeriod,
+        })
+      )
+    );
   }
 
   public async deleteCourse(course: ICourse) {
@@ -257,13 +296,27 @@ export class SemesterPanel {
       }
     }
   
-    const userCoursesQuery = query(collection(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses`), where("generatedId", "==", course.generatedId));
+    const userEmail = this.authService?.auth?.currentUser?.email;
+    if (!userEmail) {
+      return;
+    }
+
+    if (typeof course.firestoreId === "string" && course.firestoreId.length > 0) {
+      await deleteDoc(doc(this.dbCourses.db, `users/${userEmail}/courses/${course.firestoreId}`));
+      return;
+    }
+
+    const userCoursesQuery = query(
+      collection(this.dbCourses.db, `users/${userEmail}/courses`),
+      where("generatedId", "==", course.generatedId)
+    );
     const snapshot = await getDocs(userCoursesQuery);
-  
-    snapshot.forEach((ref) => {
-      const courseRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses/${ref.id}`);
-      deleteDoc(courseRef);
-    });
+
+    await Promise.all(
+      snapshot.docs.map((ref: any) =>
+        deleteDoc(doc(this.dbCourses.db, `users/${userEmail}/courses/${ref.id}`))
+      )
+    );
   }
 
   public async deleteSemester(semester: any) {
@@ -315,6 +368,76 @@ export class SemesterPanel {
 
   public smallCourseStatusBarHover(course: { name: any; }) {
     return course.name;
+  }
+
+  private tempCardTarget(tempCard: TempCard): string {
+    if (tempCard?.general) {
+      return "General Education";
+    }
+
+    const departments = Array.isArray(tempCard?.departments)
+      ? tempCard.departments
+      : tempCard?.department
+      ? [tempCard.department]
+      : [];
+    const faculties = Array.isArray(tempCard?.faculties)
+      ? tempCard.faculties
+      : tempCard?.faculty
+      ? [tempCard.faculty]
+      : [];
+    const normalisedDepartments = Array.from(
+      new Set(
+        departments
+          .filter((department: any) => typeof department === "string")
+          .map((department: string) => department.trim())
+          .filter((department: string) => department.length > 0)
+      )
+    );
+    if (normalisedDepartments.length > 0) {
+      return normalisedDepartments.join(", ");
+    }
+
+    const normalisedFaculties = Array.from(
+      new Set(
+        faculties
+          .filter((faculty: any) => typeof faculty === "string")
+          .map((faculty: string) => faculty.trim())
+          .filter((faculty: string) => faculty.length > 0)
+      )
+    );
+    if (normalisedFaculties.length > 0) {
+      return normalisedFaculties.join(", ");
+    }
+
+    return "";
+  }
+
+  private tempCardStageLabel(tempCard: TempCard): string | null {
+    const stages = this.getTempCardQueryStages(tempCard) || [];
+    if (stages.length === 0) {
+      return null;
+    }
+
+    return this.formatStageLabel(stages);
+  }
+
+  public tempCardDisplayLabel(tempCard: TempCard): string {
+    const target = this.tempCardTarget(tempCard);
+    const stageLabel = this.tempCardStageLabel(tempCard);
+
+    if (stageLabel && target) {
+      return `Select ${stageLabel} ${target}`;
+    }
+
+    if (stageLabel && !target) {
+      return `Select ${stageLabel} Course`;
+    }
+
+    if (!stageLabel && target) {
+      return `Select ${target} Course`;
+    }
+
+    return "Select Any Course";
   }
 
   public newSemesterDD() {
@@ -432,14 +555,43 @@ export class SemesterPanel {
   }
   
   private async updateUserCourses(courses: ICourse[]) {
-    for (const course of courses) {
-      const snapshot = await this.getUserCoursesSnapshot();
-  
-      snapshot.forEach((ref) => {
-        if (this.shouldUpdateCourse(course, ref)) {
-          this.updateCourse(ref);
-        }
+    if (!Array.isArray(courses) || courses.length === 0) {
+      return;
+    }
+
+    const snapshot = await this.getUserCoursesSnapshot();
+    const refsByGeneratedId = new Map<number, any[]>();
+
+    snapshot.forEach((ref: any) => {
+      const generatedId = Number(ref.data()["generatedId"]);
+      if (!Number.isFinite(generatedId)) {
+        return;
+      }
+      if (!refsByGeneratedId.has(generatedId)) {
+        refsByGeneratedId.set(generatedId, []);
+      }
+      refsByGeneratedId.get(generatedId)!.push(ref);
+    });
+
+    const updates: Promise<any>[] = [];
+    courses.forEach((course: ICourse) => {
+      if (
+        course.year !== this.previousYear ||
+        course.period !== this.previousPeriod ||
+        course.generatedId === undefined ||
+        course.generatedId === null
+      ) {
+        return;
+      }
+
+      const refs = refsByGeneratedId.get(Number(course.generatedId)) || [];
+      refs.forEach((ref: any) => {
+        updates.push(this.updateCourse(ref));
       });
+    });
+
+    if (updates.length > 0) {
+      await Promise.all(updates);
     }
   }
   
@@ -448,15 +600,9 @@ export class SemesterPanel {
     return await getDocs(userCoursesQuery);
   }
   
-  private shouldUpdateCourse(course: ICourse, ref: any) {
-    return course.year === this.previousYear &&
-      course.period === this.previousPeriod &&
-      course.generatedId === ref.data()['generatedId'];
-  }
-  
   private updateCourse(ref: any) {
     const courseRef = doc(this.dbCourses.db, `users/${this.authService.auth.currentUser.email}/courses/${ref.id}`);
-    updateDoc(courseRef, {
+    return updateDoc(courseRef, {
       year: this.savedNewYear,
       period: this.savedNewSem,
     });
@@ -643,15 +789,13 @@ export class SemesterPanel {
   }
 
   public getTempCardQueryStages(tempCard: TempCard): number[] | null {
-    if (Array.isArray(tempCard.stages) && tempCard.stages.length > 0) {
-      return tempCard.stages;
-    }
-
-    if (typeof tempCard.level === "number" && tempCard.level > 0) {
-      return [tempCard.level];
-    }
-
-    return null;
+    const stages = Array.isArray(tempCard?.stages) && tempCard.stages.length > 0
+      ? tempCard.stages
+      : typeof tempCard?.level === "number" && tempCard.level > 0
+      ? [tempCard.level]
+      : [];
+    const normalisedStages = this.normaliseBachelorStages(stages);
+    return normalisedStages.length > 0 ? normalisedStages : null;
   }
 
   public getTempCardDepartments(tempCard: TempCard): string[] | string | null {
@@ -704,23 +848,8 @@ export class SemesterPanel {
   }
 
   private getTempCardScope(tempCard: TempCard): string {
-    if (tempCard.faculty) {
-      return tempCard.faculty;
-    }
-
-    if (tempCard.department) {
-      return tempCard.department;
-    }
-
-    if (Array.isArray(tempCard.faculties) && tempCard.faculties.length > 0) {
-      return tempCard.faculties.join(", ");
-    }
-
-    if (Array.isArray(tempCard.departments) && tempCard.departments.length > 0) {
-      return tempCard.departments.join(", ");
-    }
-
-    return "Course";
+    const target = this.tempCardTarget(tempCard);
+    return target.length > 0 ? target : "Course";
   }
 
   public getTempCardGeneral(tempCard: TempCard): boolean | null {
@@ -728,9 +857,7 @@ export class SemesterPanel {
   }
 
   private formatStageLabel(stages: number[]): string {
-    const sorted = stages
-      .filter((stage: number) => typeof stage === "number" && stage > 0)
-      .sort((stageA: number, stageB: number) => stageA - stageB);
+    const sorted = this.normaliseBachelorStages(stages);
 
     if (sorted.length === 0) {
       return "";
@@ -745,14 +872,12 @@ export class SemesterPanel {
 
   private normaliseTempCardStages(path: any): number[] {
     if (Array.isArray(path.stages) && path.stages.length > 0) {
-      return path.stages
-        .filter((stage: number) => typeof stage === "number" && stage > 0)
-        .sort((stageA: number, stageB: number) => stageA - stageB);
+      return this.normaliseBachelorStages(path.stages);
     }
 
     const stage = Number(path.stage ?? path.level);
     if (Number.isFinite(stage) && stage > 0) {
-      return [stage];
+      return this.normaliseBachelorStages([stage]);
     }
 
     const aboveStage = Number(path.aboveStage);
@@ -760,7 +885,9 @@ export class SemesterPanel {
       const stages = this.availableStages().filter(
         (candidateStage: number) => candidateStage > aboveStage
       );
-      return stages.length > 0 ? stages : [Math.max(aboveStage + 1, 1)];
+      return stages.length > 0
+        ? this.normaliseBachelorStages(stages)
+        : this.normaliseBachelorStages([Math.max(aboveStage + 1, 1)]);
     }
 
     return [];
@@ -828,7 +955,7 @@ export class SemesterPanel {
     const stageSet = new Set<number>();
 
     allCourses.forEach((course: ICourse) => {
-      if (typeof course.stage === "number" && course.stage > 0) {
+      if (typeof course.stage === "number" && course.stage > 0 && course.stage <= 3) {
         stageSet.add(course.stage);
       }
     });
@@ -838,6 +965,16 @@ export class SemesterPanel {
     }
 
     return Array.from(stageSet).sort((stageA: number, stageB: number) => stageA - stageB);
+  }
+
+  private normaliseBachelorStages(stages: number[]): number[] {
+    return Array.from(
+      new Set(
+        stages
+          .filter((stage: number) => typeof stage === "number" && stage > 0)
+          .map((stage: number) => Math.min(stage, 3))
+      )
+    ).sort((stageA: number, stageB: number) => stageA - stageB);
   }
 
   newCourseEvent(){ 

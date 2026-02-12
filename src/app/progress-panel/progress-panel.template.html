@@ -4,14 +4,17 @@
   </div>
   <mat-accordion multi>
 
-    <mat-expansion-panel class="pg-bar" [disabled]="isDisabled" [expanded]="true" hideToggle>
-      <mat-expansion-panel-header *ngIf="faculty?.name && conjoint?.name" style="margin-top: 0px; margin-bottom: 0px"
-        (click)="expansionOnClick()">
+    <mat-expansion-panel *ngIf="faculty?.name && conjoint?.name" class="pg-bar"
+      [expanded]="panelExpanded.conjointTotal"
+      (opened)="setPanelExpanded('conjointTotal', true)"
+      (closed)="setPanelExpanded('conjointTotal', false)">
+      <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px"
+        >
 
         <mat-toolbar class="plain">
           <span>Conjoint Total Points</span>
           <span class="spacer"></span>
-          <span class="delete-pg" (click)="noExpansionOnClick(); deleteDegree();">
+          <span class="delete-pg" (click)="$event.stopPropagation(); deleteDegree();">
             <span *ngIf="!userService.isMobile" class="cross-pg">&times;</span>
             <span *ngIf="userService.isMobile" class="cross-pg-mobile">&times;</span>
           </span>
@@ -28,16 +31,18 @@
       </div>
     </mat-expansion-panel>
 
-    <mat-expansion-panel class="pg-bar" [disabled]="isDisabled" [expanded]="true" hideToggle>
+    <mat-expansion-panel *ngIf="faculty?.name" class="pg-bar"
+      [ngStyle]="{'box-shadow': progressPanelService?.degreeFullyPlanned ? '0px 0px 20px 5px #65cc01' : '0px 0px 20px 5px #fff'}"
+      [expanded]="panelExpanded.degree"
+      (opened)="setPanelExpanded('degree', true)"
+      (closed)="setPanelExpanded('degree', false)">
 
-        <div [ngStyle]="{'box-shadow': progressPanelService?.degreeFullyPlanned ? '0px 0px 20px 5px #65cc01' : '0px 0px 20px 5px #fff'}">
-
-        <mat-expansion-panel-header *ngIf="faculty?.name" style="margin-top: 0px; margin-bottom: 0px"
-        (click)="expansionOnClick()">
+        <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px"
+        >
         <mat-toolbar class="plain">
           <span> Degree: Bachelor of {{faculty? faculty?.name: ''}} </span>
           <span class="spacer"></span>
-          <span class="delete-pg" (click)="noExpansionOnClick(); deleteDegree();">
+          <span class="delete-pg" (click)="$event.stopPropagation(); deleteDegree();">
             <span *ngIf="!userService.isMobile" class="cross-pg">&times;</span>
             <span *ngIf="userService.isMobile" class="cross-pg-mobile">&times;</span>
           </span>
@@ -53,7 +58,6 @@
           </progress-bar-multi-container>
         </div>
       </div>
-    </div>
     </mat-expansion-panel>
 
 
@@ -84,49 +88,50 @@
     </div>
 
     <p></p>
-  <div [ngStyle]="{'box-shadow': progressPanelService?.majorFullyPlanned ? '0px 0px 20px 5px #65cc01' : '0px 0px 20px 5px #fff'}">
-    <mat-expansion-panel class="pg-bar" [disabled]="isDisabled" [expanded]="true" hideToggle>
-      <div class="">
-      <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px" (click)="expansionOnClick()"
-        *ngIf="majors?.name && !pathways?.name">
+    <mat-expansion-panel *ngIf="majors?.name && !pathways?.name" class="pg-bar"
+      [ngStyle]="{'box-shadow': progressPanelService?.majorFullyPlanned ? '0px 0px 20px 5px #65cc01' : '0px 0px 20px 5px #fff'}"
+      [expanded]="panelExpanded.major"
+      (opened)="setPanelExpanded('major', true)"
+      (closed)="setPanelExpanded('major', false)">
+      <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px">
 
-        <mat-toolbar *ngIf="majors?.name && !pathways?.name" class="plain">
+        <mat-toolbar class="plain">
           <span>Major: {{majors?.name}} </span>
           <span class="spacer"></span>
-          <span class="delete-pg" (click)="noExpansionOnClick(); deleteMajor();">
+          <span class="delete-pg" (click)="$event.stopPropagation(); deleteMajor();">
             <span *ngIf="!userService.isMobile" class="cross-pg">&times;</span>
             <span *ngIf="userService.isMobile" class="cross-pg-mobile">&times;</span>
           </span>
         </mat-toolbar>
       </mat-expansion-panel-header>
-      <div *ngIf="majors?.name && !pathways?.name" class="progress-panel-bar-container flex flex-col flex-start">
+      <div class="progress-panel-bar-container flex flex-col flex-start">
         <div class="progress-bar-group">
           <progress-bar-multi-container *ngFor="let requirement of majorRequirements; let i = index" [requirement]="requirement" [majIndex]="i"
             (click)="selectRequirements(requirement);newPGMajorEvent()" [courses]="courses">
           </progress-bar-multi-container>
         </div>
       </div>
-    </div>
     </mat-expansion-panel>
-  </div>
 
     <P></P>
 
-    <mat-expansion-panel class="pg-bar" [disabled]="isDisabled" [expanded]="true" hideToggle>
-      <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px" (click)="expansionOnClick()"
-        *ngIf="pathways?.name">
+    <mat-expansion-panel *ngIf="pathways?.name" class="pg-bar"
+      [expanded]="panelExpanded.pathway"
+      (opened)="setPanelExpanded('pathway', true)"
+      (closed)="setPanelExpanded('pathway', false)">
+      <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px">
 
-        <mat-toolbar *ngIf="pathways?.name" class="plain">
+        <mat-toolbar class="plain">
           <span> {{majors?.name}} Pathway: {{pathways?.name}} </span>
           <span class="spacer"></span>
-          <span class="delete-pg" (click)="noExpansionOnClick(); deletePathway();">
+          <span class="delete-pg" (click)="$event.stopPropagation(); deletePathway();">
             <span *ngIf="!userService.isMobile" class="cross-pg">&times;</span>
             <span *ngIf="userService.isMobile" class="cross-pg-mobile">&times;</span>
           </span>
         </mat-toolbar>
       </mat-expansion-panel-header>
 
-      <div *ngIf="pathways?.name" class="progress-panel-bar-container flex flex-col flex-start">
+      <div class="progress-panel-bar-container flex flex-col flex-start">
         <div class="progress-bar-group">
           <progress-bar-multi-container *ngFor="let requirement of pathwayRequirements" [requirement]="requirement"
             (click)="selectRequirements(requirement)" [courses]="courses">
@@ -230,14 +235,17 @@
 
     <P></P>
 
-    <mat-expansion-panel class="pg-bar" [disabled]="isDisabled" [expanded]="true" hideToggle>
-      <mat-expansion-panel-header *ngIf="secondMajors?.name" style="margin-top: 0px; margin-bottom: 0px"
-        (click)="expansionOnClick()">
+    <mat-expansion-panel *ngIf="secondMajors?.name" class="pg-bar"
+      [expanded]="panelExpanded.secondMajor"
+      (opened)="setPanelExpanded('secondMajor', true)"
+      (closed)="setPanelExpanded('secondMajor', false)">
+      <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px"
+        >
 
         <mat-toolbar *ngIf="majors?.name && secondMajors?.name" class="plain">
           <span>Second Major: {{secondMajors?.name}} </span>
           <span class="spacer"></span>
-          <span class="delete-pg" (click)="noExpansionOnClick(); deleteSecondMajor();">
+          <span class="delete-pg" (click)="$event.stopPropagation(); deleteSecondMajor();">
             <span *ngIf="!userService.isMobile" class="cross-pg">&times;</span>
             <span *ngIf="userService.isMobile" class="cross-pg-mobile">&times;</span>
           </span>
@@ -255,14 +263,17 @@
 
     <p></p>
 
-    <mat-expansion-panel class="pg-bar" [disabled]="isDisabled" [expanded]="true" hideToggle>
-      <mat-expansion-panel-header *ngIf="conjoint?.name" style="margin-top: 0px; margin-bottom: 0px"
-        (click)="expansionOnClick()">
+    <mat-expansion-panel *ngIf="conjoint?.name" class="pg-bar"
+      [expanded]="panelExpanded.conjoint"
+      (opened)="setPanelExpanded('conjoint', true)"
+      (closed)="setPanelExpanded('conjoint', false)">
+      <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px"
+        >
 
         <mat-toolbar *ngIf="conjoint" class="plain">
           <span>Conjoint: Bachelor of {{conjoint?.name}} </span>
           <span class="spacer"></span>
-          <span class="delete-pg" (click)="noExpansionOnClick(); deleteConjoint();">
+          <span class="delete-pg" (click)="$event.stopPropagation(); deleteConjoint();">
             <span *ngIf="!userService.isMobile" class="cross-pg">&times;</span>
             <span *ngIf="userService.isMobile" class="cross-pg-mobile">&times;</span>
           </span>
@@ -281,14 +292,17 @@
 
     <P></P>
 
-    <mat-expansion-panel class="pg-bar" [disabled]="isDisabled" [expanded]="true" hideToggle>
-      <mat-expansion-panel-header *ngIf="thirdMajors?.name" style="margin-top: 0px; margin-bottom: 0px"
-        (click)="expansionOnClick()">
+    <mat-expansion-panel *ngIf="thirdMajors?.name" class="pg-bar"
+      [expanded]="panelExpanded.thirdMajor"
+      (opened)="setPanelExpanded('thirdMajor', true)"
+      (closed)="setPanelExpanded('thirdMajor', false)">
+      <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px"
+        >
 
         <mat-toolbar *ngIf="majors?.name && thirdMajors?.name" class="plain">
           <span>Conjoint Major: {{thirdMajors?.name}} </span>
           <span class="spacer"></span>
-          <span class="delete-pg" (click)="noExpansionOnClick(); deleteThirdMajor();">
+          <span class="delete-pg" (click)="$event.stopPropagation(); deleteThirdMajor();">
             <span *ngIf="!userService.isMobile" class="cross-pg">&times;</span>
             <span *ngIf="userService.isMobile" class="cross-pg-mobile">&times;</span>
           </span>
@@ -307,14 +321,17 @@
 
     <P></P>
 
-    <mat-expansion-panel class="pg-bar" [disabled]="isDisabled" [expanded]="true" hideToggle>
-      <mat-expansion-panel-header *ngIf="modules?.name" style="margin-top: 0px; margin-bottom: 0px"
-        (click)="expansionOnClick()">
+    <mat-expansion-panel *ngIf="modules?.name" class="pg-bar"
+      [expanded]="panelExpanded.module"
+      (opened)="setPanelExpanded('module', true)"
+      (closed)="setPanelExpanded('module', false)">
+      <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px"
+        >
 
         <mat-toolbar *ngIf="modules?.name" class="plain">
           <span>Module: {{modules?.name}} </span>
           <span class="spacer"></span>
-          <span class="delete-pg" (click)="noExpansionOnClick(); deleteModule();">
+          <span class="delete-pg" (click)="$event.stopPropagation(); deleteModule();">
             <span *ngIf="!userService.isMobile" class="cross-pg">&times;</span>
             <span *ngIf="userService.isMobile" class="cross-pg-mobile">&times;</span>
           </span>
@@ -332,14 +349,17 @@
 
     <p></p>
 
-    <mat-expansion-panel class="pg-bar" [disabled]="isDisabled" [expanded]="true" hideToggle>
-      <mat-expansion-panel-header *ngIf="secondModules?.name" style="margin-top: 0px; margin-bottom: 0px"
-        (click)="expansionOnClick()">
+    <mat-expansion-panel *ngIf="secondModules?.name" class="pg-bar"
+      [expanded]="panelExpanded.secondModule"
+      (opened)="setPanelExpanded('secondModule', true)"
+      (closed)="setPanelExpanded('secondModule', false)">
+      <mat-expansion-panel-header style="margin-top: 0px; margin-bottom: 0px"
+        >
 
         <mat-toolbar *ngIf="secondModules?.name" class="plain">
           <span>Module: {{secondModules?.name}} </span>
           <span class="spacer"></span>
-          <span class="delete-pg" (click)="noExpansionOnClick(); deleteSecondModule();">
+          <span class="delete-pg" (click)="$event.stopPropagation(); deleteSecondModule();">
             <span *ngIf="!userService.isMobile" class="cross-pg">&times;</span>
             <span *ngIf="userService.isMobile" class="cross-pg-mobile">&times;</span>
           </span>

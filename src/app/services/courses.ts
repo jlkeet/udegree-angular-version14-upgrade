@@ -153,26 +153,34 @@ export class CourseService {
   public async setCourseDb(course: any, generatedId: any, coursePeriod: number, courseYear: number, status?: CourseStatus, grade?: null) {
     course.generatedId = generatedId || Math.floor(Math.random() * 100000);
     this.storeHelper.add('courses', course);
-    let result = course;
-    
-    const coursesRef = collection(doc(this.user_db, `users/${this.authService.auth.currentUser.email}`), "courses");
-  
-    await addDoc(coursesRef, Object.assign({
-      department: result['department'] || null,
-      desc: result['desc'] || null,
-      faculties: result['faculties'] || null,
-      id: result['id'] || null,
-      name: result['name'] || null,
+    const result = course;
+    const userEmail = this.authService?.auth?.currentUser?.email;
+    if (!userEmail) {
+      return;
+    }
+
+    const coursesRef = collection(doc(this.user_db, `users/${userEmail}`), "courses");
+
+    const createdDoc = await addDoc(coursesRef, Object.assign({
+      department: result["department"] || null,
+      desc: result["desc"] || null,
+      faculties: result["faculties"] || null,
+      id: result["id"] || null,
+      name: result["name"] || null,
       period: coursePeriod,
-      points: result['points'] || null,
-      requirements: result['requirements'] || null,
-      stage: result['stage'] || null,
-      title: result['title'] || null,
+      points: result["points"] || null,
+      requirements: result["requirements"] || null,
+      stage: result["stage"] || null,
+      title: result["title"] || null,
       year: courseYear,
       status: status ? status : CourseStatus.Planned,
       grade: grade ? grade : null,
       canDelete: true,
-      generatedId: generatedId,
+      generatedId: course.generatedId,
+    }));
+
+    this.storeHelper.findAndUpdate("courses", Object.assign({}, course, {
+      firestoreId: createdDoc.id,
     }));
   }
 
@@ -185,21 +193,29 @@ export class CourseService {
 
   public async deselectCourseByName(courseObject: any) {
 
-    let course: any;
-    course = courseObject; // gets rid of generatedId error issue, might have to fix later
-  
+    const course: ICourse = courseObject;
     this.storeHelper.findAndDelete('courses', course);
     
     this.updateErrors();
     this.courseCounter--;
-    const coursesRef = collection(doc(this.user_db, `users/${this.authService.auth.currentUser.email}`), "courses");
-    const q = query(coursesRef, where('generatedId', '==', course.generatedId));
-    
-    const snapshot = await getDocs(q);
-    
-    snapshot.forEach(docSnap => {
-      deleteDoc(doc(this.user_db, `users/${this.authService.auth.currentUser.email}/courses/${docSnap.id}`));
-    });
+
+    const courseDocIds = await this.resolveCourseDocIds(course);
+    if (courseDocIds.length === 0) {
+      return;
+    }
+
+    const userEmail = this.authService?.auth?.currentUser?.email;
+    if (!userEmail) {
+      return;
+    }
+
+    await Promise.all(
+      courseDocIds.map((courseDocId: string) =>
+        deleteDoc(doc(this.user_db, `users/${userEmail}/courses/${courseDocId}`)).catch(
+          (error: any) => console.error("Failed to delete course document:", error)
+        )
+      )
+    );
   }
 
 
@@ -208,16 +224,19 @@ export class CourseService {
     const copy = Object.assign({}, lookupCourse);
     copy.status = status;
     this.storeHelper.findAndUpdate('courses', copy);
-    let course = courseToChange;
-  
-    const coursesRef = collection(doc(this.user_db, `users/${this.authService.auth.currentUser.email}`), "courses");
-    const q = query(coursesRef, where('generatedId', '==', course.generatedId));
-    
-    const snapshot = await getDocs(q);
-    
-    snapshot.forEach(docSnap => {
-      updateDoc(doc(this.user_db, `users/${this.authService.auth.currentUser.email}/courses/${docSnap.id}`), {status: copy.status});
-    });
+    const courseDocIds = await this.resolveCourseDocIds(courseToChange);
+    const userEmail = this.authService?.auth?.currentUser?.email;
+    if (courseDocIds.length > 0 && userEmail) {
+      await Promise.all(
+        courseDocIds.map((courseDocId: string) =>
+          updateDoc(doc(this.user_db, `users/${userEmail}/courses/${courseDocId}`), {
+            status: copy.status,
+          }).catch((error: any) =>
+            console.error("Failed to update course status:", error)
+          )
+        )
+      );
+    }
       
     this.updateErrors();
   }
@@ -227,18 +246,48 @@ export class CourseService {
     const copy = Object.assign({}, lookupCourse);
     copy.grade = grade;
     this.storeHelper.findAndUpdate('courses', copy);
-    let course = courseToChange;
-  
-    const coursesRef = collection(doc(this.user_db, `users/${this.authService.auth.currentUser.email}`), "courses");
-    const q = query(coursesRef, where('generatedId', '==', course.generatedId));
-    
-    const snapshot = await getDocs(q);
-    
-    snapshot.forEach(docSnap => {
-      updateDoc(doc(this.user_db, `users/${this.authService.auth.currentUser.email}/courses/${docSnap.id}`), {grade: copy.grade});
-    });
+    const courseDocIds = await this.resolveCourseDocIds(courseToChange);
+    const userEmail = this.authService?.auth?.currentUser?.email;
+    if (courseDocIds.length > 0 && userEmail) {
+      await Promise.all(
+        courseDocIds.map((courseDocId: string) =>
+          updateDoc(doc(this.user_db, `users/${userEmail}/courses/${courseDocId}`), {
+            grade: copy.grade,
+          }).catch((error: any) =>
+            console.error("Failed to update course grade:", error)
+          )
+        )
+      );
+    }
       
     this.updateErrors();
+  }
+
+  private async resolveCourseDocIds(course: ICourse): Promise<string[]> {
+    const userEmail = this.authService?.auth?.currentUser?.email;
+    if (!userEmail || !course) {
+      return [];
+    }
+
+    if (typeof course.firestoreId === "string" && course.firestoreId.length > 0) {
+      return [course.firestoreId];
+    }
+
+    if (course.generatedId === undefined || course.generatedId === null) {
+      return [];
+    }
+
+    const coursesRef = collection(doc(this.user_db, `users/${userEmail}`), "courses");
+    const q = query(coursesRef, where("generatedId", "==", course.generatedId));
+    const snapshot = await getDocs(q);
+
+    const docIds = snapshot.docs.map((docSnap: any) => docSnap.id);
+    if (docIds.length > 0) {
+      this.storeHelper.findAndUpdate("courses", Object.assign({}, course, {
+        firestoreId: docIds[0],
+      }));
+    }
+    return docIds;
   }
 
   public updateErrors() {
@@ -365,7 +414,11 @@ export class CourseService {
 
   public async loadPlanFromDb() {
     try {
-      const userEmail = this.authService.auth.currentUser.email;
+      const userEmail = this.authService?.auth?.currentUser?.email;
+      if (!userEmail) {
+        return;
+      }
+
       const userDocRef = doc(this.dbCourses.db, 'users', userEmail);
       const userDocSnap = await getDoc(userDocRef);
   
@@ -374,9 +427,17 @@ export class CourseService {
         const coursesSnapshot = await getDocs(coursesQuery);
   
         if (!coursesSnapshot.empty) {
-          // Load all courses in parallel
-          const loadCoursePromises = coursesSnapshot.docs.map(doc => this.loadCourseFromDb(doc.id));
-          await Promise.all(loadCoursePromises);
+          const normalizedCourses = coursesSnapshot.docs
+            .map((snapshotDoc: any) =>
+              this.normalizeCourseFromDb(snapshotDoc.data(), snapshotDoc.id)
+            )
+            .filter((course: ICourse | null): course is ICourse => !!course);
+
+          normalizedCourses.forEach((course: ICourse) =>
+            this.storeHelper.addIfNotExists("courses", course as any)
+          );
+
+          this.updateErrors();
           this.syncSemestersWithPlannedCourses();
         } else {
           this.storeHelper.deleteAll();
@@ -411,24 +472,48 @@ export class CourseService {
           return;
         }
 
-        await Promise.all(
-          coursesSnapshot.docs.map((snapshotDoc) =>
-            this.loadCourseFromDbAfterDel(snapshotDoc.id)
+        const normalizedCourses = coursesSnapshot.docs
+          .map((snapshotDoc: any) =>
+            this.normalizeCourseFromDb(snapshotDoc.data(), snapshotDoc.id)
           )
-        );
+          .filter((course: ICourse | null): course is ICourse => !!course);
+
+        normalizedCourses.forEach((course: ICourse) => {
+          const plannedCourses = this.storeHelper.current("courses") || [];
+          const targetCourseIndex = plannedCourses.findIndex(
+            (plannedCourse: ICourse) => plannedCourse.generatedId === course.generatedId
+          );
+
+          if (targetCourseIndex === -1) {
+            this.storeHelper.addIfNotExists("courses", course as any);
+            return;
+          }
+
+          if (
+            course.year !== plannedCourses[targetCourseIndex].year ||
+            course.period !== plannedCourses[targetCourseIndex].period
+          ) {
+            this.storeHelper.findAndDelete(
+              "courses",
+              plannedCourses[targetCourseIndex].generatedId
+            );
+            this.storeHelper.add("courses", course);
+            return;
+          }
+
+          this.storeHelper.findAndUpdate(
+            "courses",
+            Object.assign({}, plannedCourses[targetCourseIndex], {
+              firestoreId: course.firestoreId,
+            })
+          );
+        });
+
+        this.updateErrors();
         this.syncSemestersWithPlannedCourses();
       }
-    
-      private getCourseFromDb(courseDbId: string) {
-        return new Promise<any>((resolve) => {
-          const semesterFromDb = {
-            course: 
-              this.dbCourses.getCollection("users", "courses", courseDbId).then( (res) => {resolve((res))} )
-          };
-        });
-      }
 
-      private normalizeCourseFromDb(rawCourse: any): ICourse | null {
+      private normalizeCourseFromDb(rawCourse: any, firestoreId?: string): ICourse | null {
         if (!rawCourse) {
           return null;
         }
@@ -450,60 +535,18 @@ export class CourseService {
             year: rawCourse[12] || null,
             grade: rawCourse[13] || null,
             canDelete: true,
+            firestoreId: typeof firestoreId === "string" ? firestoreId : undefined,
           };
         }
 
-        return Object.assign({}, rawCourse, { canDelete: true }) as ICourse;
+        return Object.assign({}, rawCourse, {
+          canDelete: true,
+          firestoreId:
+            typeof firestoreId === "string" && firestoreId.length > 0
+              ? firestoreId
+              : undefined,
+        }) as ICourse;
       }
-
-      private async loadCourseFromDb(courseDbId: string) {
-        try {
-          const rawCourse = await this.getCourseFromDb(courseDbId);
-          const course = this.normalizeCourseFromDb(rawCourse);
-          if (!course) {
-            return;
-          }
-          this.storeHelper.addIfNotExists("courses", course as any);
-          this.updateErrors();
-        } catch (error) {
-          console.error('Error loading course from DB:', error);
-          // Handle the error appropriately
-        }
-      }
-      
-
-    private async loadCourseFromDbAfterDel(courseDbId: string) {
-      try {
-          const rawCourse = await this.getCourseFromDb(courseDbId);
-          const course = this.normalizeCourseFromDb(rawCourse);
-          if (!course) {
-            return;
-          }
-
-          const plannedCourses = this.storeHelper.current("courses") || [];
-          const targetCourseIndex = plannedCourses.findIndex(
-            (plannedCourse: ICourse) => plannedCourse.generatedId === course.generatedId
-          );
-
-          if (targetCourseIndex === -1) {
-            this.storeHelper.addIfNotExists("courses", course as any);
-            return;
-          }
-
-          if (
-             course.year !== plannedCourses[targetCourseIndex].year || 
-             course.period !== plannedCourses[targetCourseIndex].period
-          ) {
-              this.storeHelper.findAndDelete("courses", plannedCourses[targetCourseIndex].generatedId);
-              this.storeHelper.add("courses", course);
-          }
-  
-      } catch (error) {
-          // Handle the error here
-          console.error('Failed to load course:', error);
-      }
-  }
-
   public async addSemesterFromDb() {
     try {
       const userEmail = this.authService?.auth?.currentUser?.email;
@@ -517,8 +560,20 @@ export class CourseService {
       const semestersSnapshot = await getDocs(semestersQuery);
 
       const semesterDocs = semestersSnapshot.docs
-        .map((snapshotDoc) => this.normalizeSemester(snapshotDoc.data()))
-        .filter((semester): semester is { year: number; period: number; both: string; tempCards: any[] } => !!semester);
+        .map((snapshotDoc) =>
+          this.normalizeSemester(snapshotDoc.data(), snapshotDoc.id)
+        )
+        .filter(
+          (
+            semester
+          ): semester is {
+            year: number;
+            period: number;
+            both: string;
+            tempCards: any[];
+            firestoreId?: string;
+          } => !!semester
+        );
 
       const semestersFromStore = Array.isArray(this.storeHelper.current("semesters"))
         ? this.storeHelper.current("semesters")
@@ -597,6 +652,22 @@ export class CourseService {
       if (userEmail) {
         this.dbCourses
           .addSelection(userEmail, "semester", newSemester, "semesters")
+          .then((firestoreId: string) => {
+            const latestSemesters = Array.isArray(this.storeHelper.current("semesters"))
+              ? [...this.storeHelper.current("semesters")]
+              : [];
+            const targetSemester = latestSemesters.find(
+              (semester: any) =>
+                semester.year === newSemester.year &&
+                semester.period === newSemester.period
+            );
+            if (!targetSemester) {
+              return;
+            }
+            targetSemester.firestoreId = firestoreId;
+            this.storeHelper.update("semesters", latestSemesters);
+            this.semesters = latestSemesters;
+          })
           .catch((error: any) =>
             console.error("Error saving semester to database:", error)
           );
@@ -714,7 +785,10 @@ private getNextSemesterSlot(year: number, period: number): { year: number; perio
 		}
 }
 
-  private normalizeSemester(rawSemester: any): { year: number; period: number; both: string; tempCards: any[] } | null {
+  private normalizeSemester(
+    rawSemester: any,
+    firestoreId?: string
+  ): { year: number; period: number; both: string; tempCards: any[]; firestoreId?: string } | null {
     if (!rawSemester) {
       return null;
     }
@@ -725,19 +799,47 @@ private getNextSemesterSlot(year: number, period: number): { year: number; perio
       return null;
     }
 
-    return {
+    const resolvedFirestoreId =
+      typeof rawSemester.firestoreId === "string" && rawSemester.firestoreId.length > 0
+        ? rawSemester.firestoreId
+        : typeof firestoreId === "string" && firestoreId.length > 0
+        ? firestoreId
+        : null;
+
+    const normalizedSemester: {
+      year: number;
+      period: number;
+      both: string;
+      tempCards: any[];
+      firestoreId?: string;
+    } = {
       year,
       period,
       both: `${year} ${period}`,
       tempCards: Array.isArray(rawSemester.tempCards) ? rawSemester.tempCards : [],
     };
+
+    if (resolvedFirestoreId) {
+      normalizedSemester.firestoreId = resolvedFirestoreId;
+    }
+
+    return normalizedSemester;
   }
 
   private mergeSemesters(
     primarySemesters: any[],
     secondarySemesters: any[]
-  ): { year: number; period: number; both: string; tempCards: any[] }[] {
-    const semesterByKey = new Map<string, { year: number; period: number; both: string; tempCards: any[] }>();
+  ): {
+    year: number;
+    period: number;
+    both: string;
+    tempCards: any[];
+    firestoreId?: string;
+  }[] {
+    const semesterByKey = new Map<
+      string,
+      { year: number; period: number; both: string; tempCards: any[]; firestoreId?: string }
+    >();
 
     const insertSemester = (candidate: any) => {
       const normalized = this.normalizeSemester(candidate);
@@ -759,6 +861,14 @@ private getNextSemesterSlot(year: number, period: number): { year: number; perio
 
       if (existingTempCards.length === 0 && incomingTempCards.length > 0) {
         semesterByKey.set(key, normalized);
+        return;
+      }
+
+      if (!existing.firestoreId && normalized.firestoreId) {
+        semesterByKey.set(
+          key,
+          Object.assign({}, existing, { firestoreId: normalized.firestoreId })
+        );
       }
     };
 
@@ -808,35 +918,62 @@ private getNextSemesterSlot(year: number, period: number): { year: number; perio
 
     const email = this.authService?.auth?.currentUser?.email;
     if (email) {
-      const userRef = doc(this.user_db, `users/${email}`);
-      const semesterRef = collection(userRef, "semester");
-      const q = query(semesterRef);
-      const snapshot = await getDocs(q);
+      const semestersFromStore = Array.isArray(this.storeHelper.current("semesters"))
+        ? this.storeHelper.current("semesters")
+        : [];
+      const semesterWithCard = semestersFromStore.find((semester: any) =>
+        (Array.isArray(semester?.tempCards) ? semester.tempCards : []).some(
+          (card: any) => this.tempCardIdsMatch(card, tempCard)
+        )
+      );
 
-      const updates: Promise<any>[] = [];
+      if (
+        semesterWithCard &&
+        typeof semesterWithCard.firestoreId === "string" &&
+        semesterWithCard.firestoreId.length > 0
+      ) {
+        const updatedTempCards = (Array.isArray(semesterWithCard.tempCards)
+          ? semesterWithCard.tempCards
+          : []
+        ).filter((card: any) => !this.tempCardIdsMatch(card, tempCard));
 
-      snapshot.forEach((docSnap) => {
-        const docRef = doc(semesterRef, docSnap.id);
-        const tempCards: any[] = Array.isArray(docSnap.data()["tempCards"])
-          ? docSnap.data()["tempCards"]
-          : [];
+        await updateDoc(
+          doc(this.user_db, `users/${email}/semester/${semesterWithCard.firestoreId}`),
+          { tempCards: updatedTempCards }
+        ).catch((error) => {
+          console.error("Error removing tempCard from the document: ", error);
+        });
+      } else {
+        const userRef = doc(this.user_db, `users/${email}`);
+        const semesterRef = collection(userRef, "semester");
+        const q = query(semesterRef);
+        const snapshot = await getDocs(q);
 
-        const updatedTempCards = tempCards.filter(
-          (card: any) => !this.tempCardIdsMatch(card, tempCard)
-        );
-        if (updatedTempCards.length === tempCards.length) {
-          return;
+        const updates: Promise<any>[] = [];
+
+        snapshot.forEach((docSnap) => {
+          const docRef = doc(semesterRef, docSnap.id);
+          const tempCards: any[] = Array.isArray(docSnap.data()["tempCards"])
+            ? docSnap.data()["tempCards"]
+            : [];
+
+          const updatedTempCards = tempCards.filter(
+            (card: any) => !this.tempCardIdsMatch(card, tempCard)
+          );
+          if (updatedTempCards.length === tempCards.length) {
+            return;
+          }
+
+          updates.push(
+            updateDoc(docRef, { tempCards: updatedTempCards }).catch((error) => {
+              console.error("Error removing tempCard from the document: ", error);
+            })
+          );
+        });
+
+        if (updates.length > 0) {
+          await Promise.all(updates);
         }
-
-        updates.push(
-          updateDoc(docRef, { tempCards: updatedTempCards }).catch((error) => {
-            console.error("Error removing tempCard from the document: ", error);
-          })
-        );
-      });
-
-      if (updates.length > 0) {
-        await Promise.all(updates);
       }
     }
 

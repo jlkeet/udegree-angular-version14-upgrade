@@ -45,13 +45,13 @@ import { pluck } from 'rxjs/operators';
   }
 
   .planner-actions {
-    width: calc(100% - 35px);
+    width: calc(100% - 28px);
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding-left: 36px;
-    margin-top: -24px;
-    margin-bottom: 8px;
+    gap: 8px;
+    padding-left: 28px;
+    margin-top: 4px;
+    margin-bottom: 14px;
   }
 
   .planner-toolbar {
@@ -59,10 +59,11 @@ import { pluck } from 'rxjs/operators';
     align-items: center;
     gap: 8px;
     width: fit-content;
-    background: #f6fafc;
-    border: 1px solid #dbe7ee;
-    border-radius: 10px;
-    padding: 6px;
+    background: #f8fbfd;
+    border: 1px solid #e1ebf1;
+    border-radius: 9px;
+    padding: 5px;
+    box-shadow: 0 6px 14px rgba(47, 87, 112, 0.08);
   }
 
   .action-btn {
@@ -102,9 +103,10 @@ import { pluck } from 'rxjs/operators';
   }
 
   .planner-status {
-    font-size: 14px;
-    color: #5f7483;
+    font-size: 13px;
+    color: #657a88;
     min-height: 20px;
+    padding-left: 2px;
   }
 
   .planner-status--running {
@@ -119,6 +121,7 @@ import { pluck } from 'rxjs/operators';
     .planner-actions {
       width: calc(100% - 10px);
       padding-left: 12px;
+      margin-top: 2px;
     }
   }
 

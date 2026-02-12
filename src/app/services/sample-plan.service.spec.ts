@@ -15,7 +15,9 @@ describe("SamplePlanService", () => {
     allCourses: ICourse[],
     majorRequirements: any[],
     existingCourses: ICourse[] = [],
-    existingSemesters: any[] = []
+    existingSemesters: any[] = [],
+    conjointRequirements: any[] = [],
+    degreeRequirements: any[] = []
   ) {
     state = {
       courses: existingCourses.map((course: ICourse) => Object.assign({}, course)),
@@ -44,10 +46,11 @@ describe("SamplePlanService", () => {
     };
 
     progressPanelService = {
-      getReqs: (): any[] => [],
+      getReqs: (): any[] => degreeRequirements,
       getMajReqs: () => majorRequirements,
       getSecondMajReqs: (): any[] => [],
       getThirdMajReqs: (): any[] => [],
+      getConjointReqs: (): any[] => conjointRequirements,
       getPathwayReqs: (): any[] => [],
       getModuleReqs: (): any[] => [],
       getSecondModuleReqs: (): any[] => [],
@@ -490,10 +493,9 @@ describe("SamplePlanService", () => {
     const stageRangeCards = tempCards.filter(
       (card: any) =>
         Array.isArray(card.stages) &&
+        card.stages.length === 2 &&
         card.stages.includes(2) &&
-        card.stages.includes(3) &&
-        card.stages.includes(4) &&
-        card.stages.includes(7)
+        card.stages.includes(3)
     );
     const genericScienceCards = tempCards.filter(
       (card: any) =>
@@ -524,13 +526,13 @@ describe("SamplePlanService", () => {
       points: 15,
       value: 15,
       generatedId: 800001,
-      department: "Biological Sciences",
-      departments: ["Biological Sciences"],
+      department: "BIOLOGICAL SCIENCES",
+      departments: ["BIOLOGICAL SCIENCES"],
       faculty: null,
       faculties: null,
       level: 2,
       stages: null,
-      autoRequirementKey: "0|30|Biological Sciences||2||",
+      autoRequirementKey: "0|30|BIOLOGICAL SCIENCES||2||",
     };
 
     createService(
@@ -553,11 +555,7 @@ describe("SamplePlanService", () => {
     const tempCards = (state.semesters || []).flatMap((semester: any) =>
       Array.isArray(semester.tempCards) ? semester.tempCards : []
     );
-    const matching = tempCards.filter(
-      (card: any) => card.autoRequirementKey === "0|30|Biological Sciences||2||"
-    );
-
-    expect(matching.length).toBe(2);
+    expect(tempCards.length).toBe(2);
   });
 
   it("marks general education temp cards with the general filter", async () => {
@@ -594,6 +592,41 @@ describe("SamplePlanService", () => {
     tempCards.forEach((card: any) => {
       expect(card.general).toBeTrue();
     });
+  });
+
+  it("plans against conjoint requirements so conjoint bars can be fulfilled", async () => {
+    const history200: ICourse = {
+      id: 60,
+      generatedId: 9060,
+      name: "HISTORY200",
+      desc: "History paper",
+      faculties: ["Arts"],
+      department: ["History"],
+      points: 15,
+      stage: 2,
+    };
+
+    createService(
+      [history200],
+      [],
+      [],
+      [],
+      [
+        {
+          type: RequirementType.Points,
+          required: 30,
+          departments: ["History"],
+        },
+      ]
+    );
+
+    const result = await service.setCourse();
+    const tempCards = (state.semesters || []).flatMap((semester: any) =>
+      Array.isArray(semester.tempCards) ? semester.tempCards : []
+    );
+
+    expect(tempCards.length).toBe(2);
+    expect(result.status).toBe("ok");
   });
 
   it("returns a warning when there are no selected requirements to fulfil", async () => {

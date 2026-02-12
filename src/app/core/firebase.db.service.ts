@@ -80,18 +80,33 @@ export class FirebaseDbService {
   }
   
 
-  async getID(email: any, collectionName: string, storeHelperName: string) {
+  async getID(
+    email: any,
+    collectionName: string,
+    storeHelperName: string
+  ): Promise<boolean> {
     try {
       const collectionRef = collection(this.db, `users/${email}/${collectionName}`);
       const querySnapshot = await getDocs(collectionRef);
-    
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach((doc) => {
-          this.loadPlanFromDb(collectionName, doc.id, storeHelperName);
-        });
+
+      if (querySnapshot.empty) {
+        return false;
       }
+
+      await Promise.all(
+        querySnapshot.docs.map((snapshotDoc: any) =>
+          this.loadPlanFromDb(
+            collectionName,
+            snapshotDoc.id,
+            storeHelperName,
+            snapshotDoc.data()
+          )
+        )
+      );
+      return true;
     } catch (err) {
       console.log('Error getting documents:', err);
+      return false;
     }
   }
   
@@ -118,25 +133,18 @@ export class FirebaseDbService {
   }
 
 
-  public loadPlanFromDb(collectionName: any, degId: any, storeHelperName: any) {
-    this.getPlanFromDb(collectionName, degId).then(async (copy) => {
-      Object.assign({
-        abbrv: copy['abbrv'] || null,
-        blurb: copy['blurb'] || null,
-        doubleMajorRequirements: copy['doubleMajorRequirements'] || null,
-        flags: copy['flags'] || null,
-        majorRequirements: copy['majorRequirements'] || null,
-        majors: copy['majors'] || null,
-        name: copy['name'] || null,
-        conjointRequirements: ['conjointRequirements'] || null,
-        faculties: copy['faculties'] || null,
-        requirements: copy['requirements'] || null,
-        courses: copy['courses'] || null,
-      });
-      this.getPlanFromDb(collectionName, degId).then((res) => {
-        this.storeHelper.update(storeHelperName, res)
-      });
-    });
+  public async loadPlanFromDb(
+    collectionName: any,
+    degId: any,
+    storeHelperName: any,
+    planData?: any
+  ) {
+    const resolvedPlan = planData ?? (await this.getPlanFromDb(collectionName, degId));
+    if (!resolvedPlan) {
+      return;
+    }
+
+    this.storeHelper.update(storeHelperName, resolvedPlan);
   }
 
 //   public getStudentEmailForAudit() {

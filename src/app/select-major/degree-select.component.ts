@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { collection, getDocs } from "firebase/firestore";
 import { AuthService } from "../core/auth.service";
 import {
   DepartmentService,
@@ -71,53 +70,51 @@ export class DegreeSelection {
     // public afAuth: Auth,
   ) {
 
-    this.authService.authState.subscribe((user: any) => {
+    this.authService.authState.subscribe(async (user: any) => {
       this.userContainer.currentUser = user;
       if (this.userContainer.currentUser) {
-        this.initiateCurrentPlanFromDb();
-        setTimeout(() => {
-          this.initiateCurrentPlan()
-        }, 3000);  
+        await this.initiateCurrentPlanFromDb();
+        this.initiateCurrentPlan();
       }
     });
   }
   
-  public initiateCurrentPlanFromDb() {
-    return new Promise<void>(async (resolve, reject) => {
-      let collectionList = [
-        "degree",
-        "conjoint",
-        "major",
-        "pathway",
-        "secondMajor",
-        "thirdMajor",
-        "module",
-        "secondModule",
-      ];
-      let storeList = [
-        "faculty",
-        "conjoint",
-        "majors",
-        "pathways",
-        "secondMajors",
-        "thirdMajors",
-        "modules",
-        "secondModules",
-      ];
+  public async initiateCurrentPlanFromDb() {
+    const userEmail = this.authService?.auth?.currentUser?.email;
+    if (!userEmail) {
+      return;
+    }
 
-      for (let i = 0; i < collectionList.length; i++) {
-        const userCollectionRef = collection(this.dbCourses.db, `users/${this.authService.auth.currentUser!.email}/${collectionList[i]}`);
-        const isItSaved = await getDocs(userCollectionRef);
+    const collectionList = [
+      "degree",
+      "conjoint",
+      "major",
+      "pathway",
+      "secondMajor",
+      "thirdMajor",
+      "module",
+      "secondModule",
+    ];
+    const storeList = [
+      "faculty",
+      "conjoint",
+      "majors",
+      "pathways",
+      "secondMajors",
+      "thirdMajors",
+      "modules",
+      "secondModules",
+    ];
 
-      
-        if (isItSaved.size > 0) {
-          this.onPageChange.emit(); // Loads the progress bars if there is something in the user database
-          this.dbCourses.getID(this.authService.auth.currentUser!.email, collectionList[i], storeList[i]);
-        }
-      
-        resolve();
-      }
-    });
+    const loadedFlags = await Promise.all(
+      collectionList.map((collectionName: string, index: number) =>
+        this.dbCourses.getID(userEmail, collectionName, storeList[index])
+      )
+    );
+
+    if (loadedFlags.some(Boolean)) {
+      this.onPageChange.emit(); // Loads the progress bars if there is something in the user database
+    }
   }
 
   public initiateCurrentPlan() {

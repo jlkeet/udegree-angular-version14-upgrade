@@ -15,6 +15,7 @@
            [barOne]="barOneState"
            [barTwo]="barTwoState"
            [barThree]="barThreeState"
+           [barFour]="barFourState"
            [isTotal]="isTotal"
            [hoverText]="hoverText"
            [index]="index"
@@ -28,12 +29,10 @@
 
     <mat-expansion-panel
     class="complex-container"
-    [disabled]="isDisabled"
-    [expanded]="false"
     hideToggle
   >
 
-    <mat-expansion-panel-header *ngIf="isComplex" class="complex-header" style="padding-bottom: 37px !important" (click)="expansionOnClick();">
+    <mat-expansion-panel-header *ngIf="isComplex" class="complex-header" style="padding-bottom: 37px !important">
       <!--<img src='assets/img/file.svg' class="file-icon" />-->
       <span>{{title}}</span>
     </mat-expansion-panel-header>
@@ -46,6 +45,7 @@
        [barOne]="barOneStateComplex[i]"
        [barTwo]="barTwoStateComplex[i]"
        [barThree]="barThreeStateComplex[i]"
+       [barFour]="barFourStateComplex[i]"
        [isTotal]="isTotal"
        [hoverText]="item.hoverText"
        [rule]="item.rule"

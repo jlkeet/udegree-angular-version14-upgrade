@@ -120,8 +120,18 @@ export class ProgressPanel {
 
   public collectionList = ["module", "secondModule"];
   public storeList = ["modules", "secondModules"];
-  public isDisabled: boolean = false;
   public isComplex: boolean = false;
+  public panelExpanded: any = {
+    conjointTotal: true,
+    degree: true,
+    major: true,
+    pathway: true,
+    secondMajor: true,
+    conjoint: true,
+    thirdMajor: true,
+    module: true,
+    secondModule: true,
+  };
   
   public fullyPlanned: any;
 
@@ -312,10 +322,26 @@ export class ProgressPanel {
       this.secondModules ? this.secondModules.requirements : []
     );
 
+    const conjointTotalRequirement =
+      this.conjointRequirements.length > 0
+        ? [this.conjointRequirements[this.conjointRequirements.length - 1]]
+        : [];
+    const conjointPanelRequirements =
+      this.conjointRequirements.length > 2
+        ? this.conjointRequirements.slice(
+            1,
+            this.conjointRequirements.length - 1
+          )
+        : [];
+    const conjointRequirementsForPlanning = toRequirementArray(
+      conjointPanelRequirements.concat(conjointTotalRequirement)
+    );
+
     this.progressPanelService.setReqs(this.requirements)
     this.progressPanelService.setMajReqs(this.majorRequirements)
     this.progressPanelService.setSecondMajReqs(this.secondMajorRequirements)
     this.progressPanelService.setThirdMajReqs(this.thirdMajorRequirements)
+    this.progressPanelService.setConjointReqs(conjointRequirementsForPlanning)
     this.progressPanelService.setPathwayReqs(this.pathwayRequirements)
     this.progressPanelService.setModuleReqs(this.moduleRequirements)
     this.progressPanelService.setSecondModuleReqs(this.secondModuleRequirements)
@@ -342,8 +368,42 @@ export class ProgressPanel {
     return found !== undefined;
   }
 
+  private async clearUserCollections(
+    email: string,
+    collectionList: string[],
+    storeList: string[]
+  ): Promise<void> {
+    const snapshots = await Promise.all(
+      collectionList.map((collectionName: string) =>
+        getDocs(collection(this.dbCourses.db, `users/${email}/${collectionName}`))
+      )
+    );
+
+    const deletes: Promise<any>[] = [];
+    snapshots.forEach((snapshot: any, index: number) => {
+      this.storeHelper.update(storeList[index], null);
+      snapshot.forEach((snapshotDoc: any) => {
+        deletes.push(
+          deleteDoc(
+            doc(
+              this.dbCourses.db,
+              `users/${email}/${collectionList[index]}/${snapshotDoc.id}`
+            )
+          )
+        );
+      });
+    });
+
+    if (deletes.length > 0) {
+      await Promise.all(deletes);
+    }
+  }
+
   public async deleteDegree() {
     this.email = this.authService?.auth?.currentUser?.email;
+    if (!this.email) {
+      return;
+    }
 
     let collectionList = [
       "degree",
@@ -365,21 +425,7 @@ export class ProgressPanel {
       "modules",
       "secondModules",
     ];
-
-    for (let i = 0; i < collectionList.length; i++) {
-      const userCollectionRef = collection(this.dbCourses.db, `users/${this.email}/${collectionList[i]}`);
-      const snapshot = await getDocs(userCollectionRef);
-    
-      if (snapshot.docs.length > 0) {
-        snapshot.forEach((ref) => {
-          this.deleteId = ref.id;
-          this.storeHelper.update(storeList[i], null);
-    
-          const docRef = doc(this.dbCourses.db, `users/${this.email}/${collectionList[i]}/${this.deleteId}`);
-          deleteDoc(docRef);
-        });
-      }
-    }
+    await this.clearUserCollections(this.email, collectionList, storeList);
     this.addingDegree = false;
     this.addedDegree = false;
     this.addingMajor = false;
@@ -396,6 +442,9 @@ export class ProgressPanel {
 
   public async deleteMajor() {
     this.email = this.authService.auth.currentUser.email;
+    if (!this.email) {
+      return;
+    }
 
     let collectionList = [
       "degree",
@@ -414,20 +463,7 @@ export class ProgressPanel {
       "secondMajors",
       "thirdMajors",
     ];
-    for (let i = 0; i < collectionList.length; i++) {
-      const userCollectionRef = collection(this.dbCourses.db, `users/${this.email}/${collectionList[i]}`);
-      const snapshot = await getDocs(userCollectionRef);
-    
-      if (snapshot.docs.length > 0) {
-        snapshot.forEach((ref) => {
-          this.deleteId = ref.id;
-          this.storeHelper.update(storeList[i], null);
-    
-          const docRef = doc(this.dbCourses.db, `users/${this.email}/${collectionList[i]}/${this.deleteId}`);
-          deleteDoc(docRef);
-        });
-      }
-    }
+    await this.clearUserCollections(this.email, collectionList, storeList);
     this.addingMajor = false;
     this.addedMajor = false;
     this.currentMajors[0] = null;
@@ -436,6 +472,9 @@ export class ProgressPanel {
 
   public async deletePathway() {
     this.email = this.authService.auth.currentUser.email;
+    if (!this.email) {
+      return;
+    }
 
     let collectionList = [
       "pathway",
@@ -443,28 +482,18 @@ export class ProgressPanel {
     let storeList = [
       "pathways",
     ];
-    for (let i = 0; i < collectionList.length; i++) {
-      const userCollectionRef = collection(this.dbCourses.db, `users/${this.email}/${collectionList[i]}`);
-      const snapshot = await getDocs(userCollectionRef);
-    
-      if (snapshot.docs.length > 0) {
-        snapshot.forEach((ref) => {
-          this.deleteId = ref.id;
-          this.storeHelper.update(storeList[i], null);
-    
-          const docRef = doc(this.dbCourses.db, `users/${this.email}/${collectionList[i]}/${this.deleteId}`);
-          deleteDoc(docRef);
-        });
-      }
-    }
+    await this.clearUserCollections(this.email, collectionList, storeList);
     this.addingPathway = false;
     this.addedPathway = false;
     this.currentPathways[0] = null;
-    this.deleteMajor();
+    await this.deleteMajor();
   }
 
   public async deleteConjoint() {
     this.email = this.authService.auth.currentUser.email;
+    if (!this.email) {
+      return;
+    }
 
     let collectionList = [
       "conjoint",
@@ -472,31 +501,20 @@ export class ProgressPanel {
     let storeList = [
       "conjoint",
     ];
-    for (let i = 0; i < collectionList.length; i++) {
-      const userCollectionRef = collection(this.dbCourses.db, `users/${this.email}/${collectionList[i]}`);
-      const snapshot = await getDocs(userCollectionRef);
-    
-      if (snapshot.docs.length > 0) {
-        snapshot.forEach((ref) => {
-          this.deleteId = ref.id;
-          this.storeHelper.update(storeList[i], null);
-    
-          const docRef = doc(this.dbCourses.db, `users/${this.email}/${collectionList[i]}/${this.deleteId}`);
-          deleteDoc(docRef);
-        });
-      }
-    }
+    await this.clearUserCollections(this.email, collectionList, storeList);
     this.addingConjoint = false;
     this.addedConjoint = false;
     this.currentConjoints[0] = null;
-    this.deleteSecondMajor();
-    this.deleteThirdMajor();
+    await Promise.all([this.deleteSecondMajor(), this.deleteThirdMajor()]);
     // this.dbCourses.setAuditLogDeleteConjoint()
   }
 
 
   public async deleteSecondMajor() {
     this.email = this.authService.auth.currentUser.email;
+    if (!this.email) {
+      return;
+    }
 
     let collectionList = [
       "secondMajor",
@@ -504,20 +522,7 @@ export class ProgressPanel {
     let storeList = [
       "secondMajors",
     ];
-    for (let i = 0; i < collectionList.length; i++) {
-      const userCollectionRef = collection(this.dbCourses.db, `users/${this.email}/${collectionList[i]}`);
-      const snapshot = await getDocs(userCollectionRef);
-    
-      if (snapshot.docs.length > 0) {
-        snapshot.forEach((ref) => {
-          this.deleteId = ref.id;
-          this.storeHelper.update(storeList[i], null);
-    
-          const docRef = doc(this.dbCourses.db, `users/${this.email}/${collectionList[i]}/${this.deleteId}`);
-          deleteDoc(docRef);
-        });
-      }
-    }
+    await this.clearUserCollections(this.email, collectionList, storeList);
     this.addingSecondMajor = false;
     this.addedSecondMajor = false;
     this.currentSecondMajors[0] = null;
@@ -525,6 +530,9 @@ export class ProgressPanel {
 
   public async deleteThirdMajor() {
     this.email = this.authService.auth.currentUser.email;
+    if (!this.email) {
+      return;
+    }
 
     let collectionList = [
       "thirdMajor",
@@ -532,20 +540,7 @@ export class ProgressPanel {
     let storeList = [
       "thirdMajors",
     ];
-    for (let i = 0; i < collectionList.length; i++) {
-      const userCollectionRef = collection(this.dbCourses.db, `users/${this.email}/${collectionList[i]}`);
-      const snapshot = await getDocs(userCollectionRef);
-    
-      if (snapshot.docs.length > 0) {
-        snapshot.forEach((ref) => {
-          this.deleteId = ref.id;
-          this.storeHelper.update(storeList[i], null);
-    
-          const docRef = doc(this.dbCourses.db, `users/${this.email}/${collectionList[i]}/${this.deleteId}`);
-          deleteDoc(docRef);
-        });
-      }
-    }
+    await this.clearUserCollections(this.email, collectionList, storeList);
     this.addingThirdMajor = false;
     this.addedThirdMajor = false;
     this.currentThirdMajors[0] = null;
@@ -553,6 +548,9 @@ export class ProgressPanel {
 
   public async deleteModule() {
     this.email = this.authService.auth.currentUser.email;
+    if (!this.email) {
+      return;
+    }
 
     let collectionList = [
       "module",
@@ -560,20 +558,7 @@ export class ProgressPanel {
     let storeList = [
       "modules",
     ];
-    for (let i = 0; i < collectionList.length; i++) {
-      const userCollectionRef = collection(this.dbCourses.db, `users/${this.email}/${collectionList[i]}`);
-      const snapshot = await getDocs(userCollectionRef);
-    
-      if (snapshot.docs.length > 0) {
-        snapshot.forEach((ref) => {
-          this.deleteId = ref.id;
-          this.storeHelper.update(storeList[i], null);
-    
-          const docRef = doc(this.dbCourses.db, `users/${this.email}/${collectionList[i]}/${this.deleteId}`);
-          deleteDoc(docRef);
-        });
-      }
-    }
+    await this.clearUserCollections(this.email, collectionList, storeList);
     this.addingModule = false;
     this.addedModule = false;
     this.currentModules[0] = null;
@@ -582,6 +567,9 @@ export class ProgressPanel {
 
   public async deleteSecondModule() {
     this.email = this.authService.auth.currentUser.email;
+    if (!this.email) {
+      return;
+    }
 
     let collectionList = [
       "secondModule",
@@ -589,22 +577,7 @@ export class ProgressPanel {
     let storeList = [
       "secondModules",
     ];
-    for (let i = 0; i < collectionList.length; i++) {
-      for (let i = 0; i < collectionList.length; i++) {
-        const userCollectionRef = collection(this.dbCourses.db, `users/${this.email}/${collectionList[i]}`);
-        const snapshot = await getDocs(userCollectionRef);
-      
-        if (snapshot.docs.length > 0) {
-          snapshot.forEach((ref) => {
-            this.deleteId = ref.id;
-            this.storeHelper.update(storeList[i], null);
-      
-            const docRef = doc(this.dbCourses.db, `users/${this.email}/${collectionList[i]}/${this.deleteId}`);
-            deleteDoc(docRef);
-          });
-        }
-      }
-    }
+    await this.clearUserCollections(this.email, collectionList, storeList);
     this.addingSecondModule = false;
     this.addedSecondModule = false;
     this.currentSecondModules[0] = null;
@@ -629,6 +602,7 @@ export class ProgressPanel {
   }
 
   public selectRequirements(requirement: any): void {
+    const hasGeneralFlag = this.requirementHasFlag(requirement, "general");
 
     const stages = requirement.stage
       ? [requirement.stage]
@@ -676,10 +650,7 @@ export class ProgressPanel {
           ? requirement.secondModules.toString()
           : null
         : null,
-      general:
-        requirement.flags && requirement.flags.includes("General")
-          ? true
-          : null,
+      general: hasGeneralFlag ? true : null,
       // further:
       //   requirement.flags && requirement.flags.includes("further")
       //     ? true
@@ -706,6 +677,48 @@ export class ProgressPanel {
     } else {
       return null;
     }
+  }
+
+  private requirementHasFlag(requirement: any, targetFlag: string): boolean {
+    if (!requirement || !targetFlag) {
+      return false;
+    }
+
+    const target = targetFlag.trim().toLowerCase();
+    const flags = requirement.flags;
+    if (!flags) {
+      return false;
+    }
+
+    if (Array.isArray(flags)) {
+      return flags.some(
+        (flag: any) =>
+          typeof flag === "string" &&
+          flag.trim().toLowerCase() === target
+      );
+    }
+
+    if (typeof flags === "string") {
+      return flags
+        .split(",")
+        .map((flag: string) => flag.trim().toLowerCase())
+        .includes(target);
+    }
+
+    if (typeof flags === "object") {
+      if (flags[targetFlag] === true || flags[target] === true) {
+        return true;
+      }
+
+      return Object.keys(flags).some((key: string) => {
+        return (
+          key.trim().toLowerCase() === target &&
+          Boolean(flags[key])
+        );
+      });
+    }
+
+    return false;
   }
 
   public changeFaculty(which: any, event: { value: { name: any; }; }) {
@@ -827,16 +840,6 @@ export class ProgressPanel {
     }
   }
 
-  public expansionOnClick() {
-    this.isDisabled = false;
-    return this.isDisabled;
-  }
-
-  public noExpansionOnClick() {
-    this.isDisabled = true;
-    return this.isDisabled;
-  }
-
   public openDialog(degSelectId: any) {
     const dialogConfig = new MatDialogConfig();
 
@@ -852,6 +855,10 @@ export class ProgressPanel {
     dialogRef.afterClosed().subscribe(
       (        data: any) => console.log("Dialog output:", data)
     );    
+}
+
+public setPanelExpanded(panelKey: string, expanded: boolean) {
+  this.panelExpanded[panelKey] = expanded;
 }
 
 newDegreeEvent(){ 

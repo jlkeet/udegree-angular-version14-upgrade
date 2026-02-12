@@ -1,21 +1,31 @@
+.advisor-export {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
 .export-advisor-zero,
 .export-advisor-one,
 .export-advisor-two,
 .export-advisor-three {
-    width: 100%;
-    height: 44px;
+    width: min(520px, 100%);
+    height: 48px;
     border-radius: 9px;
     border: 1px solid #8ea9bb;
     font-weight: 700;
-    font-size: 15px;
+    font-size: 14px;
     letter-spacing: 0.01em;
     transition: all 0.2s ease;
+    text-align: left;
+    padding: 0 16px;
 }
 
 .export-advisor-zero {
-    background: linear-gradient(180deg, #fdfefe 0%, #f1f7fb 100%);
-    color: #5a7588;
+    background: linear-gradient(180deg, #f8fbfd 0%, #f2f7fb 100%);
+    color: #6a7e8b;
+    border-color: #c9d9e4;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 .export-advisor-one {
@@ -35,6 +45,7 @@
     color: #7f6718;
     background: linear-gradient(145deg, #ffe28a 0%, #ffd15f 100%);
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 .export-advisor-three {
@@ -42,4 +53,5 @@
     color: #f6fff3;
     background: linear-gradient(145deg, #6fcf5d 0%, #57b43f 100%);
     cursor: not-allowed;
+    box-shadow: none;
 }

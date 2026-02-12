@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
 export class ProgressPanelService {
     public requirements: any;
     public degreeFullyPlanned: any;
+    public conjointRequirements: any;
 
     public majorRequirements: any;
     public majorFullyPlanned: any;
@@ -88,6 +89,14 @@ export class ProgressPanelService {
 
     public getReqs() {
         return this.requirements;
+    }
+
+    public setConjointReqs(reqs: any) {
+        this.conjointRequirements = reqs;
+    }
+
+    public getConjointReqs() {
+        return this.conjointRequirements;
     }
   
   }

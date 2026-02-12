@@ -4,6 +4,7 @@ import { IRequirement } from '../services';
 export interface ICourse {
   id?: number;
   generatedId?: number;
+  firestoreId?: string;
   name?: string;
   title?: string;
   desc?: string;
