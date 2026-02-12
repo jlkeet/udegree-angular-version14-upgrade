@@ -246,6 +246,65 @@ describe("SamplePlanService", () => {
     expect(plannedEasy.period).toBe(plannedPrereq.period);
   });
 
+  it("does not schedule a course when a complex prerequisite required-count cannot be met", async () => {
+    const prereqOne: ICourse = {
+      id: 13,
+      generatedId: 7013,
+      name: "PREREQ100",
+      desc: "Available prerequisite",
+      faculties: ["Arts"],
+      department: ["History"],
+      points: 15,
+      stage: 1,
+    };
+
+    const blockedAdvanced: ICourse = {
+      id: 14,
+      generatedId: 7014,
+      name: "ADV300",
+      desc: "Blocked advanced paper",
+      faculties: ["Arts"],
+      department: ["History"],
+      points: 15,
+      stage: 3,
+      requirements: [
+        {
+          type: RequirementType.Papers,
+          required: 2,
+          complex: [
+            {
+              type: RequirementType.Papers,
+              required: 1,
+              papers: ["PREREQ100"],
+            },
+            {
+              type: RequirementType.Papers,
+              required: 1,
+              papers: ["MISSING100"],
+            },
+          ],
+        },
+      ],
+    };
+
+    createService(
+      [blockedAdvanced, prereqOne],
+      [{ type: RequirementType.Papers, required: 1, papers: ["ADV300"] }]
+    );
+
+    await service.setCourse();
+
+    const addedNames = courseService.setCourseDb
+      .calls.allArgs()
+      .map((args: any[]) => args[0].name);
+    const plannedAdvanced = state.courses.find(
+      (course: ICourse) => course.name === "ADV300"
+    );
+
+    expect(addedNames).toContain("PREREQ100");
+    expect(plannedAdvanced).toBeUndefined();
+  });
+
   it("biases stage 300 papers into third-year-or-later semesters", async () => {
     const intro: ICourse = {
       id: 21,

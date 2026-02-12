@@ -590,7 +590,10 @@ public corequisiteCheck(subRequirement: IRequirement, planned: ICourse[], course
     }
 
     if (typeof requirement.flags === "string") {
-      return requirement.flags.toLowerCase() === flagLower;
+      return requirement.flags
+        .split(",")
+        .map((entry: string) => entry.trim().toLowerCase())
+        .includes(flagLower);
     }
 
     return false;
@@ -600,12 +603,54 @@ public corequisiteCheck(subRequirement: IRequirement, planned: ICourse[], course
   }
 
   public checkCoRequesiteFlag(requirement: IRequirement | undefined | null, flag: string): boolean {
-      // console.log(requirement)
-      if (requirement && requirement.flags !== undefined && requirement.flags.isCorequesite) {
-        return true;
-      } else {
+      if (!requirement || !flag) {
         return false;
+      }
+
+      const aliases = this.corequisiteFlagAliases(flag);
+      const flags = requirement.flags;
+
+      if (flags !== undefined && flags !== null) {
+        if (Array.isArray(flags)) {
+          return flags.some(
+            (entry: any) =>
+              typeof entry === "string" &&
+              aliases.includes(entry.trim().toLowerCase())
+          );
+        }
+
+        if (typeof flags === "string") {
+          return flags
+            .split(",")
+            .map((entry: string) => entry.trim().toLowerCase())
+            .some((entry: string) => aliases.includes(entry));
+        }
+
+        if (typeof flags === "object") {
+          return Object.keys(flags).some((key: string) => {
+            if (!aliases.includes(key.trim().toLowerCase())) {
+              return false;
+            }
+            return Boolean(flags[key]);
+          });
+        }
+      }
+
+      // Backward compatibility for legacy inline boolean fields.
+      const requirementAny = requirement as Record<string, any>;
+      return Object.keys(requirementAny).some((key: string) => {
+        const normalisedKey = key.trim().toLowerCase();
+        return aliases.includes(normalisedKey) && requirementAny[key] === true;
+      });
+  }
+
+  private corequisiteFlagAliases(flag: string): string[] {
+    const normalised = flag.trim().toLowerCase();
+    if (normalised === "iscorequisite" || normalised === "iscorequesite") {
+      return ["iscorequisite", "iscorequesite"];
     }
+
+    return [normalised];
   }
   
 

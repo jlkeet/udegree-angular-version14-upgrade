@@ -64,13 +64,17 @@
           </ng-container>
         </ng-container>
   
-        <div fake class="course-select-fake temp-card path-selection" *ngIf="sampleService.complexPreReqs?.complex && semester.year == 2024 && semester.period == 1 && complexClickedBool == false;">
+        <div
+          fake
+          class="course-select-fake temp-card path-selection"
+          *ngIf="shouldRenderComplexPathSelection() && complexClickedBool == false"
+        >
           <div class="position-text" (click)="complexClicked()">Click to see Options</div>
         </div>
   
-        <ng-container *ngIf="complexClickedBool && !selectedPath">
+        <ng-container *ngIf="shouldRenderComplexPathSelection() && complexClickedBool && !selectedPath">
           <ng-template ngFor let-element [ngForOf]="sampleService.complexPreReqs.complex">
-            <div *ngIf="semester.year == 2024 && semester.period == 1" fake class="course-select-fake temp-card path-selection">
+            <div fake class="course-select-fake temp-card path-selection">
               <div (click)="selectPath(element)" class="position-text">
                 Select {{element.required}} from {{element.papers || element.departments || element.faculties || "points any department"}}
               </div>

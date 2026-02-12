@@ -649,6 +649,36 @@ export class SemesterPanel {
     this.complexClickedBool = !this.complexClickedBool;
   }
 
+  public hasComplexPathOptions(): boolean {
+    return Array.isArray(this.sampleService?.complexPreReqs?.complex)
+      && this.sampleService.complexPreReqs.complex.length > 0;
+  }
+
+  public shouldRenderComplexPathSelection(): boolean {
+    if (!this.hasComplexPathOptions()) {
+      return false;
+    }
+
+    const semesters = Array.isArray(this.storeHelper.current("semesters"))
+      ? [...this.storeHelper.current("semesters")]
+      : [];
+    if (semesters.length === 0) {
+      return false;
+    }
+
+    semesters.sort((semesterA: any, semesterB: any) =>
+      Number(semesterA?.year) === Number(semesterB?.year)
+        ? Number(semesterA?.period) - Number(semesterB?.period)
+        : Number(semesterA?.year) - Number(semesterB?.year)
+    );
+
+    const firstSemester = semesters[0];
+    return (
+      Number(firstSemester?.year) === Number(this.semester?.year) &&
+      Number(firstSemester?.period) === Number(this.semester?.period)
+    );
+  }
+
   public complexSelection(event: any) {
 
     // if (event.papers) {
@@ -736,14 +766,12 @@ export class SemesterPanel {
       (element: any) => element !== path
     );
 
-    setTimeout(async () => {
-      await this.sampleService.sortTempCardsIntoYears();
-      
-      // Remove the tempCards from their original location after sorting
-      for (const card of this.selectedPathCards) {
-        await this.removeTempCardFromOriginalLocation(card);
-      }
-    }, 2000);
+    await this.sampleService.sortTempCardsIntoYears();
+
+    // Remove the tempCards from their original location after sorting
+    for (const card of this.selectedPathCards) {
+      await this.removeTempCardFromOriginalLocation(card);
+    }
   }
 
   private async removeTempCardFromOriginalLocation(tempCard: TempCard) {

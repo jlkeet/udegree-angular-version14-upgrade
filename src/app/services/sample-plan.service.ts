@@ -151,7 +151,9 @@ export class SamplePlanService {
       )
         ? this.courseService.complexReqsForSamplePlan
         : [];
-      this.complexPreReqs = complexRequirements[0] || { complex: [] };
+      this.complexPreReqs = {
+        complex: this.uniqueComplexSubRequirements(complexRequirements),
+      };
       this.semesters = this.getSemesters();
       const afterSemesterCount = (
         this.storeHelper.current("semesters") || []
@@ -496,6 +498,31 @@ export class SamplePlanService {
     }
 
     return score;
+  }
+
+  private uniqueComplexSubRequirements(
+    complexRequirements: IRequirement[]
+  ): IRequirement[] {
+    const seen = new Set<string>();
+    const unique: IRequirement[] = [];
+
+    (Array.isArray(complexRequirements) ? complexRequirements : []).forEach(
+      (requirement: IRequirement) => {
+        const subRequirements = Array.isArray(requirement?.complex)
+          ? requirement.complex
+          : [];
+        subRequirements.forEach((subRequirement: IRequirement) => {
+          const signature = this.requirementSignature(subRequirement);
+          if (seen.has(signature)) {
+            return;
+          }
+          seen.add(signature);
+          unique.push(subRequirement);
+        });
+      }
+    );
+
+    return unique;
   }
 
   private requirementCandidateCount(requirement: IRequirement): number {
@@ -1544,7 +1571,12 @@ export class SamplePlanService {
           }
         }
 
-        if (complexErrors === subRequirements.length) {
+        const requiredCount =
+          requirement.required !== undefined
+            ? Math.min(requirement.required, subRequirements.length)
+            : subRequirements.length;
+        const satisfiedCount = subRequirements.length - complexErrors;
+        if (satisfiedCount < requiredCount) {
           return true;
         }
         continue;

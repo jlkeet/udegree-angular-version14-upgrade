@@ -139,4 +139,47 @@ describe("RequirementService", () => {
 
     expect(service.requirementCheck(requirement, planned)).toBe(15);
   });
+
+  it("detects corequisite flags across flag shapes and legacy spelling", () => {
+    const requirementFromObject: IRequirement = {
+      type: RequirementType.Papers,
+      required: 1,
+      papers: ["ANTHRO100"],
+      flags: { isCorequisite: true },
+    };
+    const requirementFromArray: IRequirement = {
+      type: RequirementType.Papers,
+      required: 1,
+      papers: ["ANTHRO100"],
+      flags: ["isCorequisite"],
+    };
+    const requirementFromString: IRequirement = {
+      type: RequirementType.Papers,
+      required: 1,
+      papers: ["ANTHRO100"],
+      flags: "isCorequisite",
+    };
+    const requirementFromLegacyProperty: IRequirement = {
+      type: RequirementType.Papers,
+      required: 1,
+      papers: ["ANTHRO100"],
+      isCorequesite: true,
+    };
+
+    expect(
+      service.checkCoRequesiteFlag(requirementFromObject, "isCorequesite")
+    ).toBeTrue();
+    expect(
+      service.checkCoRequesiteFlag(requirementFromArray, "isCorequesite")
+    ).toBeTrue();
+    expect(
+      service.checkCoRequesiteFlag(requirementFromString, "isCorequesite")
+    ).toBeTrue();
+    expect(
+      service.checkCoRequesiteFlag(
+        requirementFromLegacyProperty,
+        "isCorequesite"
+      )
+    ).toBeTrue();
+  });
 });
